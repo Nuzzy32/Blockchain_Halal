@@ -888,6 +888,6 @@ matriks di atas. Catat hasilnya di `docs/testing.md`.
 
 | Batas | Kapan jadi masalah | Jalan keluar |
 |---|---|---|
-| Jumlah permintaan `eth_getLogs` bertambah ~4 per hari sejak blok deploy | Setelah beberapa bulan, pemuatan dashboard terasa lambat | Tambahkan penghitung/daftar id di contract v2 (Fase 2), lalu ganti pemindaian log dengan pembacaan langsung |
+| Jumlah permintaan `eth_getLogs` bertambah ~4 per hari sejak blok deploy | Setelah beberapa bulan, RPC publik membalas 429 (rate limit) sehingga seluruh `Promise.all` gagal serentak dan dashboard jatuh ke kartu galat total — bukan sekadar lambat | Tambahkan penghitung/daftar id di contract v2 (Fase 2), lalu ganti pemindaian log dengan pembacaan langsung |
 | `getRecord` dipanggil satu per satu untuk tiap sapi | Ratusan sapi sekaligus bisa kena batas laju RPC | Batasi jumlah yang diambil, atau tambahkan fungsi baca massal di contract v2 |
 | Sepuluh sapi terbaru saja yang ditampilkan | Saat data banyak dan pengguna ingin menelusuri semuanya | Tambahkan penomoran halaman atau pencarian berdasarkan id |
