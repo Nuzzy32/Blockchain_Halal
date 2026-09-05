@@ -100,3 +100,15 @@ Simpan ke `docs/screenshots/`. Minimal yang dibutuhkan laporan Fase 6:
 - [ ] Satu pesan revert, mis. B7 "sapi sudah disembelih"
 - [ ] Banner "Jaringan salah" (D2)
 - [ ] Halaman "Sapi #999 tidak ditemukan" (C2)
+
+## D. Dashboard statistik (Fase 1)
+
+| # | Aksi | Harapan | Status |
+|---|---|---|---|
+| D1 | Buka `?dashboard=1` tanpa wallet terpasang | Halaman terbuka penuh, tidak ada permintaan connect wallet | `[ ]` |
+| D2 | Bandingkan "Total sapi" dengan jumlah sapi yang sudah didaftarkan | Angkanya sama | `[ ]` |
+| D3 | Bandingkan corong tahapan dengan status tiap sapi | Terdaftar ≥ Disembelih ≥ Dikirim, dan cocok dengan kenyataan | `[ ]` |
+| D4 | Periksa sebaran grade | Jumlah per grade cocok; totalnya sama dengan total sapi | `[ ]` |
+| D5 | Klik nomor sapi di tabel "Sapi terbaru" | Membuka halaman lacak sapi tersebut | `[ ]` |
+| D6 | Matikan koneksi internet lalu muat ulang | Muncul "Gagal memuat statistik" + tombol Muat ulang, bukan layar kosong | `[ ]` |
+| D7 | Buka di lebar ponsel (±375px) | Tidak ada geseran horizontal; tabel tetap terbaca | `[ ]` |
