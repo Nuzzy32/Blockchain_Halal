@@ -236,7 +236,7 @@ function Recent({ records }) {
                 <td className="px-5 py-3">
                   <a
                     href={`?id=${rec.id}`}
-                    className="font-display font-semibold text-primary underline underline-offset-4"
+                    className="tap font-display font-semibold text-primary underline underline-offset-4"
                   >
                     #{String(rec.id)}
                   </a>
