@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react'
-import { ADDRESS, addressUrl, errorMessage, fetchAllCattle } from './contract.js'
-import { formatDuration, summarize } from './stats.js'
+import {
+  ADDRESS,
+  addressUrl,
+  errorMessage,
+  fetchAllCattle,
+  formatDate,
+} from './contract.js'
+import { formatDuration, stageOf, summarize } from './stats.js'
 
 /**
  * Ringkasan seluruh rantai pasok, dibaca dari blockchain tanpa wallet.
@@ -69,6 +75,8 @@ function Stats({ stats }) {
 
       <Funnel funnel={stats.funnel} total={stats.total} />
       <Durations stats={stats} />
+      <Grades grades={stats.grades} total={stats.total} />
+      <Recent records={stats.recent} />
       <Provenance />
     </div>
   )
@@ -158,6 +166,91 @@ function Provenance() {
       >
         {ADDRESS}
       </a>
+    </section>
+  )
+}
+
+/* ---------- sebaran grade ---------- */
+
+/**
+ * Batang horizontal berlabel, bukan pie: kategorinya sedikit, dan perbandingan panjang
+ * batang jauh lebih mudah dibaca daripada perbandingan sudut. Angka dan persentase
+ * ditulis eksplisit supaya grafik ini tetap terbaca tanpa melihat panjang batangnya.
+ */
+function Grades({ grades, total }) {
+  return (
+    <section>
+      <h2 className="eyebrow mb-3">Sebaran grade</h2>
+      <ul className="space-y-3">
+        {grades.map(({ grade, count }) => {
+          const percent = Math.round((count / total) * 100)
+          return (
+            <li key={grade} className="flex items-center gap-4">
+              <span className="font-display w-10 shrink-0 text-lg font-semibold">
+                {grade}
+              </span>
+              <span className="h-3 min-w-0 flex-1 overflow-hidden rounded-full bg-divider">
+                <span
+                  aria-hidden
+                  className="block h-full rounded-full bg-primary"
+                  style={{ width: `${percent}%` }}
+                />
+              </span>
+              <span className="w-24 shrink-0 text-right text-sm tnum text-muted">
+                {count} ekor · {percent}%
+              </span>
+            </li>
+          )
+        })}
+      </ul>
+    </section>
+  )
+}
+
+/* ---------- sapi terbaru ---------- */
+
+const STAGE_LABEL = ['Terdaftar', 'Disembelih', 'Dikirim']
+
+function Recent({ records }) {
+  // Sepuluh terbaru sudah cukup untuk gambaran; sisanya bisa dilihat lewat halaman lacak.
+  const rows = records.slice(0, 10)
+
+  return (
+    <section>
+      <h2 className="eyebrow mb-3">Sapi terbaru</h2>
+      <div className="overflow-hidden rounded-xl border border-divider">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-divider bg-surface">
+              <th className="eyebrow px-5 py-3 text-left">Nomor</th>
+              <th className="eyebrow px-5 py-3 text-left">Grade</th>
+              <th className="eyebrow px-5 py-3 text-left">Status</th>
+              <th className="eyebrow px-5 py-3 text-left">Terdaftar</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((rec) => (
+              <tr key={String(rec.id)} className="border-t border-divider bg-surface">
+                <td className="px-5 py-3">
+                  <a
+                    href={`?id=${rec.id}`}
+                    className="font-display font-semibold text-primary underline underline-offset-4"
+                  >
+                    #{String(rec.id)}
+                  </a>
+                </td>
+                <td className="px-5 py-3 font-medium">{rec.grade}</td>
+                <td className="px-5 py-3">
+                  <span className="inline-flex items-center rounded-full bg-primary-soft px-2.5 py-1 text-xs font-semibold text-primary">
+                    {STAGE_LABEL[stageOf(rec)]}
+                  </span>
+                </td>
+                <td className="px-5 py-3 tnum text-muted">{formatDate(rec.registeredDate)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </section>
   )
 }
