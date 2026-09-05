@@ -4,6 +4,7 @@ import {
   ADDRESS,
   AMOY_PARAMS,
   CHAIN_ID,
+  dashboardUrl,
   Role,
   ROLE_LABEL,
   addressUrl,
@@ -167,8 +168,15 @@ function TopBar({ wallet }) {
           Traceability Sapi
         </span>
 
+        <a
+          href={dashboardUrl()}
+          className="tap ml-auto text-sm font-medium text-primary underline underline-offset-4"
+        >
+          Statistik
+        </a>
+
         {wallet.account && (
-          <div className="ml-auto flex items-center gap-2">
+          <div className="flex items-center gap-2">
             {wallet.role !== null && wallet.role !== Role.None && (
               <span className="hidden rounded-full bg-primary-soft px-2.5 py-1 text-xs font-semibold text-primary sm:inline">
                 {ROLE_LABEL[wallet.role]}
