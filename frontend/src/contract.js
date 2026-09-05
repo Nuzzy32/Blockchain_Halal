@@ -9,9 +9,16 @@ export const CHAIN_ID = 80002n
 export const RPC = 'https://polygon-amoy-bor-rpc.publicnode.com'
 export const EXPLORER = 'https://amoy.polygonscan.com'
 
+// Blok tempat contract di-deploy (docs/deployment.md). Titik awal penelusuran log —
+// tidak perlu memindai dari blok 0.
+export const DEPLOY_BLOCK = 46758635
+
 // ABI human-readable: ethers v6 menerima bentuk ini dan hasilnya identik dengan
 // ABI JSON hasil compile, tapi 6 baris alih-alih ~280.
 export const ABI = [
+  // Event dibutuhkan dashboard untuk mengumpulkan daftar id sapi — contract tidak
+  // menyimpan daftarnya, jadi satu-satunya sumber adalah log event.
+  'event CattleRegistered(uint256 indexed id, address indexed by, uint256 at)',
   'function registerCattle(uint256 id, uint256 age, string feedType, string grade)',
   'function recordSlaughter(uint256 id)',
   'function recordShipping(uint256 id)',
@@ -40,6 +47,39 @@ export const AMOY_PARAMS = {
 /** Contract read-only lewat RPC publik. Tanpa wallet — dipakai halaman konsumen. */
 export function readContract() {
   return new Contract(ADDRESS, ABI, new JsonRpcProvider(RPC))
+}
+
+/**
+ * Seluruh sapi yang pernah didaftarkan, lengkap dengan detailnya.
+ *
+ * Contract tidak menyimpan daftar id, jadi id dikumpulkan dari log event
+ * CattleRegistered lalu tiap id dibaca detailnya lewat getRecord.
+ *
+ * ponytail: RPC publik menolak eth_getLogs dengan rentang >10.000 blok, jadi rentang
+ * dipecah dan seluruh potongan diminta sekaligus. Jumlah permintaan bertambah ~4 per hari
+ * sejak deploy (Amoy ~2 detik/blok). Untuk skala tugas ini masih hitungan milidetik; kalau
+ * kelak terasa lambat, tambahkan penghitung id di contract v2 (Fase 2) supaya daftar sapi
+ * bisa dibaca langsung tanpa memindai log.
+ */
+export async function fetchAllCattle() {
+  const provider = new JsonRpcProvider(RPC)
+  const ct = new Contract(ADDRESS, ABI, provider)
+  const latest = await provider.getBlockNumber()
+  const MAX_RANGE = 10_000
+
+  const ranges = []
+  for (let from = DEPLOY_BLOCK; from <= latest; from += MAX_RANGE) {
+    ranges.push([from, Math.min(from + MAX_RANGE - 1, latest)])
+  }
+
+  const chunks = await Promise.all(
+    ranges.map(([from, to]) =>
+      ct.queryFilter(ct.filters.CattleRegistered(), from, to),
+    ),
+  )
+
+  const ids = chunks.flat().map((log) => log.args.id)
+  return Promise.all(ids.map((id) => ct.getRecord(id)))
 }
 
 /** Contract yang bisa menulis, ditandatangani wallet yang sedang aktif di MetaMask. */
