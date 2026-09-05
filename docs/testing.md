@@ -82,24 +82,49 @@ Semua diuji lewat UI. Pesan yang diharapkan harus muncul di kotak merah di bawah
 
 | # | Aksi | Harapan | Status |
 |---|---|---|---|
-| E1 | Buka `?dashboard=1` tanpa wallet terpasang | Halaman terbuka penuh, tidak ada permintaan connect wallet | `[ ]` |
-| E2 | Bandingkan "Total sapi" dengan jumlah sapi yang sudah didaftarkan | Angkanya sama | `[ ]` |
-| E3 | Bandingkan corong tahapan dengan status tiap sapi | Terdaftar ≥ Disembelih ≥ Dikirim, dan cocok dengan kenyataan | `[ ]` |
-| E4 | Periksa sebaran grade | Jumlah per grade cocok; totalnya sama dengan total sapi | `[ ]` |
-| E5 | Klik nomor sapi di tabel "Sapi terbaru" | Membuka halaman lacak sapi tersebut | `[ ]` |
-| E6 | Matikan koneksi internet lalu muat ulang | Muncul "Gagal memuat statistik" + tombol Muat ulang, bukan layar kosong | `[ ]` |
-| E7 | Buka di lebar ponsel (±375px) | Tidak ada geseran horizontal; tabel tetap terbaca | `[ ]` |
+| E1 | Buka `?dashboard=1` tanpa wallet terpasang | Halaman terbuka penuh, tidak ada permintaan connect wallet | `[x]` |
+| E2 | Bandingkan "Total sapi" dengan jumlah sapi yang sudah didaftarkan | Angkanya sama | `[x]` |
+| E3 | Bandingkan corong tahapan dengan status tiap sapi | Tiap sapi terhitung tepat sekali; jumlah ketiganya = total | `[x]` |
+| E4 | Periksa sebaran grade | Jumlah per grade cocok; totalnya sama dengan total sapi | `[x]` |
+| E5 | Klik nomor sapi di tabel "Sapi terbaru" | Membuka halaman lacak sapi tersebut | `[x]` |
+| E6 | Putus akses ke RPC lalu muat ulang | Muncul "Gagal memuat statistik" + tombol Muat ulang, bukan layar kosong | `[x]` |
+| E7 | Buka di lebar ponsel (±375px) | Tidak ada geseran horizontal; tabel tetap terbaca | `[x]` |
+
+Catatan E3: harapan semula ditulis sebagai corong kumulatif (Terdaftar ≥ Disembelih ≥
+Dikirim). Dashboard yang jadi menampilkan **status eksklusif** — "masih di peternakan",
+"sudah disembelih belum dikirim", "sudah dikirim" — supaya tiap sapi terhitung tepat
+sekali. Harapan di tabel disesuaikan mengikuti perilaku yang benar itu.
+
+Catatan E6: "matikan internet" diganti "arahkan RPC ke host yang tidak ada", dijalankan di
+`npm run dev`. Jalur kodenya identik (`fetchAllCattle()` reject → `catch` → `LoadError`)
+dan tidak butuh mencabut jaringan mesin penguji.
 
 ---
 
 ## Hasil
 
-_Isi setelah semua tabel di atas dijalankan._
+### Bagian E — Dashboard statistik (Fase 1)
 
-- Tanggal pengujian:
-- Dijalankan oleh:
-- Ringkasan:
-- Yang gagal & tindak lanjut:
+- Tanggal pengujian: 5 September 2026
+- Dijalankan oleh: Claude Code, di situs live <https://nuzzy32.github.io/Blockchain_Halal/>
+  (E6 di `npm run dev`, lihat catatannya)
+- Ringkasan: **7/7 lulus.** Data pembanding diambil langsung dari chain lewat
+  `fetchAllCattle()`: 1 sapi tercatat, id 1, grade A, sudah sampai tahap dikirim
+  (terdaftar 1788581465 → disembelih 1788581815 → dikirim 1788581958).
+  Dashboard menampilkan total 1; status eksklusif 0 / 0 / 1; grade A 1 ekor 100%;
+  rata-rata "daftar → disembelih" 6 menit dan "disembelih → dikirim" 2 menit — cocok
+  dengan selisih timestamp di atas. Klik `#1` membuka `?id=1` dengan data yang benar.
+  Pada 375 px `scrollWidth` sama dengan `clientWidth` (nol geseran horizontal) dan tidak
+  ada satu pun elemen yang melewati tepi; kolom "Terdaftar" tersembunyi sesuai desain.
+- Yang gagal & tindak lanjut: tidak ada.
+- Catatan publish: setelah `npm run deploy`, `index.html` sempat terlayan dari cache
+  peramban sehingga masih memuat bundel lama. Muat ulang dengan query pemecah cache
+  menyelesaikannya — bukan bug aplikasi, tapi perlu diingat saat demo.
+
+### Bagian A–D — Alur penulisan lewat MetaMask (Fase 5)
+
+Belum dijalankan. Semuanya butuh MetaMask dengan 4 akun berlabel dan test POL, jadi harus
+dijalankan sendiri oleh Adrian — bukan sesuatu yang bisa diotomatiskan dari sini.
 
 ## Screenshot
 
