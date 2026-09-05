@@ -225,7 +225,9 @@ function Recent({ records }) {
               <th className="eyebrow px-5 py-3 text-left">Nomor</th>
               <th className="eyebrow px-5 py-3 text-left">Grade</th>
               <th className="eyebrow px-5 py-3 text-left">Status</th>
-              <th className="eyebrow px-5 py-3 text-left">Terdaftar</th>
+              <th className="eyebrow hidden px-5 py-3 text-left sm:table-cell">
+                Terdaftar
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -245,7 +247,9 @@ function Recent({ records }) {
                     {STAGE_LABEL[stageOf(rec)]}
                   </span>
                 </td>
-                <td className="px-5 py-3 tnum text-muted">{formatDate(rec.registeredDate)}</td>
+                <td className="hidden px-5 py-3 tnum text-muted sm:table-cell">
+                  {formatDate(rec.registeredDate)}
+                </td>
               </tr>
             ))}
           </tbody>
