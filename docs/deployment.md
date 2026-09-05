@@ -19,6 +19,7 @@ Diisi saat Fase 3. Frontend (Fase 4) membaca alamat + ABI dari file ini.
 | RPC (frontend) | `https://polygon-amoy-bor-rpc.publicnode.com` |
 | RPC (cadangan) | `https://polygon-amoy.drpc.org` |
 | Explorer | `https://amoy.polygonscan.com` |
+| Blok deploy | `46758635` |
 | **Alamat contract** | `0x3B32AfD1D507d4312c9Dc09563a4Ee8C6B57d34D` |
 | **Tx hash deploy** | `0xa873acbcfdc6fd07d4c3ecdc1da2193a82f59e21443c39d59c0694a77ef09a21` |
 | Tanggal deploy | 2026-09-05 |

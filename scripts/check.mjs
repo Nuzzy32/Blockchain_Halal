@@ -4,7 +4,7 @@
 //
 //   node scripts/check.mjs
 import assert from 'node:assert/strict'
-import { ADDRESS, readContract } from '../frontend/src/contract.js'
+import { ADDRESS, fetchAllCattle, readContract } from '../frontend/src/contract.js'
 
 const PETERNAK = '0x060b8A144800DAB4b638c3e350613BE744aF8A6c' // docs/deployment.md
 const ct = readContract()
@@ -19,6 +19,14 @@ assert.equal(await ct.roles(PETERNAK), 1n, 'wallet Peternak harus punya role Far
 // getRecord harus revert untuk id yang tidak dikenal — halaman track mengandalkan ini
 // untuk membedakan "QR tidak valid" dari data kosong.
 await assert.rejects(() => ct.getRecord(999999), /data tidak ditemukan/)
+
+// fetchAllCattle harus menemukan sapi lewat log event, bukan menebak id.
+const semua = await fetchAllCattle()
+assert.ok(semua.length >= 1, 'minimal ada 1 sapi yang pernah didaftarkan')
+assert.ok(
+  semua.some((r) => r.id === 1n && r.grade === 'A'),
+  'sapi id 1 (grade A) harus ikut terambil oleh fetchAllCattle',
+)
 
 console.log(`OK — contract ${ADDRESS} cocok dengan ABI di frontend/src/contract.js`)
 console.log(`     sapi id 1: umur ${rec.age} bln, pakan "${rec.feedType}", grade ${rec.grade}`)
