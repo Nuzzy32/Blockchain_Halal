@@ -11,6 +11,9 @@ import {
 /**
  * Halaman yang dibuka konsumen setelah scan QR.
  * Membaca lewat RPC publik — tanpa MetaMask, tanpa wallet, tanpa biaya.
+ *
+ * Struktur mengikuti pertanyaan konsumen, bukan pola landing page: apa nomornya,
+ * sudah sampai tahap mana, datanya apa, siapa yang mencatat, bagaimana membuktikannya.
  */
 export default function TrackPage({ id }) {
   const [state, setState] = useState({ status: 'loading' })
@@ -40,7 +43,7 @@ export default function TrackPage({ id }) {
   return (
     <div className="min-h-dvh">
       <Header />
-      <main className="mx-auto w-full max-w-2xl px-5 pb-20 pt-8 sm:pt-12">
+      <main className="mx-auto w-full max-w-2xl px-5 pb-24 pt-8 sm:pt-12">
         {state.status === 'loading' && <Loading id={id} />}
         {state.status === 'notfound' && <NotFound id={id} />}
         {state.status === 'error' && <LoadError message={state.message} />}
@@ -52,21 +55,19 @@ export default function TrackPage({ id }) {
 
 function Header() {
   return (
-    <header className="border-b border-line bg-surface/80 backdrop-blur">
-      <div className="mx-auto flex max-w-2xl items-center gap-2.5 px-5 py-4">
-        <Seal className="h-6 w-6 text-forest" />
+    <header className="sticky top-0 z-20 border-b border-divider bg-surface">
+      <div className="mx-auto flex h-14 max-w-2xl items-center gap-2.5 px-5">
+        <Seal className="h-5 w-5 text-primary" />
         <span className="font-display text-[15px] font-semibold tracking-tight">
           Traceability Sapi
         </span>
-        <span className="ml-auto text-[11px] font-medium uppercase tracking-[0.14em] text-muted">
-          Polygon Amoy
-        </span>
+        <span className="eyebrow ml-auto">Polygon Amoy</span>
       </div>
     </header>
   )
 }
 
-/* ---------- status tahap ---------- */
+/* ---------- tahap rantai pasok ---------- */
 
 const STAGES = [
   {
@@ -92,55 +93,53 @@ const STAGES = [
   },
 ]
 
-function currentStage(rec) {
-  if (rec.shippedDate !== 0n) return 2
-  if (rec.slaughterDate !== 0n) return 1
-  return 0
-}
+const currentStage = (rec) =>
+  rec.shippedDate !== 0n ? 2 : rec.slaughterDate !== 0n ? 1 : 0
 
 function Record({ id, rec }) {
   const stage = currentStage(rec)
   const badge = ['Terdaftar', 'Disembelih', 'Dikirim'][stage]
 
   return (
-    <div className="animate-rise space-y-6">
+    <div className="stagger space-y-10">
+      {/* Identitas — angka besar sebagai jangkar visual, gaya Swiss. */}
       <section>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">
-          Nomor identitas sapi
-        </p>
-        <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-2">
-          <h1 className="font-display text-5xl font-semibold leading-none tracking-tight tnum sm:text-6xl">
-            #{id}
+        <p className="eyebrow">Nomor identitas sapi</p>
+        <div className="mt-2 flex flex-wrap items-baseline gap-x-4 gap-y-3">
+          <h1 className="font-display text-6xl font-bold leading-none tnum sm:text-7xl">
+            <span className="text-muted">#</span>
+            {id}
           </h1>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-forest-100 px-3 py-1 text-sm font-medium text-forest">
-            <span className="h-1.5 w-1.5 rounded-full bg-forest-600" />
+          <span className="inline-flex items-center gap-2 rounded-full bg-primary-soft px-3 py-1.5 text-sm font-semibold text-primary">
+            <span className="h-2 w-2 rounded-full bg-primary" aria-hidden />
             {badge}
           </span>
         </div>
-        <p className="mt-3 text-[15px] leading-relaxed text-muted">
+        <p className="mt-4 max-w-prose leading-relaxed text-muted">
           Seluruh riwayat di bawah ini tercatat permanen di blockchain dan tidak dapat
           diubah setelah dicatat.
         </p>
       </section>
 
-      <section className="card grid grid-cols-2 divide-line sm:grid-cols-3 sm:divide-x">
-        <Fact label="Umur ternak" value={`${rec.age} bulan`} />
-        <Fact label="Grade" value={rec.grade} />
-        <Fact
-          label="Jenis pakan"
-          value={rec.feedType}
-          className="col-span-2 border-t border-line sm:col-span-1 sm:border-t-0"
-        />
+      {/* Data — grid tegas dengan garis pemisah, bukan kartu bertumpuk. */}
+      <section>
+        <h2 className="eyebrow mb-3">Data ternak</h2>
+        <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-divider bg-divider sm:grid-cols-3">
+          <Fact label="Umur" value={`${rec.age} bulan`} />
+          <Fact label="Grade" value={rec.grade} />
+          <Fact label="Jenis pakan" value={rec.feedType} className="col-span-2 sm:col-span-1" />
+        </dl>
       </section>
 
       <section>
-        <h2 className="mb-4 font-display text-lg font-semibold tracking-tight">
+        <h2 className="font-display mb-5 text-xl font-semibold tracking-tight">
           Perjalanan rantai pasok
         </h2>
-        <ol className="relative">
+        <ol>
           {STAGES.map((s, i) => (
             <Step
               key={s.key}
+              n={i + 1}
               stage={s}
               date={formatDate(rec[s.key])}
               actor={rec[s.actor]}
@@ -158,59 +157,59 @@ function Record({ id, rec }) {
 
 function Fact({ label, value, className = '' }) {
   return (
-    <div className={`px-5 py-4 ${className}`}>
-      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">
-        {label}
-      </p>
-      <p className="mt-1 text-[17px] font-medium leading-snug">{value}</p>
+    <div className={`bg-surface px-5 py-4 ${className}`}>
+      <dt className="eyebrow">{label}</dt>
+      <dd className="mt-1.5 font-display text-lg font-semibold leading-snug">{value}</dd>
     </div>
   )
 }
 
-function Step({ stage, date, actor, done, last }) {
+function Step({ n, stage, date, actor, done, last }) {
   return (
-    <li className="relative flex gap-4 pb-7 last:pb-0">
-      {/* Konektor vertikal antar-langkah; disembunyikan di langkah terakhir. */}
+    <li className="relative flex gap-5 pb-8 last:pb-0">
+      {/* Rel vertikal timeline; disembunyikan di langkah terakhir. */}
       {!last && (
         <span
           aria-hidden
-          className={`absolute left-[15px] top-8 bottom-1 w-px ${
-            done ? 'bg-forest-600/35' : 'bg-line'
-          }`}
+          className={`absolute left-4 top-9 bottom-1 w-px ${done ? 'bg-primary/30' : 'bg-divider'}`}
         />
       )}
 
       <span
-        className={`relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-[13px] font-semibold ${
+        className={`font-display relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[13px] font-semibold ${
           done
-            ? 'border-forest bg-forest text-white'
-            : 'border-line bg-surface text-muted'
+            ? 'bg-primary text-on-primary'
+            : 'border border-border bg-surface text-muted'
         }`}
       >
-        {done ? <Check className="h-4 w-4" /> : '·'}
+        {done ? <Check className="h-4 w-4" /> : n}
       </span>
 
-      <div className="min-w-0 flex-1 pt-0.5">
-        <p className={`font-medium leading-snug ${done ? '' : 'text-muted'}`}>
+      <div className="min-w-0 flex-1">
+        <p className={`font-display text-[17px] font-semibold leading-snug ${done ? '' : 'text-muted'}`}>
           {stage.label}
         </p>
 
         {done ? (
           <>
-            <p className="mt-0.5 text-sm tnum text-muted">{date}</p>
-            <p className="mt-2 text-[13px] leading-relaxed text-muted">{stage.note}</p>
+            <p className="mt-1 text-sm font-medium tnum text-muted">{date}</p>
+            <p className="mt-2.5 max-w-prose text-sm leading-relaxed text-muted">
+              {stage.note}
+            </p>
             <a
               href={addressUrl(actor)}
               target="_blank"
               rel="noreferrer"
-              className="mt-2 inline-flex items-center gap-1.5 text-[13px] font-medium text-forest-600 underline decoration-forest-600/30 underline-offset-4 hover:decoration-forest-600"
+              className="tap mt-3 flex-wrap gap-2 text-sm"
             >
-              <span className="text-muted">{stage.role}</span>
-              <span className="font-mono">{shortAddress(actor)}</span>
+              <span className="eyebrow">{stage.role}</span>
+              <span className="font-mono font-medium text-primary underline underline-offset-4">
+                {shortAddress(actor)}
+              </span>
             </a>
           </>
         ) : (
-          <p className="mt-0.5 text-sm text-muted">Belum tercatat</p>
+          <p className="mt-1 text-sm text-muted">Belum tercatat</p>
         )}
       </div>
     </li>
@@ -219,16 +218,20 @@ function Step({ stage, date, actor, done, last }) {
 
 function Provenance() {
   return (
-    <section className="rounded-xl border border-line bg-amber-soft px-5 py-4">
-      <p className="text-[13px] leading-relaxed text-ink/80">
+    <section className="rounded-xl border border-divider bg-warn-bg px-5 py-5">
+      <h2 className="eyebrow" style={{ color: 'var(--color-warn-text)' }}>
+        Cara memverifikasi sendiri
+      </h2>
+      <p className="mt-2 max-w-prose text-sm leading-relaxed">
         Data ini dibaca langsung dari smart contract di jaringan Polygon Amoy. Siapa pun
-        dapat memverifikasinya secara independen tanpa mempercayai situs ini.
+        dapat memeriksanya di block explorer tanpa mempercayai situs ini.
       </p>
       <a
         href={addressUrl(ADDRESS)}
         target="_blank"
         rel="noreferrer"
-        className="mt-2 inline-block break-all font-mono text-[12px] text-amber-brand underline underline-offset-4"
+        className="tap mt-2 break-all font-mono text-xs font-medium underline underline-offset-4"
+        style={{ color: 'var(--color-warn-text)' }}
       >
         {ADDRESS}
       </a>
@@ -240,48 +243,55 @@ function Provenance() {
 
 function Loading({ id }) {
   return (
-    <div className="space-y-4" role="status" aria-live="polite">
-      <p className="text-sm text-muted">Membaca data sapi #{id} dari blockchain…</p>
-      <div className="h-14 w-48 animate-pulse rounded-lg bg-line/60" />
-      <div className="card h-24 animate-pulse" />
-      <div className="h-40 animate-pulse rounded-xl bg-line/40" />
+    <div className="space-y-8" role="status" aria-live="polite">
+      <span className="sr-only">Memuat data sapi nomor {id} dari blockchain</span>
+      <div aria-hidden className="space-y-3">
+        <div className="h-3 w-40 rounded bg-divider" />
+        <div className="h-16 w-52 animate-pulse rounded-lg bg-divider" />
+      </div>
+      <div aria-hidden className="h-24 animate-pulse rounded-xl bg-divider/70" />
+      <div aria-hidden className="h-52 animate-pulse rounded-xl bg-divider/50" />
+    </div>
+  )
+}
+
+function Message({ title, children, action }) {
+  return (
+    <div className="animate-rise card px-6 py-12 text-center" role="status">
+      <h1 className="font-display text-2xl font-semibold tracking-tight">{title}</h1>
+      <p className="mx-auto mt-3 max-w-sm leading-relaxed text-muted">{children}</p>
+      {action}
     </div>
   )
 }
 
 function NotFound({ id }) {
   return (
-    <div className="animate-rise card px-6 py-10 text-center">
-      <h1 className="font-display text-2xl font-semibold tracking-tight">
-        Sapi #{id} tidak ditemukan
-      </h1>
-      <p className="mx-auto mt-3 max-w-sm text-[15px] leading-relaxed text-muted">
-        Tidak ada catatan untuk nomor ini di blockchain. QR code mungkin salah, rusak,
-        atau berasal dari kemasan yang tidak resmi.
-      </p>
-    </div>
+    <Message title={`Sapi #${id} tidak ditemukan`}>
+      Tidak ada catatan untuk nomor ini di blockchain. QR code mungkin salah, rusak, atau
+      berasal dari kemasan yang tidak resmi.
+    </Message>
   )
 }
 
 function LoadError({ message }) {
   return (
-    <div className="animate-rise card px-6 py-10 text-center">
-      <h1 className="font-display text-2xl font-semibold tracking-tight">
-        Gagal memuat data
-      </h1>
-      <p className="mx-auto mt-3 max-w-sm text-[15px] leading-relaxed text-muted">
-        Tidak bisa menghubungi jaringan Polygon Amoy. Periksa koneksi internet, lalu muat
-        ulang halaman.
-      </p>
-      <p className="mt-4 font-mono text-[12px] text-muted">{message}</p>
-      <button onClick={() => window.location.reload()} className="btn btn-ghost mt-5">
-        Muat ulang
-      </button>
-    </div>
+    <Message
+      title="Gagal memuat data"
+      action={
+        <button onClick={() => window.location.reload()} className="btn btn-ghost mt-6">
+          Muat ulang
+        </button>
+      }
+    >
+      Tidak bisa menghubungi jaringan Polygon Amoy. Periksa koneksi internet, lalu muat
+      ulang halaman.
+      <span className="mt-3 block font-mono text-xs">{message}</span>
+    </Message>
   )
 }
 
-/* ---------- ikon inline (menghindari dependency icon set) ---------- */
+/* ---------- ikon SVG inline (bukan emoji, tanpa dependency icon set) ---------- */
 
 function Check(props) {
   return (
@@ -289,7 +299,7 @@ function Check(props) {
       <path
         d="M5 10.5l3.2 3.2L15 7"
         stroke="currentColor"
-        strokeWidth="2"
+        strokeWidth="2.2"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
@@ -303,13 +313,13 @@ function Seal(props) {
       <path
         d="M12 2.5l2.4 1.5 2.8-.3 1 2.7 2.3 1.7-1 2.7 1 2.7-2.3 1.7-1 2.7-2.8-.3L12 21.5l-2.4-1.6-2.8.3-1-2.7-2.3-1.7 1-2.7-1-2.7 2.3-1.7 1-2.7 2.8.3L12 2.5z"
         stroke="currentColor"
-        strokeWidth="1.4"
+        strokeWidth="1.5"
         strokeLinejoin="round"
       />
       <path
         d="M8.5 12l2.4 2.4 4.6-4.8"
         stroke="currentColor"
-        strokeWidth="1.8"
+        strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
       />

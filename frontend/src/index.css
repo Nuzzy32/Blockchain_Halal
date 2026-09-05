@@ -1,37 +1,75 @@
 @import 'tailwindcss';
 
+/* Design system: design-system/traceability-sapi/MASTER.md
+   Style: Minimalism & Swiss Style. Palet: Citizen Science (lihat Project Overrides).
+   Semua pasangan warna di bawah sudah diukur >= 4.5:1 untuk teks, >= 3:1 untuk batas
+   kontrol. Jangan ganti nilai tanpa mengukur ulang. */
 @theme {
-  /* Kertas hangat + hijau tua: nuansa dokumen sertifikasi, bukan dashboard kripto. */
-  --color-paper: #faf8f3;
-  --color-surface: #ffffff;
-  --color-ink: #1a1a17;
-  --color-muted: #6b6b60;
-  --color-line: #e5e1d6;
-  --color-forest: #14532d;
-  --color-forest-600: #1f6f4a;
-  --color-forest-100: #e6efe8;
-  --color-amber-brand: #a16207;
-  --color-amber-soft: #fdf6e3;
+  --color-primary: #15803d;
+  --color-on-primary: #ffffff;
+  --color-primary-soft: #dcfce7;
 
-  --font-display: 'Fraunces', ui-serif, Georgia, serif;
-  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --color-bg: #f0fdf4;
+  --color-surface: #ffffff;
+  --color-ink: #14532d;
+  --color-muted: #475569;
+
+  /* Dua token batas yang berbeda — lihat Override #3.
+     divider dekoratif; border untuk batas kontrol yang wajib 3:1. */
+  --color-divider: #bbf7d0;
+  --color-border: #6b8a78;
+
+  --color-accent: #d97706; /* hanya fill, teks di atasnya hitam */
+  --color-warn-text: #b45309; /* varian teks yang lulus 4.5:1 */
+  --color-warn-bg: #fffbeb;
+  --color-danger: #dc2626;
+  --color-danger-bg: #fef2f2;
+
+  --font-display: 'Outfit', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Work Sans', ui-sans-serif, system-ui, sans-serif;
   --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* Density 4/10 — Standard */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  --space-3xl: 4rem;
+
+  --shadow-sm: 0 1px 2px rgb(20 83 45 / 0.05);
+  --shadow-md: 0 4px 6px rgb(20 83 45 / 0.07);
 }
 
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
+    scroll-padding-top: 5rem; /* fokus tidak tertutup header sticky (WCAG 2.2 AA) */
   }
 
   body {
-    background-color: var(--color-paper);
+    background-color: var(--color-bg);
     color: var(--color-ink);
     font-family: var(--font-sans);
-    font-feature-settings: 'cv05', 'ss01';
+    font-size: 16px;
+    line-height: 1.5;
     -webkit-font-smoothing: antialiased;
   }
 
-  /* Angka rata kolom: penting untuk tabel data & timestamp. */
+  h1, h2, h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+
+  /* Cincin fokus seragam untuk SEMUA kontrol, bukan hanya input.
+     Jangan pernah menghapus ini tanpa pengganti yang terlihat. */
+  :where(a, button, input, select, textarea):focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
   .tnum {
     font-variant-numeric: tabular-nums;
   }
@@ -40,27 +78,29 @@
 @layer components {
   .card {
     background-color: var(--color-surface);
-    border: 1px solid var(--color-line);
-    border-radius: 1rem;
-    box-shadow: 0 1px 2px rgb(26 26 23 / 0.04), 0 8px 24px -12px rgb(26 26 23 / 0.10);
+    border: 1px solid var(--color-divider);
+    border-radius: 0.75rem;
+    box-shadow: var(--shadow-sm);
   }
 
   .field {
     width: 100%;
-    border: 1px solid var(--color-line);
-    border-radius: 0.625rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
     background-color: var(--color-surface);
     padding: 0.625rem 0.875rem;
-    font-size: 0.9375rem;
-    outline: none;
-    transition: border-color 120ms, box-shadow 120ms;
+    font-size: 1rem; /* 16px: mencegah iOS auto-zoom saat fokus */
+    min-height: 44px; /* target sentuh minimum */
+    transition: border-color 200ms, box-shadow 200ms;
   }
   .field:focus {
-    border-color: var(--color-forest-600);
-    box-shadow: 0 0 0 3px rgb(31 111 74 / 0.14);
+    border-color: var(--color-primary);
+  }
+  .field[aria-invalid='true'] {
+    border-color: var(--color-danger);
   }
   .field:disabled {
-    background-color: #f5f3ee;
+    background-color: #f1f5f4;
     color: var(--color-muted);
     cursor: not-allowed;
   }
@@ -69,49 +109,86 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    border-radius: 0.625rem;
-    padding: 0.625rem 1.125rem;
+    gap: var(--space-sm);
+    min-height: 44px;
+    border-radius: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    font-family: var(--font-display);
     font-size: 0.9375rem;
-    font-weight: 550;
-    transition: background-color 120ms, opacity 120ms, transform 120ms;
-  }
-  .btn:active:not(:disabled) {
-    transform: translateY(1px);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 200ms, opacity 200ms;
   }
   .btn:disabled {
-    opacity: 0.45;
+    opacity: 0.5;
     cursor: not-allowed;
   }
 
   .btn-primary {
-    background-color: var(--color-forest);
-    color: #fff;
+    background-color: var(--color-primary);
+    color: var(--color-on-primary);
   }
   .btn-primary:hover:not(:disabled) {
-    background-color: var(--color-forest-600);
+    background-color: #166534;
   }
 
   .btn-ghost {
-    border: 1px solid var(--color-line);
+    border: 1px solid var(--color-border);
     background-color: var(--color-surface);
     color: var(--color-ink);
   }
   .btn-ghost:hover:not(:disabled) {
-    background-color: #f5f3ee;
+    background-color: var(--color-primary-soft);
+  }
+
+  /* Target sentuh 44px untuk link yang berdiri sendiri (bukan link di dalam kalimat).
+     Margin negatif menjaga ritme vertikal tetap sama seperti sebelum dipadding. */
+  .tap {
+    /* Target sentuh 44px untuk link yang berdiri sendiri (bukan link dalam kalimat).
+       Harus flex block-level: `min-height` tidak berlaku pada kotak inline-flex. */
+    display: flex;
+    width: fit-content;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  /* Label mikro Swiss: uppercase, tracking lebar, ukuran kecil tapi kontras penuh. */
+  .eyebrow {
+    font-family: var(--font-display);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--color-muted);
   }
 }
 
-/* Animasi masuk yang halus untuk hasil query & pesan status. */
+/* Motion: karakter preset "Stagger List" (300-450ms, back.out, stagger 0.06s)
+   diimplementasi dengan CSS — lihat Override #5 di MASTER.md.
+
+   Animasinya OPT-IN lewat `no-preference`, bukan opt-out lewat `reduce`. Alasannya
+   keselamatan, bukan gaya: `animation-fill-mode: both` menahan frame awal, dan frame
+   awal di sini `opacity: 0`. Kalau animasi tidak pernah berjalan — jam animasi beku,
+   mesin render tanpa dukungan animasi, tab yang di-throttle — konten akan tersangkut
+   tidak terlihat. Halaman yang tugasnya menampilkan data tidak boleh punya mode gagal
+   berupa layar kosong. Tanpa blok media di bawah, semuanya tampil normal. */
 @keyframes rise {
-  from { opacity: 0; transform: translateY(6px); }
+  from { opacity: 0; transform: translateY(16px) scale(0.98); }
   to   { opacity: 1; transform: none; }
 }
-.animate-rise {
-  animation: rise 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+
+@media (prefers-reduced-motion: no-preference) {
+  .animate-rise,
+  .stagger > * {
+    animation: rise 400ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+  .stagger > *:nth-child(2) { animation-delay: 60ms; }
+  .stagger > *:nth-child(3) { animation-delay: 120ms; }
+  .stagger > *:nth-child(4) { animation-delay: 180ms; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-rise { animation: none; }
-  * { transition-duration: 1ms !important; }
+  *, *::before, *::after {
+    transition-duration: 1ms !important;
+  }
 }

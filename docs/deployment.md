@@ -359,6 +359,12 @@ Hasil compile `0.8.24` + optimizer 200 runs. Identik dengan artifact Remix pada 
 
 Kode di `frontend/`. React + Vite + Tailwind v4, ethers v6, `qrcode.react`.
 
+Sistem desain (palet, tipografi, spasi, motion) didokumentasikan di
+`design-system/traceability-sapi/MASTER.md`, termasuk lima penyimpangan terverifikasi
+dari rekomendasi generator beserta angka kontras yang mendasarinya. **Baca file itu
+sebelum mengubah warna** — pasangan warna di `frontend/src/index.css` sudah diukur
+memenuhi 4.5:1 untuk teks dan 3:1 untuk batas kontrol.
+
 | | |
 |---|---|
 | Situs live | <https://nuzzy32.github.io/Blockchain_Halal/> |

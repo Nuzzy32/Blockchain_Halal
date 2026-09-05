@@ -31,23 +31,25 @@ export default function ActorPanel() {
 
       <main className="mx-auto w-full max-w-5xl px-5 pb-24 pt-10">
         <header className="max-w-2xl">
-          <h1 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
-            Panel Pencatatan Rantai Pasok
+          <p className="eyebrow">Panel aktor</p>
+          <h1 className="font-display mt-2 text-4xl font-bold tracking-tight sm:text-5xl">
+            Pencatatan Rantai Pasok
           </h1>
-          <p className="mt-3 text-[15px] leading-relaxed text-muted">
+          <p className="mt-4 max-w-prose leading-relaxed text-muted">
             Setiap tahap dicatat oleh aktor yang berwenang dan disimpan permanen di
-            jaringan Polygon Amoy. Hubungkan wallet untuk mulai mencatat.
+            jaringan Polygon Amoy.
           </p>
         </header>
 
         {!hasMetaMask() ? (
           <NoWallet />
         ) : (
-          <div className="mt-8 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+          <div className="mt-10 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
             <div className="space-y-6">
               {wallet.account && wallet.wrongNetwork && (
                 <NetworkBanner onSwitch={wallet.switchNetwork} busy={wallet.switching} />
               )}
+              {wallet.error && <Banner tone="danger">{wallet.error}</Banner>}
               {!wallet.account ? (
                 <ConnectCard onConnect={wallet.connect} busy={wallet.connecting} />
               ) : (
@@ -159,33 +161,31 @@ function useWallet() {
 
 function TopBar({ wallet }) {
   return (
-    <header className="border-b border-line bg-surface/80 backdrop-blur">
-      <div className="mx-auto flex max-w-5xl items-center gap-3 px-5 py-4">
+    <header className="sticky top-0 z-20 border-b border-divider bg-surface">
+      <div className="mx-auto flex h-14 max-w-5xl items-center gap-3 px-5">
         <span className="font-display text-[15px] font-semibold tracking-tight">
           Traceability Sapi
-        </span>
-        <span className="hidden text-[11px] font-medium uppercase tracking-[0.14em] text-muted sm:inline">
-          Panel Aktor
         </span>
 
         {wallet.account && (
           <div className="ml-auto flex items-center gap-2">
             {wallet.role !== null && wallet.role !== Role.None && (
-              <span className="hidden rounded-full bg-forest-100 px-2.5 py-1 text-[12px] font-medium text-forest sm:inline">
+              <span className="hidden rounded-full bg-primary-soft px-2.5 py-1 text-xs font-semibold text-primary sm:inline">
                 {ROLE_LABEL[wallet.role]}
               </span>
             )}
             <span
-              className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 font-mono text-[12px] ${
-                wallet.wrongNetwork
-                  ? 'border-amber-brand/40 bg-amber-soft text-amber-brand'
-                  : 'border-line text-muted'
-              }`}
+              className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 font-mono text-xs"
+              style={wallet.wrongNetwork ? { color: 'var(--color-warn-text)' } : undefined}
             >
               <span
-                className={`h-1.5 w-1.5 rounded-full ${
-                  wallet.wrongNetwork ? 'bg-amber-brand' : 'bg-forest-600'
-                }`}
+                aria-hidden
+                className="h-2 w-2 rounded-full"
+                style={{
+                  background: wallet.wrongNetwork
+                    ? 'var(--color-accent)'
+                    : 'var(--color-primary)',
+                }}
               />
               {shortAddress(wallet.account)}
             </span>
@@ -196,13 +196,30 @@ function TopBar({ wallet }) {
   )
 }
 
+function Banner({ tone, children, action }) {
+  const danger = tone === 'danger'
+  return (
+    <div
+      role={danger ? 'alert' : 'status'}
+      className="flex flex-wrap items-center gap-4 rounded-xl border px-5 py-4"
+      style={{
+        borderColor: danger ? 'var(--color-danger)' : 'var(--color-accent)',
+        background: danger ? 'var(--color-danger-bg)' : 'var(--color-warn-bg)',
+      }}
+    >
+      <div className="min-w-0 flex-1 text-sm leading-relaxed">{children}</div>
+      {action}
+    </div>
+  )
+}
+
 function NoWallet() {
   return (
-    <div className="card mt-8 max-w-xl px-6 py-8">
+    <div className="card mt-10 max-w-xl px-6 py-8">
       <h2 className="font-display text-xl font-semibold tracking-tight">
         MetaMask tidak terdeteksi
       </h2>
-      <p className="mt-3 text-[15px] leading-relaxed text-muted">
+      <p className="mt-3 leading-relaxed text-muted">
         Panel ini menulis transaksi ke blockchain, jadi membutuhkan wallet. Pasang ekstensi
         MetaMask, lalu muat ulang halaman ini.
       </p>
@@ -210,11 +227,11 @@ function NoWallet() {
         href="https://metamask.io/download/"
         target="_blank"
         rel="noreferrer"
-        className="btn btn-primary mt-5"
+        className="btn btn-primary mt-6"
       >
         Pasang MetaMask
       </a>
-      <p className="mt-5 border-t border-line pt-4 text-[13px] leading-relaxed text-muted">
+      <p className="mt-6 border-t border-divider pt-4 text-sm leading-relaxed text-muted">
         Konsumen tidak membutuhkan wallet — halaman hasil scan QR bisa dibuka siapa saja.
       </p>
     </div>
@@ -227,11 +244,11 @@ function ConnectCard({ onConnect, busy }) {
       <h2 className="font-display text-xl font-semibold tracking-tight">
         Hubungkan wallet
       </h2>
-      <p className="mt-3 max-w-md text-[15px] leading-relaxed text-muted">
+      <p className="mt-3 max-w-md leading-relaxed text-muted">
         Form pencatatan akan menyesuaikan dengan role wallet Anda: peternak, rumah potong,
         atau distributor.
       </p>
-      <button onClick={onConnect} disabled={busy} className="btn btn-primary mt-5">
+      <button onClick={onConnect} disabled={busy} className="btn btn-primary mt-6">
         {busy ? 'Menunggu MetaMask…' : 'Hubungkan MetaMask'}
       </button>
     </div>
@@ -240,87 +257,103 @@ function ConnectCard({ onConnect, busy }) {
 
 function NetworkBanner({ onSwitch, busy }) {
   return (
-    <div className="flex flex-wrap items-center gap-4 rounded-xl border border-amber-brand/30 bg-amber-soft px-5 py-4">
-      <div className="min-w-0 flex-1">
-        <p className="font-medium text-amber-brand">Jaringan salah</p>
-        <p className="mt-0.5 text-[13px] leading-relaxed text-ink/70">
-          Wallet Anda tidak berada di Polygon Amoy. Transaksi akan gagal atau terkirim ke
-          jaringan yang keliru.
-        </p>
-      </div>
-      <button onClick={onSwitch} disabled={busy} className="btn btn-ghost shrink-0">
-        {busy ? 'Memindahkan…' : 'Pindah ke Amoy'}
-      </button>
-    </div>
+    <Banner
+      tone="warn"
+      action={
+        <button onClick={onSwitch} disabled={busy} className="btn btn-ghost shrink-0">
+          {busy ? 'Memindahkan…' : 'Pindah ke Amoy'}
+        </button>
+      }
+    >
+      <strong className="font-display block font-semibold" style={{ color: 'var(--color-warn-text)' }}>
+        Jaringan salah
+      </strong>
+      <span className="mt-0.5 block text-muted">
+        Wallet Anda tidak berada di Polygon Amoy. Form dikunci sampai jaringan benar.
+      </span>
+    </Banner>
   )
 }
 
 /* ---------- form per role ---------- */
 
+// Validasi sisi klien mencerminkan require() di contract. Tujuannya bukan menggantikan
+// contract (itu tetap otoritas akhir), tapi supaya user tidak membayar gas untuk
+// transaksi yang sudah pasti ditolak.
+const positiveInt = (label) => (v) => {
+  const t = v?.trim() ?? ''
+  if (!t) return `${label} wajib diisi.`
+  if (!/^\d+$/.test(t)) return `${label} harus berupa angka bulat.`
+  if (Number(t) < 1) return `${label} tidak boleh 0.`
+  return null
+}
+const nonEmpty = (label) => (v) =>
+  v?.trim() ? null : `${label} tidak boleh kosong.`
+
+const idField = { name: 'id', label: 'Nomor sapi', placeholder: 'contoh: 2', validate: positiveInt('Nomor sapi') }
+
 const FORMS = {
   [Role.Farmer]: {
     title: 'Daftarkan sapi baru',
-    lead: 'Catat data awal sapi. Nomor ini yang nanti dicetak sebagai QR code di kemasan.',
+    lead: 'Nomor ini yang nanti dicetak sebagai QR code di kemasan.',
     action: 'Daftarkan sapi',
     fields: [
-      { name: 'id', label: 'Nomor sapi', type: 'number', placeholder: 'mis. 2', min: 1 },
-      { name: 'age', label: 'Umur (bulan)', type: 'number', placeholder: 'mis. 24', min: 1 },
-      { name: 'feedType', label: 'Jenis pakan', placeholder: 'mis. Rumput & Konsentrat' },
-      { name: 'grade', label: 'Grade', placeholder: 'mis. A' },
+      idField,
+      { name: 'age', label: 'Umur (bulan)', placeholder: 'contoh: 24', validate: positiveInt('Umur') },
+      { name: 'feedType', label: 'Jenis pakan', placeholder: 'contoh: Rumput & Konsentrat', validate: nonEmpty('Jenis pakan') },
+      { name: 'grade', label: 'Grade', placeholder: 'contoh: A', validate: nonEmpty('Grade') },
     ],
-    send: (ct, f) => ct.registerCattle(f.id, f.age, f.feedType, f.grade),
+    send: (ct, f) => ct.registerCattle(f.id.trim(), f.age.trim(), f.feedType.trim(), f.grade.trim()),
   },
   [Role.Butcher]: {
     title: 'Catat penyembelihan',
     lead: 'Tanggal diambil otomatis dari waktu blockchain, bukan diisi manual.',
     action: 'Catat penyembelihan',
-    fields: [{ name: 'id', label: 'Nomor sapi', type: 'number', placeholder: 'mis. 2', min: 1 }],
-    send: (ct, f) => ct.recordSlaughter(f.id),
+    fields: [idField],
+    send: (ct, f) => ct.recordSlaughter(f.id.trim()),
   },
   [Role.Distributor]: {
     title: 'Catat pengiriman',
     lead: 'Hanya sapi yang sudah tercatat disembelih yang dapat dikirim.',
     action: 'Catat pengiriman',
-    fields: [{ name: 'id', label: 'Nomor sapi', type: 'number', placeholder: 'mis. 2', min: 1 }],
-    send: (ct, f) => ct.recordShipping(f.id),
+    fields: [idField],
+    send: (ct, f) => ct.recordShipping(f.id.trim()),
   },
 }
 
 function RoleForm({ wallet }) {
   const cfg = FORMS[wallet.role]
   const [values, setValues] = useState({})
+  const [touched, setTouched] = useState({})
   const [tx, setTx] = useState({ status: 'idle' })
+  const formRef = useRef(null)
 
-  const locked = wallet.wrongNetwork || tx.status === 'signing' || tx.status === 'mining'
-
-  if (wallet.role === null) return <div className="card px-6 py-8 text-muted">Membaca role…</div>
-
-  if (!cfg) {
+  if (wallet.role === null) {
     return (
-      <div className="card px-6 py-8">
-        <h2 className="font-display text-xl font-semibold tracking-tight">
-          Wallet ini belum punya role
-        </h2>
-        <p className="mt-3 max-w-md text-[15px] leading-relaxed text-muted">
-          Alamat{' '}
-          <a
-            href={addressUrl(wallet.account)}
-            target="_blank"
-            rel="noreferrer"
-            className="font-mono text-forest-600 underline underline-offset-4"
-          >
-            {shortAddress(wallet.account)}
-          </a>{' '}
-          belum ditetapkan sebagai peternak, rumah potong, atau distributor. Pemilik
-          contract harus memanggil <code className="font-mono text-[13px]">setRole</code>{' '}
-          terlebih dahulu, atau pindah ke akun aktor di MetaMask.
-        </p>
+      <div className="card px-6 py-8 text-muted" role="status">
+        Membaca role wallet…
       </div>
     )
   }
 
+  if (!cfg) return <NoRole account={wallet.account} />
+
+  const busy = tx.status === 'signing' || tx.status === 'mining'
+  const locked = wallet.wrongNetwork || busy
+  const errorFor = (f) => f.validate(values[f.name] ?? '')
+
   const submit = async (e) => {
     e.preventDefault()
+
+    // Tandai semua field tersentuh supaya pesan inline muncul, lalu fokuskan yang pertama
+    // bermasalah — pengguna keyboard tidak perlu menebak field mana yang salah.
+    const firstBad = cfg.fields.find((f) => errorFor(f))
+    if (firstBad) {
+      setTouched(Object.fromEntries(cfg.fields.map((f) => [f.name, true])))
+      formRef.current?.querySelector(`[name="${firstBad.name}"]`)?.focus()
+      return
+    }
+
     setTx({ status: 'signing' })
     try {
       const ct = await writeContract()
@@ -329,6 +362,7 @@ function RoleForm({ wallet }) {
       await sent.wait()
       setTx({ status: 'success', hash: sent.hash })
       setValues({})
+      setTouched({})
     } catch (err) {
       setTx({ status: 'error', message: errorMessage(err) })
     }
@@ -339,40 +373,86 @@ function RoleForm({ wallet }) {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="font-display text-xl font-semibold tracking-tight">{cfg.title}</h2>
-          <p className="mt-2 max-w-md text-[14px] leading-relaxed text-muted">{cfg.lead}</p>
+          <p className="mt-2 max-w-md text-sm leading-relaxed text-muted">{cfg.lead}</p>
         </div>
-        <span className="shrink-0 rounded-full bg-forest-100 px-3 py-1 text-[12px] font-medium text-forest">
+        <span className="shrink-0 rounded-full bg-primary-soft px-3 py-1 text-xs font-semibold text-primary">
           {ROLE_LABEL[wallet.role]}
         </span>
       </div>
 
-      <form onSubmit={submit} className="mt-6 space-y-4">
-        <div className="grid gap-4 sm:grid-cols-2">
-          {cfg.fields.map((f) => (
-            <label key={f.name} className="block">
-              <span className="mb-1.5 block text-[13px] font-medium">{f.label}</span>
-              <input
-                className="field"
-                type={f.type ?? 'text'}
-                min={f.min}
-                placeholder={f.placeholder}
-                required
-                disabled={locked}
-                value={values[f.name] ?? ''}
-                onChange={(e) => setValues({ ...values, [f.name]: e.target.value })}
-              />
-            </label>
-          ))}
+      <form ref={formRef} onSubmit={submit} noValidate className="mt-7 space-y-5">
+        <div className="grid gap-5 sm:grid-cols-2">
+          {cfg.fields.map((f) => {
+            const err = touched[f.name] ? errorFor(f) : null
+            return (
+              <div key={f.name}>
+                <label
+                  htmlFor={`f-${f.name}`}
+                  className="mb-1.5 block text-sm font-medium"
+                >
+                  {f.label}
+                </label>
+                <input
+                  id={`f-${f.name}`}
+                  name={f.name}
+                  className="field"
+                  inputMode={f.validate === idField.validate ? 'numeric' : undefined}
+                  placeholder={f.placeholder}
+                  disabled={locked}
+                  aria-invalid={err ? 'true' : undefined}
+                  aria-describedby={err ? `e-${f.name}` : undefined}
+                  value={values[f.name] ?? ''}
+                  onChange={(e) => setValues({ ...values, [f.name]: e.target.value })}
+                  onBlur={() => setTouched({ ...touched, [f.name]: true })}
+                />
+                {err && (
+                  <p
+                    id={`e-${f.name}`}
+                    className="mt-1.5 text-sm font-medium"
+                    style={{ color: 'var(--color-danger)' }}
+                  >
+                    {err}
+                  </p>
+                )}
+              </div>
+            )
+          })}
         </div>
 
         <button type="submit" disabled={locked} className="btn btn-primary">
-          {tx.status === 'signing' && 'Menunggu tanda tangan…'}
-          {tx.status === 'mining' && 'Menunggu konfirmasi blockchain…'}
-          {tx.status !== 'signing' && tx.status !== 'mining' && cfg.action}
+          {tx.status === 'signing'
+            ? 'Menunggu tanda tangan…'
+            : tx.status === 'mining'
+              ? 'Menunggu konfirmasi…'
+              : cfg.action}
         </button>
       </form>
 
       <TxStatus tx={tx} />
+    </div>
+  )
+}
+
+function NoRole({ account }) {
+  return (
+    <div className="card px-6 py-8">
+      <h2 className="font-display text-xl font-semibold tracking-tight">
+        Wallet ini belum punya role
+      </h2>
+      <p className="mt-3 max-w-md leading-relaxed text-muted">
+        Alamat{' '}
+        <a
+          href={addressUrl(account)}
+          target="_blank"
+          rel="noreferrer"
+          className="font-mono text-primary underline underline-offset-4"
+        >
+          {shortAddress(account)}
+        </a>{' '}
+        belum ditetapkan sebagai peternak, rumah potong, atau distributor. Pemilik contract
+        harus memanggil <code className="font-mono text-sm">setRole</code> terlebih dahulu,
+        atau pindah ke akun aktor di MetaMask.
+      </p>
     </div>
   )
 }
@@ -382,7 +462,15 @@ function TxStatus({ tx }) {
 
   if (tx.status === 'error') {
     return (
-      <p className="animate-rise mt-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-[14px] leading-relaxed text-red-800">
+      <p
+        role="alert"
+        className="animate-rise mt-6 rounded-lg border px-4 py-3 text-sm leading-relaxed"
+        style={{
+          borderColor: 'var(--color-danger)',
+          background: 'var(--color-danger-bg)',
+          color: 'var(--color-danger)',
+        }}
+      >
         {tx.message}
       </p>
     )
@@ -391,18 +479,22 @@ function TxStatus({ tx }) {
   const done = tx.status === 'success'
   return (
     <div
-      className={`animate-rise mt-5 rounded-lg border px-4 py-3 text-[14px] leading-relaxed ${
-        done ? 'border-forest-600/30 bg-forest-100 text-forest' : 'border-line bg-paper text-muted'
+      role="status"
+      aria-atomic="true"
+      className={`animate-rise mt-6 rounded-lg border px-4 py-3 text-sm leading-relaxed ${
+        done ? 'border-primary bg-primary-soft text-primary' : 'border-divider text-muted'
       }`}
     >
-      <p className="font-medium">
-        {done ? 'Tercatat di blockchain.' : 'Transaksi terkirim, menunggu konfirmasi…'}
+      <p className="font-display font-semibold">
+        {done
+          ? 'Tercatat permanen di blockchain.'
+          : 'Transaksi terkirim, menunggu konfirmasi blockchain…'}
       </p>
       <a
         href={txUrl(tx.hash)}
         target="_blank"
         rel="noreferrer"
-        className="mt-1 inline-block break-all font-mono text-[12px] underline underline-offset-4"
+        className="mt-1 inline-block break-all font-mono text-xs underline underline-offset-4"
       >
         {tx.hash}
       </a>
@@ -415,45 +507,45 @@ function TxStatus({ tx }) {
 function QrCard() {
   const [id, setId] = useState('')
   const box = useRef(null)
-  const valid = /^\d+$/.test(id) && Number(id) > 0
-  const url = valid ? trackUrl(id) : ''
+  const valid = /^\d+$/.test(id.trim()) && Number(id) > 0
+  const url = valid ? trackUrl(id.trim()) : ''
 
   const download = () => {
     const canvas = box.current?.querySelector('canvas')
     if (!canvas) return
     const a = document.createElement('a')
     a.href = canvas.toDataURL('image/png')
-    a.download = `qr-sapi-${id}.png`
+    a.download = `qr-sapi-${id.trim()}.png`
     a.click()
   }
 
   return (
     <aside className="card px-6 py-7">
       <h2 className="font-display text-lg font-semibold tracking-tight">QR untuk kemasan</h2>
-      <p className="mt-2 text-[14px] leading-relaxed text-muted">
+      <p className="mt-2 text-sm leading-relaxed text-muted">
         Cetak QR ini di label kemasan. Konsumen memindainya dengan kamera ponsel biasa —
         tanpa aplikasi khusus, tanpa wallet.
       </p>
 
-      <label className="mt-5 block">
-        <span className="mb-1.5 block text-[13px] font-medium">Nomor sapi</span>
-        <input
-          className="field"
-          type="number"
-          min={1}
-          placeholder="mis. 2"
-          value={id}
-          onChange={(e) => setId(e.target.value)}
-        />
+      <label htmlFor="qr-id" className="mt-6 mb-1.5 block text-sm font-medium">
+        Nomor sapi
       </label>
+      <input
+        id="qr-id"
+        className="field"
+        inputMode="numeric"
+        placeholder="contoh: 2"
+        value={id}
+        onChange={(e) => setId(e.target.value)}
+      />
 
       {valid ? (
         <div className="animate-rise mt-5">
           <div
             ref={box}
-            className="flex justify-center rounded-xl border border-line bg-white p-5"
+            className="flex justify-center rounded-xl border border-divider bg-white p-5"
           >
-            <QRCodeCanvas value={url} size={192} level="M" marginSize={2} />
+            <QRCodeCanvas value={url} size={180} level="M" marginSize={2} />
           </div>
           <p className="mt-3 break-all text-center font-mono text-[11px] leading-relaxed text-muted">
             {url}
@@ -463,18 +555,18 @@ function QrCard() {
           </button>
         </div>
       ) : (
-        <div className="mt-5 flex h-[248px] items-center justify-center rounded-xl border border-dashed border-line text-[13px] text-muted">
+        <div className="mt-5 flex h-56 items-center justify-center rounded-xl border border-dashed border-border text-sm text-muted">
           Isi nomor sapi untuk membuat QR
         </div>
       )}
 
-      <p className="mt-5 border-t border-line pt-4 text-[12px] leading-relaxed text-muted">
+      <p className="mt-6 border-t border-divider pt-4 text-xs leading-relaxed text-muted">
         Smart contract
         <a
           href={addressUrl(ADDRESS)}
           target="_blank"
           rel="noreferrer"
-          className="ml-1 break-all font-mono text-forest-600 underline underline-offset-4"
+          className="tap ml-1 break-all font-mono text-primary underline underline-offset-4"
         >
           {shortAddress(ADDRESS)}
         </a>
