@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import {
   ADDRESS,
+  dashboardUrl,
   addressUrl,
   errorMessage,
   formatDate,
@@ -61,7 +62,15 @@ function Header() {
         <span className="font-display text-[15px] font-semibold tracking-tight">
           Traceability Sapi
         </span>
-        <span className="eyebrow ml-auto">Polygon Amoy</span>
+        {/* Sengaja hanya ke statistik, bukan ke panel aktor: konsumen yang memindai QR
+            tidak punya wallet, jadi mengarahkannya ke sana hanya membingungkan.
+            Info jaringan tetap tersedia di bagian "Cara memverifikasi sendiri". */}
+        <a
+          href={dashboardUrl()}
+          className="tap ml-auto text-sm font-medium text-primary underline underline-offset-4"
+        >
+          Statistik
+        </a>
       </div>
     </header>
   )

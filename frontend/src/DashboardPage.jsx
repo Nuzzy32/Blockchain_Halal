@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import {
   ADDRESS,
+  homeUrl,
   addressUrl,
   errorMessage,
   fetchAllCattle,
@@ -70,7 +71,12 @@ function Header() {
         <span className="font-display text-[15px] font-semibold tracking-tight">
           Traceability Sapi
         </span>
-        <span className="eyebrow ml-auto">Statistik rantai pasok</span>
+        <a
+          href={homeUrl()}
+          className="tap ml-auto text-sm font-medium text-primary underline underline-offset-4"
+        >
+          Panel aktor
+        </a>
       </div>
     </header>
   )

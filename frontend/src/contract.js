@@ -108,6 +108,16 @@ export const addressUrl = (addr) => `${EXPLORER}/address/${addr}`
 export const trackUrl = (id) =>
   `${window.location.origin}${import.meta.env.BASE_URL}?id=${id}`
 
+// Tautan antar halaman. Relatif (tanpa origin) karena hanya dipakai di dalam situs,
+// tapi tetap ikut base Vite supaya benar juga di GitHub Pages yang di-host pada subpath.
+//
+// Berupa fungsi, bukan konstanta, karena berkas ini juga diimpor oleh skrip node
+// (scripts/check.mjs) — di sana `import.meta.env` milik Vite tidak ada, sehingga
+// mengaksesnya saat modul dimuat akan melempar galat. Di dalam fungsi, isinya hanya
+// dievaluasi saat dipanggil dari peramban.
+export const homeUrl = () => import.meta.env.BASE_URL
+export const dashboardUrl = () => `${import.meta.env.BASE_URL}?dashboard=1`
+
 /**
  * Pesan revert dari contract sudah berbahasa Indonesia dan jelas ("CT: sapi sudah
  * disembelih"), jadi diteruskan apa adanya. Yang perlu diterjemahkan hanya kasus
