@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "deploy": "vite build && gh-pages -d dist",
-    "check": "node ../scripts/check.mjs"
+    "check": "node ../scripts/check.mjs",
+    "check:stats": "node ../scripts/check-stats.mjs"
   },
   "dependencies": {
     "ethers": "^6.13.4",
