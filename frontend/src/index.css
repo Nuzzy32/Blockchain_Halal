@@ -1,0 +1,117 @@
+@import 'tailwindcss';
+
+@theme {
+  /* Kertas hangat + hijau tua: nuansa dokumen sertifikasi, bukan dashboard kripto. */
+  --color-paper: #faf8f3;
+  --color-surface: #ffffff;
+  --color-ink: #1a1a17;
+  --color-muted: #6b6b60;
+  --color-line: #e5e1d6;
+  --color-forest: #14532d;
+  --color-forest-600: #1f6f4a;
+  --color-forest-100: #e6efe8;
+  --color-amber-brand: #a16207;
+  --color-amber-soft: #fdf6e3;
+
+  --font-display: 'Fraunces', ui-serif, Georgia, serif;
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-feature-settings: 'cv05', 'ss01';
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Angka rata kolom: penting untuk tabel data & timestamp. */
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer components {
+  .card {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: 1rem;
+    box-shadow: 0 1px 2px rgb(26 26 23 / 0.04), 0 8px 24px -12px rgb(26 26 23 / 0.10);
+  }
+
+  .field {
+    width: 100%;
+    border: 1px solid var(--color-line);
+    border-radius: 0.625rem;
+    background-color: var(--color-surface);
+    padding: 0.625rem 0.875rem;
+    font-size: 0.9375rem;
+    outline: none;
+    transition: border-color 120ms, box-shadow 120ms;
+  }
+  .field:focus {
+    border-color: var(--color-forest-600);
+    box-shadow: 0 0 0 3px rgb(31 111 74 / 0.14);
+  }
+  .field:disabled {
+    background-color: #f5f3ee;
+    color: var(--color-muted);
+    cursor: not-allowed;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 0.625rem;
+    padding: 0.625rem 1.125rem;
+    font-size: 0.9375rem;
+    font-weight: 550;
+    transition: background-color 120ms, opacity 120ms, transform 120ms;
+  }
+  .btn:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+  .btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .btn-primary {
+    background-color: var(--color-forest);
+    color: #fff;
+  }
+  .btn-primary:hover:not(:disabled) {
+    background-color: var(--color-forest-600);
+  }
+
+  .btn-ghost {
+    border: 1px solid var(--color-line);
+    background-color: var(--color-surface);
+    color: var(--color-ink);
+  }
+  .btn-ghost:hover:not(:disabled) {
+    background-color: #f5f3ee;
+  }
+}
+
+/* Animasi masuk yang halus untuk hasil query & pesan status. */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+.animate-rise {
+  animation: rise 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-rise { animation: none; }
+  * { transition-duration: 1ms !important; }
+}
