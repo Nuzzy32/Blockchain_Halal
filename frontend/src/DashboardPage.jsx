@@ -20,16 +20,33 @@ export default function DashboardPage() {
   useEffect(() => {
     let cancelled = false
 
-    fetchAllCattle()
+    // ethers v6 baru menyerah setelah 300 detik. Koneksi yang menggantung (bukan gagal
+    // langsung) tanpa ini bikin skeleton loading bertahan hingga 5 menit tanpa penjelasan —
+    // PRD mewajibkan status gagal yang jelas, bukan macet memuat. Pemanggilan normal
+    // terukur ~0,6 detik, jadi 20 detik sudah sangat longgar. Promise.race dipakai (bukan
+    // setTimeout + flag) supaya kalau timeout menang, penyelesaian fetchAllCattle() yang
+    // datang belakangan tidak menimpa balik status galat menjadi "ok".
+    const TIMEOUT_MS = 20_000
+    let timeoutId
+    const timeout = new Promise((_, reject) => {
+      timeoutId = setTimeout(
+        () => reject(new Error(`Jaringan tidak merespons dalam ${TIMEOUT_MS / 1000} detik.`)),
+        TIMEOUT_MS,
+      )
+    })
+
+    Promise.race([fetchAllCattle(), timeout])
       .then((records) => {
         if (!cancelled) setState({ status: 'ok', stats: summarize(records) })
       })
       .catch((err) => {
         if (!cancelled) setState({ status: 'error', message: errorMessage(err) })
       })
+      .finally(() => clearTimeout(timeoutId))
 
     return () => {
       cancelled = true
+      clearTimeout(timeoutId)
     }
   }, [])
 
@@ -82,12 +99,19 @@ function Stats({ stats }) {
   )
 }
 
-/* ---------- corong tahapan ---------- */
+/* ---------- posisi di rantai pasok ---------- */
 
+/**
+ * Status EKSKLUSIF (tiap sapi terhitung tepat satu kali, jumlahnya sama dengan total) —
+ * bukan corong kumulatif. funnel.registered dari summarize() adalah total keseluruhan
+ * (semua sapi pasti sudah terdaftar), jadi "masih di peternakan" = total - yang sudah
+ * disembelih. Dihitung di sini, bukan di stats.js, supaya bentuk kumulatif summarize()
+ * (dan uji di scripts/check-stats.mjs) tidak berubah.
+ */
 function Funnel({ funnel, total }) {
   const steps = [
-    { label: 'Terdaftar di peternakan', value: funnel.registered },
-    { label: 'Sudah disembelih', value: funnel.slaughtered },
+    { label: 'Masih di peternakan', value: funnel.registered - funnel.slaughtered },
+    { label: 'Sudah disembelih, belum dikirim', value: funnel.slaughtered - funnel.shipped },
     { label: 'Sudah dikirim', value: funnel.shipped },
   ]
 

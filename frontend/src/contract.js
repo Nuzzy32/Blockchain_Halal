@@ -65,6 +65,19 @@ export async function fetchAllCattle() {
   const provider = new JsonRpcProvider(RPC)
   const ct = new Contract(ADDRESS, ABI, provider)
   const latest = await provider.getBlockNumber()
+
+  // Node RPC basi (tertinggal, dialihkan ke chain lain, atau load-balancer memberi node
+  // usang) bisa melaporkan tinggi blok di bawah blok deploy contract. Kalau tidak dicegat
+  // di sini, loop rentang di bawah menghasilkan nol rentang dan fungsi diam-diam
+  // mengembalikan array kosong — kegagalan infrastruktur menyamar jadi "belum ada data".
+  if (latest < DEPLOY_BLOCK) {
+    throw new Error(
+      `RPC melaporkan tinggi blok ${latest}, lebih rendah dari blok deploy contract ` +
+        `(${DEPLOY_BLOCK}). Node ini kemungkinan tertinggal atau tersambung ke chain yang ` +
+        `salah — datanya tidak bisa dipercaya.`,
+    )
+  }
+
   const MAX_RANGE = 10_000
 
   const ranges = []
