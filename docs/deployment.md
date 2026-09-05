@@ -361,8 +361,13 @@ Kode di `frontend/`. React + Vite + Tailwind v4, ethers v6, `qrcode.react`.
 
 | | |
 |---|---|
+| Situs live | <https://nuzzy32.github.io/Blockchain_Halal/> |
+| Repo | <https://github.com/Nuzzy32/Blockchain_Halal> |
 | Panel aktor | `/` — butuh MetaMask, form menyesuaikan role wallet |
 | Halaman konsumen | `/?id=<nomor sapi>` — read-only, tanpa wallet |
+
+Contoh halaman konsumen untuk sapi id 1:
+<https://nuzzy32.github.io/Blockchain_Halal/?id=1>
 
 Alamat contract dan ABI ada di `frontend/src/contract.js` (ABI ditulis dalam bentuk
 human-readable ethers, isinya setara dengan ABI JSON di atas).
