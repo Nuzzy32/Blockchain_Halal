@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 import { network } from 'hardhat'
 
-const { ethers } = await network.connect()
+const { ethers } = await network.create()
 
 const ADMIN_ROLE = ethers.id('ADMIN_ROLE')
 const FARMER_ROLE = ethers.id('FARMER_ROLE')
