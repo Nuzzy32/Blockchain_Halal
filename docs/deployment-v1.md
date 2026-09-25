@@ -14,7 +14,7 @@ Contract purwarupa v0 (`CattleTraceability`) tetap hidup di alamat lamanya dan m
 
 Private key hanya pernah diketik owner sendiri. Jangan pernah menempelkannya ke chat, file, atau commit.
 
-1. Pastikan wallet **Owner** (`0x088Da3284A7EE0735E2B7962CE2E236f148A51db`) punya test POL dari faucet Polygon Amoy.
+1. Pastikan wallet **Owner** (`0x088Da3284A7Ee0735e2b7962ce2e236F148A51db`) punya test POL dari faucet Polygon Amoy.
 2. Simpan private key Owner ke keystore terenkripsi Hardhat. Perintah ini meminta password keystore baru, lalu private key (MetaMask → Account details → Show private key):
 
    ```bash
@@ -57,7 +57,7 @@ Private key hanya pernah diketik owner sendiri. Jangan pernah menempelkannya ke 
 
 | Peran | Label MetaMask | Alamat | Tx hash `grantRole` |
 |---|---|---|---|
-| `ADMIN_ROLE` (deployer) | `Owner` | `0x088Da3284A7EE0735E2B7962CE2E236f148A51db` | otomatis di constructor |
+| `ADMIN_ROLE` (deployer) | `Owner` | `0x088Da3284A7Ee0735e2b7962ce2e236F148A51db` | otomatis di constructor |
 | `FARMER_ROLE` | `Peternak` | `0x060b8A144800DAB4b638c3e350613BE744aF8A6c` | belum |
 | `ABATTOIR_ROLE` | `RumahPotong` | `0x4cb58bd06DE17e01079441Ebcd98DCE11238b476` | belum |
 | `DISTRIBUTOR_ROLE` | `Distributor` | `0x6a9f05b6D81a5061a85ef2B3998b9dB811717e11` | belum |

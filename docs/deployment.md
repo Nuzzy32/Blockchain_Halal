@@ -31,7 +31,7 @@ Enum `Role`: `0 = None`, `1 = Farmer`, `2 = Butcher`, `3 = Distributor`.
 
 | Peran | Label MetaMask | Alamat | Nilai role | Tx hash `setRole` |
 |---|---|---|---|---|
-| Owner (deployer) | `Owner` | `0x088Da3284A7EE0735E2B7962CE2E236f148A51db` | — | — |
+| Owner (deployer) | `Owner` | `0x088Da3284A7Ee0735e2b7962ce2e236F148A51db` | — | — |
 | Peternak | `Peternak` | `0x060b8A144800DAB4b638c3e350613BE744aF8A6c` | `1` | `0xdd095f531ce76b1534a947267a488dfe3088f75183d7a36f22329258517f5f87` |
 | Rumah Potong | `RumahPotong` | `0x4cb58bd06DE17e01079441Ebcd98DCE11238b476` | `2` | `0x6d98716bb399a977d04a5a2fc39a4e73f0e4dd4d8ed4220caa81b0c942a66722` |
 | Distributor | `Distributor` | `0x6a9f05b6D81a5061a85ef2B3998b9dB811717e11` | `3` | `0xcea9b0bb6a24d9283a2b577cff422835c3856385631470c475722d59f22f316b` |
