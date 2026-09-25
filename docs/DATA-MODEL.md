@@ -68,7 +68,7 @@ enum PackageStatus {
 
 ```solidity
 struct CattleRecord {
-    // slot 1 (17 byte)
+    // slot 1 (21 byte)
     uint64  cattleId;
     uint16  ageInMonths;
     uint16  liveWeightKg;
@@ -76,6 +76,7 @@ struct CattleRecord {
     uint8   feedType;        // FeedType
     uint8   status;          // CattleStatus
     uint8   slaughterMethod; // SlaughterMethod
+    uint32  packagedGrams;   // total berat seluruh kemasan dari sapi ini
     bool    exists;
     // slot 2
     address farmer;
@@ -91,6 +92,8 @@ struct CattleRecord {
 ```
 
 > `slaughterMethod` sengaja ditaruh di slot 1 (bukan slot terpisah di akhir) karena slot 1 baru terisi 16 dari 32 byte. Hasilnya 6 slot per sapi, bukan 7.
+
+`packagedGrams` menjumlah berat seluruh kemasan dari sapi itu; tidak boleh melebihi berat hidup (lihat CONTRACTS.md createPackages).
 
 Kenapa `bytes32` dan bukan `string`: `bytes32` berukuran tetap dan jauh lebih murah dari sisi gas. Nomor sertifikat dan kode peternakan panjangnya terbatas, jadi cukup ditampung. Konversi ke teks dilakukan di frontend.
 
@@ -176,6 +179,7 @@ uint256 private adminCount;
 | `weightGrams` | Antara 100 dan 50000 |
 | `cutType` | Tidak boleh `Unspecified` |
 | Jumlah kemasan per panggilan | Maksimal 50, untuk mencegah kehabisan gas |
+| Total berat kemasan per sapi | Tidak boleh melebihi `liveWeightKg × 1000` gram |
 
 ### Pencatatan pengiriman
 | Field | Aturan |

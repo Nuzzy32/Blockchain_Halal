@@ -34,6 +34,8 @@ error BatchTooLarge(uint256 given, uint256 max);
 error ZeroAddress();
 error LastAdmin();
 error LengthMismatch(uint256 cutTypes, uint256 weights);
+error WrongAbattoir(uint64 cattleId, address abattoir);
+error PackageWeightExceeded(uint64 cattleId, uint256 totalGrams, uint256 maxGrams);
 ```
 
 Custom error lebih hemat gas dibanding `require` dengan pesan string, dan frontend bisa menangkap tipe error spesifiknya untuk menampilkan pesan yang tepat.
@@ -164,11 +166,13 @@ function createPackages(
 
 **Validasi:**
 - Status sapi harus `Slaughtered` atau `Packaged`
+- Pemanggil harus RPH yang sama dengan yang mencatat penyembelihan sapi itu, kalau tidak revert `WrongAbattoir`. Dengan begitu `cattle.abattoir` sekaligus menunjukkan siapa yang mengemas
 - Array tidak boleh kosong, kalau kosong revert `EmptyField("cutTypes")`. Tanpa aturan ini, status sapi bisa berubah jadi `Packaged` tanpa satu pun kemasan
 - Panjang kedua array harus sama, kalau tidak revert `LengthMismatch`
 - Panjang array maksimal 50 (`MAX_BATCH`, konstanta public yang bisa dibaca frontend), kalau lebih revert `BatchTooLarge`
 - Tiap `weightsGrams` antara 100 dan 50000
 - Tiap `cutTypes` bukan `Unspecified`
+- Total berat seluruh kemasan dari satu sapi tidak boleh melebihi berat hidupnya (`liveWeightKg × 1000` gram), kalau lebih revert `PackageWeightExceeded`. Mencegah satu sertifikat halal dipakai untuk kemasan tanpa batas
 
 **Efek:**
 - Membuat beberapa kemasan sekaligus dalam satu transaksi

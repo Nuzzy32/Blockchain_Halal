@@ -34,6 +34,8 @@ Dokumen ini berisi model ancaman, mitigasi yang diterapkan, dan keterbatasan yan
 - Timestamp di masa depan ditolak contract
 - Timestamp sebelum tanggal registrasi ditolak
 - Admin bisa mencabut peran wallet yang terbukti curang
+- Hanya RPH yang mencatat penyembelihan yang bisa membuat kemasan dari sapi itu
+- Total berat kemasan dari satu sapi dibatasi berat hidupnya, supaya satu sertifikat halal tidak bisa ditempel ke kemasan tanpa batas
 
 **Status:** Tidak sepenuhnya bisa diselesaikan oleh teknologi
 

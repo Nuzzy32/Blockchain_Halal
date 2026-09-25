@@ -5,10 +5,10 @@ const CUTS = [CutType.Sirloin, CutType.Brisket, CutType.Ground]
 const WEIGHTS = [500, 1000, 250]
 
 describe('CattleRegistry — pembuatan kemasan', function () {
-  let registry, farmer, abattoir
+  let registry, farmer, abattoir, stranger
 
   beforeEach(async function () {
-    ;({ registry, farmer, abattoir } = await createSlaughteredCattle())
+    ;({ registry, farmer, abattoir, stranger } = await createSlaughteredCattle())
   })
 
   it('membuat beberapa kemasan sekaligus, terhubung ke sapi induk', async function () {
@@ -70,16 +70,46 @@ describe('CattleRegistry — pembuatan kemasan', function () {
     expect(await registry.MAX_BATCH()).to.equal(50n)
   })
 
-  it('berat kemasan di luar 100-50000 gram ditolak', async function () {
+  it('berat kemasan di luar 100-50000 gram ditolak, batasnya diterima', async function () {
     await expect(registry.connect(abattoir).createPackages(1, [CutType.Sirloin], [99]))
       .to.be.revertedWithCustomError(registry, 'InvalidWeight').withArgs(99)
     await expect(registry.connect(abattoir).createPackages(1, [CutType.Sirloin], [50001]))
       .to.be.revertedWithCustomError(registry, 'InvalidWeight').withArgs(50001)
+    await expect(registry.connect(abattoir).createPackages(1, [CutType.Sirloin], [100]))
+      .not.to.revert(ethers)
+    await expect(registry.connect(abattoir).createPackages(1, [CutType.Sirloin], [50_000]))
+      .not.to.revert(ethers)
   })
 
   it('jenis potongan Unspecified ditolak', async function () {
     await expect(registry.connect(abattoir).createPackages(1, [CutType.Unspecified], [500]))
       .to.be.revertedWithCustomError(registry, 'UnspecifiedEnum').withArgs('cutType')
+  })
+
+  it('RPH lain yang bukan pencatat sembelih tidak bisa membuat kemasan', async function () {
+    await registry.grantRole(stranger.address, ROLE.ABATTOIR)
+    await expect(registry.connect(stranger).createPackages(1, CUTS, WEIGHTS))
+      .to.be.revertedWithCustomError(registry, 'WrongAbattoir')
+      .withArgs(1, abattoir.address)
+  })
+
+  it('total berat kemasan sapi terekam di packagedGrams', async function () {
+    await registry.connect(abattoir).createPackages(1, CUTS, WEIGHTS)
+    expect((await registry.getCattle(1)).packagedGrams).to.equal(1750n)
+  })
+
+  it('total berat kemasan melebihi berat hidup dalam satu batch ditolak', async function () {
+    await expect(registry.connect(abattoir).createPackages(1, Array(10).fill(CutType.Ground), Array(10).fill(50_000)))
+      .to.be.revertedWithCustomError(registry, 'PackageWeightExceeded')
+      .withArgs(1, 500_000, 450_000)
+  })
+
+  it('total berat kemasan melebihi berat hidup lintas batch ditolak', async function () {
+    await expect(registry.connect(abattoir).createPackages(1, Array(9).fill(CutType.Ground), Array(9).fill(50_000)))
+      .not.to.revert(ethers)
+    await expect(registry.connect(abattoir).createPackages(1, [CutType.Ground], [100]))
+      .to.be.revertedWithCustomError(registry, 'PackageWeightExceeded')
+      .withArgs(1, 450_100, 450_000)
   })
 })
 

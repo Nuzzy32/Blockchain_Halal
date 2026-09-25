@@ -26,7 +26,7 @@ contract CattleRegistry {
     // Urutan field disusun supaya muat sesedikit mungkin slot 32 byte.
 
     struct CattleRecord {
-        // slot 1 (17 byte)
+        // slot 1 (21 byte)
         uint64  cattleId;
         uint16  ageInMonths;
         uint16  liveWeightKg;
@@ -34,6 +34,7 @@ contract CattleRegistry {
         uint8   feedType;        // FeedType
         uint8   status;          // CattleStatus
         uint8   slaughterMethod; // SlaughterMethod
+        uint32  packagedGrams;   // total berat seluruh kemasan dari sapi ini
         bool    exists;
         // slot 2
         address farmer;
@@ -103,6 +104,8 @@ contract CattleRegistry {
     error ZeroAddress();
     error LastAdmin();
     error LengthMismatch(uint256 cutTypes, uint256 weights);
+    error WrongAbattoir(uint64 cattleId, address abattoir);
+    error PackageWeightExceeded(uint64 cattleId, uint256 totalGrams, uint256 maxGrams);
 
     // ---------------------------------------------------------------- Event
 
@@ -234,6 +237,7 @@ contract CattleRegistry {
         if (c.status == uint8(CattleStatus.Registered)) {
             revert InvalidCattleStatus(cattleId, c.status, uint8(CattleStatus.Slaughtered));
         }
+        if (c.abattoir != msg.sender) revert WrongAbattoir(cattleId, c.abattoir);
         uint256 count = cutTypes.length;
         if (count == 0) revert EmptyField("cutTypes");
         if (count != weightsGrams.length) revert LengthMismatch(count, weightsGrams.length);
@@ -258,7 +262,13 @@ contract CattleRegistry {
 
             cattleToPackages[cattleId].push(packageId);
             packageIds[i] = packageId;
+            c.packagedGrams += weight;
             emit PackageCreated(packageId, cattleId, uint8(cutTypes[i]), weight);
+        }
+
+        // Batas longgar: berat karkas nyata sekitar 50-60% berat hidup, jadi pemakaian jujur tidak pernah tertolak.
+        if (uint256(c.packagedGrams) > uint256(c.liveWeightKg) * 1000) {
+            revert PackageWeightExceeded(cattleId, uint256(c.packagedGrams), uint256(c.liveWeightKg) * 1000);
         }
 
         c.status = uint8(CattleStatus.Packaged);
