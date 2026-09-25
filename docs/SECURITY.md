@@ -157,8 +157,8 @@ Penyelesaian sebenarnya butuh lapisan di luar sistem: audit fisik oleh lembaga i
 **Dampak:** Tinggi kalau wallet-nya berisi aset nyata.
 
 **Mitigasi:**
-- `.env` masuk `.gitignore` sejak commit pertama
-- Tersedia `.env.example` tanpa nilai asli
+- Private key deployer disimpan terenkripsi lewat `npx hardhat keystore set AMOY_PRIVATE_KEY`, di folder konfigurasi Hardhat milik pengguna, di luar repository. Tidak ada file `.env`
+- `.env` tetap masuk `.gitignore` sebagai jaga-jaga
 - Wallet yang dipakai khusus testnet, tidak pernah berisi aset bernilai
 - Cek `git status` sebelum setiap push
 

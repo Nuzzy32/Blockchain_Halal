@@ -1,6 +1,6 @@
 # Roadmap
 
-Status saat ini: **Fase 2 selesai, masuk Fase 3**
+Status saat ini: **Fase 3 berjalan — contract dan test selesai, menunggu deploy ke Amoy oleh owner**
 
 Estimasi total 5 sampai 6 minggu dengan ritme santai. Sesuaikan dengan tenggat tugas. Kalau waktu mepet, urutan fase tetap sama, hanya durasinya yang dipadatkan.
 
@@ -56,15 +56,15 @@ Estimasi total 5 sampai 6 minggu dengan ritme santai. Sesuaikan dengan tenggat t
 
 ## Fase 3 — Implementasi Smart Contract
 **Durasi:** 5 sampai 6 hari
-**Status:** Belum mulai
+**Status:** Berjalan
 
-- [ ] Implementasi `registerCattle` beserta validasinya
-- [ ] Implementasi `recordSlaughter` beserta data halal
-- [ ] Implementasi `createPackages` dengan batas batch
-- [ ] Implementasi `recordShipping`
-- [ ] Implementasi seluruh fungsi baca
-- [ ] Tulis unit test jalur normal
-- [ ] Tulis unit test jalur penolakan
+- [x] Implementasi `registerCattle` beserta validasinya
+- [x] Implementasi `recordSlaughter` beserta data halal
+- [x] Implementasi `createPackages` dengan batas batch
+- [x] Implementasi `recordShipping`
+- [x] Implementasi seluruh fungsi baca
+- [x] Tulis unit test jalur normal
+- [x] Tulis unit test jalur penolakan
 - [ ] Deploy ke Polygon Amoy
 - [ ] Verifikasi contract di block explorer
 
