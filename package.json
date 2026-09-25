@@ -1,0 +1,16 @@
+{
+  "name": "halalchain-trace",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test mocha"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox-mocha-ethers": "^4.0.0",
+    "chai": "^6.2.2",
+    "ethers": "^6.17.0",
+    "hardhat": "^3.18.0",
+    "mocha": "^12.0.2"
+  }
+}

@@ -67,30 +67,29 @@ enum PackageStatus {
 
 ```solidity
 struct CattleRecord {
-    // slot 1
+    // slot 1 (17 byte)
     uint64  cattleId;
     uint16  ageInMonths;
     uint16  liveWeightKg;
-    uint8   grade;          // Grade
-    uint8   feedType;       // FeedType
-    uint8   status;         // CattleStatus
+    uint8   grade;           // Grade
+    uint8   feedType;        // FeedType
+    uint8   status;          // CattleStatus
+    uint8   slaughterMethod; // SlaughterMethod
     bool    exists;
     // slot 2
-    address farmer;         // wallet peternak
+    address farmer;
     uint64  registeredAt;
     // slot 3
-    address abattoir;       // wallet RPH
+    address abattoir;
     uint64  slaughteredAt;
-    // slot 4
-    bytes32 farmId;         // kode peternakan, bukan nama orang
-    // slot 5
-    bytes32 slaughtermanId; // ID sertifikat juru sembelih
-    // slot 6
-    bytes32 halalCertNo;    // nomor sertifikat halal
-    // slot 7
-    uint8   slaughterMethod;// SlaughterMethod
+    // slot 4-6
+    bytes32 farmId;          // kode peternakan, bukan nama orang
+    bytes32 slaughtermanId;  // ID sertifikat juru sembelih
+    bytes32 halalCertNo;     // nomor sertifikat halal
 }
 ```
+
+> `slaughterMethod` sengaja ditaruh di slot 1 (bukan slot terpisah di akhir) karena slot 1 baru terisi 16 dari 32 byte. Hasilnya 6 slot per sapi, bukan 7.
 
 Kenapa `bytes32` dan bukan `string`: `bytes32` berukuran tetap dan jauh lebih murah dari sisi gas. Nomor sertifikat dan kode peternakan panjangnya terbatas, jadi cukup ditampung. Konversi ke teks dilakukan di frontend.
 

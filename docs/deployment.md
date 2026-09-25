@@ -63,8 +63,8 @@ Alur penuh register → sembelih → kirim tervalidasi berurutan di on-chain.
 1. Tambahkan network Amoy di MetaMask pakai nilai di tabel Contract di atas (symbol: `POL`).
 2. Siapkan 4 akun berlabel, isi test POL dari faucet Polygon ke **keempat**-nya —
    tiga akun aktor juga butuh gas untuk menulis.
-3. Remix → paste `contracts/CattleTraceability.sol` → compile `0.8.24`, optimizer on / 200 runs.
-4. Tab **Solidity Unit Testing** → jalankan `contracts/CattleTraceability_test.sol`.
+3. Remix → paste `legacy/v0-remix/CattleTraceability.sol` → compile `0.8.24`, optimizer on / 200 runs.
+4. Tab **Solidity Unit Testing** → jalankan `legacy/v0-remix/CattleTraceability_test.sol`.
    Harus 11 fungsi hijau / 27 assertion. **Jangan deploy sebelum ini hijau.**
 5. Environment **Injected Provider – MetaMask**, akun aktif `Owner` → Deploy.
 6. Dari `Owner`, panggil `setRole` 3× sesuai tabel Akun & Role.
