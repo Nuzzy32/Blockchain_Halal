@@ -43,3 +43,10 @@ export async function slaughterCattle(registry, abattoir, cattleId, overrides = 
   const slaughteredAt = s.slaughteredAt ?? (await networkHelpers.time.latest())
   return registry.connect(abattoir).recordSlaughter(cattleId, slaughteredAt, s.slaughtermanId, s.halalCertNo, s.method)
 }
+
+export async function createSlaughteredCattle() {
+  const ctx = await deployWithRoles()
+  await registerCattle(ctx.registry, ctx.farmer)
+  await slaughterCattle(ctx.registry, ctx.abattoir, 1)
+  return ctx
+}

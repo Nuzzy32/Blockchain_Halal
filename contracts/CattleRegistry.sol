@@ -67,6 +67,12 @@ contract CattleRegistry {
     uint16 private constant MAX_AGE_MONTHS     = 120;
     uint16 private constant MIN_LIVE_WEIGHT_KG = 100;
     uint16 private constant MAX_LIVE_WEIGHT_KG = 1500;
+    uint32 private constant MIN_PACKAGE_GRAMS  = 100;
+    uint32 private constant MAX_PACKAGE_GRAMS  = 50_000;
+
+    /// @notice Batas item per transaksi batch, supaya tidak melewati batas gas per blok (SECURITY A7).
+    ///         Public supaya frontend membaca batas yang sama dari contract.
+    uint256 public constant MAX_BATCH = 50;
 
     // ---------------------------------------------------------------- Penyimpanan
 
@@ -96,6 +102,7 @@ contract CattleRegistry {
     error BatchTooLarge(uint256 given, uint256 max);
     error ZeroAddress();
     error LastAdmin();
+    error LengthMismatch(uint256 cutTypes, uint256 weights);
 
     // ---------------------------------------------------------------- Event
 
@@ -215,6 +222,48 @@ contract CattleRegistry {
         emit CattleSlaughtered(cattleId, msg.sender, halalCertNo, slaughteredAt);
     }
 
+    // ---------------------------------------------------------------- RPH: pengemasan
+
+    function createPackages(
+        uint64 cattleId,
+        CutType[] calldata cutTypes,
+        uint32[] calldata weightsGrams
+    ) external onlyRole(ABATTOIR_ROLE) cattleExists(cattleId) returns (uint64[] memory packageIds) {
+        CattleRecord storage c = cattleRecords[cattleId];
+        // Status yang sah: Slaughtered atau Packaged (kemasan tambahan). Satu-satunya yang ditolak: Registered.
+        if (c.status == uint8(CattleStatus.Registered)) {
+            revert InvalidCattleStatus(cattleId, c.status, uint8(CattleStatus.Slaughtered));
+        }
+        uint256 count = cutTypes.length;
+        if (count == 0) revert EmptyField("cutTypes");
+        if (count != weightsGrams.length) revert LengthMismatch(count, weightsGrams.length);
+        if (count > MAX_BATCH) revert BatchTooLarge(count, MAX_BATCH);
+
+        packageIds = new uint64[](count);
+
+        for (uint256 i = 0; i < count; i++) {
+            if (cutTypes[i] == CutType.Unspecified) revert UnspecifiedEnum("cutType");
+            uint32 weight = weightsGrams[i];
+            if (weight < MIN_PACKAGE_GRAMS || weight > MAX_PACKAGE_GRAMS) revert InvalidWeight(weight);
+
+            uint64 packageId = nextPackageId++;
+            PackageRecord storage p = packageRecords[packageId];
+            p.packageId = packageId;
+            p.cattleId = cattleId;
+            p.weightGrams = weight;
+            p.cutType = uint8(cutTypes[i]);
+            p.status = uint8(PackageStatus.Created);
+            p.exists = true;
+            p.packagedAt = uint64(block.timestamp);
+
+            cattleToPackages[cattleId].push(packageId);
+            packageIds[i] = packageId;
+            emit PackageCreated(packageId, cattleId, uint8(cutTypes[i]), weight);
+        }
+
+        c.status = uint8(CattleStatus.Packaged);
+    }
+
     // ---------------------------------------------------------------- Baca publik (tanpa wallet)
 
     function getCattle(uint64 cattleId) external view cattleExists(cattleId) returns (CattleRecord memory) {
@@ -223,5 +272,28 @@ contract CattleRegistry {
 
     function totalCattle() external view returns (uint64) {
         return nextCattleId - 1;
+    }
+
+    /// @notice Paginasi: satu sapi bisa menghasilkan ratusan kemasan, jadi daftar dibaca per halaman.
+    ///         Sapi yang tidak ada atau belum punya kemasan mengembalikan daftar kosong dan total 0.
+    function getPackagesByCattle(uint64 cattleId, uint256 offset, uint256 limit)
+        external
+        view
+        returns (uint64[] memory ids, uint256 total)
+    {
+        uint64[] storage all = cattleToPackages[cattleId];
+        total = all.length;
+        if (offset >= total) return (new uint64[](0), total);
+
+        // Dibandingkan dengan sisa, bukan offset + limit, supaya limit sangat besar tidak overflow.
+        uint256 end = limit > total - offset ? total : offset + limit;
+        ids = new uint64[](end - offset);
+        for (uint256 i = offset; i < end; i++) {
+            ids[i - offset] = all[i];
+        }
+    }
+
+    function totalPackages() external view returns (uint64) {
+        return nextPackageId - 1;
     }
 }

@@ -33,6 +33,7 @@ error UnspecifiedEnum(string field);
 error BatchTooLarge(uint256 given, uint256 max);
 error ZeroAddress();
 error LastAdmin();
+error LengthMismatch(uint256 cutTypes, uint256 weights);
 ```
 
 Custom error lebih hemat gas dibanding `require` dengan pesan string, dan frontend bisa menangkap tipe error spesifiknya untuk menampilkan pesan yang tepat.
@@ -163,8 +164,9 @@ function createPackages(
 
 **Validasi:**
 - Status sapi harus `Slaughtered` atau `Packaged`
-- Panjang kedua array harus sama
-- Panjang array maksimal 50, kalau lebih revert `BatchTooLarge`
+- Array tidak boleh kosong, kalau kosong revert `EmptyField("cutTypes")`. Tanpa aturan ini, status sapi bisa berubah jadi `Packaged` tanpa satu pun kemasan
+- Panjang kedua array harus sama, kalau tidak revert `LengthMismatch`
+- Panjang array maksimal 50 (`MAX_BATCH`, konstanta public yang bisa dibaca frontend), kalau lebih revert `BatchTooLarge`
 - Tiap `weightsGrams` antara 100 dan 50000
 - Tiap `cutTypes` bukan `Unspecified`
 
@@ -235,6 +237,8 @@ function getPackagesByCattle(uint64 cattleId, uint256 offset, uint256 limit)
 ```
 
 Memakai paginasi. Satu ekor sapi bisa menghasilkan ratusan kemasan, jadi mengembalikan seluruh array sekaligus berisiko gagal karena batas ukuran respons.
+
+Sapi yang tidak ada atau belum punya kemasan mengembalikan daftar kosong dengan `total = 0`, bukan revert.
 
 ### totalCattle dan totalPackages
 
