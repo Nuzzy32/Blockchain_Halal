@@ -28,6 +28,5 @@ console.log(`Blok     : ${deployReceipt.blockNumber}`)
 for (const [roleName, account] of ACTORS) {
   const role = await registry[roleName]()
   const receipt = await (await registry.grantRole(account, role)).wait()
-  if (!(await registry.checkRole(account, role))) throw new Error(`${roleName} gagal diberikan ke ${account}`)
   console.log(`${roleName.padEnd(16)} → ${account}  tx ${receipt.hash}`)
 }

@@ -27,11 +27,15 @@ Private key hanya pernah diketik owner sendiri. Jangan pernah menempelkannya ke 
    npx hardhat run --build-profile production scripts/deploy.js --network amoy
    ```
 
+   Kalau perintah ini berhenti dengan error **setelah** baris `Contract :` tercetak, **jangan jalankan ulang** — itu akan membuat contract kedua. Simpan output-nya dan kirim ke Claude; peran yang belum terpasang bisa diberikan manual lewat `grantRole`.
+
 4. Verifikasi kode sumber di Sourcify (tanpa API key), ganti `<ALAMAT>` dengan alamat dari langkah 3:
 
    ```bash
    npx hardhat verify sourcify --network amoy <ALAMAT>
    ```
+
+   Perintah ini juga meminta password keystore, karena memakai jaringan `amoy`.
 
 5. Salin seluruh output langkah 3 dan 4 ke tabel di bawah.
 
