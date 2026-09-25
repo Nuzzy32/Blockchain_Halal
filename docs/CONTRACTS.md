@@ -32,6 +32,7 @@ error EmptyField(string field);
 error UnspecifiedEnum(string field);
 error BatchTooLarge(uint256 given, uint256 max);
 error ZeroAddress();
+error LastAdmin();
 ```
 
 Custom error lebih hemat gas dibanding `require` dengan pesan string, dan frontend bisa menangkap tipe error spesifiknya untuk menampilkan pesan yang tepat.
@@ -65,7 +66,7 @@ function grantRole(address account, bytes32 role)
     onlyRole(ADMIN_ROLE)
 ```
 
-Memberikan peran ke sebuah alamat. Menolak alamat nol. Memancarkan `RoleGranted`.
+Memberikan peran ke sebuah alamat. Menolak alamat nol. Memancarkan `RoleGranted`. Kalau alamat sudah memiliki peran itu, tidak terjadi apa-apa dan tidak ada event, supaya hitungan admin tetap akurat.
 
 ### revokeRole
 
@@ -75,7 +76,7 @@ function revokeRole(address account, bytes32 role)
     onlyRole(ADMIN_ROLE)
 ```
 
-Mencabut peran. Admin tidak boleh mencabut `ADMIN_ROLE` miliknya sendiri kalau dia satu-satunya admin, karena contract akan terkunci selamanya tanpa admin.
+Mencabut peran. Memancarkan `RoleRevoked`. Mencabut peran yang tidak dimiliki tidak terjadi apa-apa. Pencabutan `ADMIN_ROLE` ditolak dengan `LastAdmin` kalau hanya tersisa satu admin, karena contract akan terkunci selamanya tanpa admin.
 
 ### checkRole
 
@@ -84,7 +85,7 @@ function checkRole(address account, bytes32 role)
     external view returns (bool)
 ```
 
-Fungsi baca yang dipakai frontend untuk menentukan form mana yang boleh dibuka.
+Fungsi baca yang dipakai frontend untuk menentukan form mana yang boleh dibuka. Mapping peran sendiri bersifat private, jadi ini satu-satunya jalur baca peran.
 
 ## 5. Fungsi Rantai Pasok
 

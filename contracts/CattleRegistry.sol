@@ -71,6 +71,10 @@ contract CattleRegistry {
     uint64 private nextCattleId  = 1;
     uint64 private nextPackageId = 1;
 
+    // private: frontend membaca lewat checkRole, satu jalur baca saja.
+    mapping(address => mapping(bytes32 => bool)) private hasRole;
+    uint256 private adminCount;
+
     // ---------------------------------------------------------------- Error
 
     error Unauthorized(address caller, bytes32 requiredRole);
@@ -85,6 +89,7 @@ contract CattleRegistry {
     error UnspecifiedEnum(string field);
     error BatchTooLarge(uint256 given, uint256 max);
     error ZeroAddress();
+    error LastAdmin();
 
     // ---------------------------------------------------------------- Event
 
@@ -94,4 +99,44 @@ contract CattleRegistry {
     event PackageShipped(uint64 indexed packageId, address indexed distributor, uint64 shippedAt);
     event RoleGranted(address indexed account, bytes32 indexed role);
     event RoleRevoked(address indexed account, bytes32 indexed role);
+
+    // ---------------------------------------------------------------- Manajemen peran
+
+    constructor() {
+        _grant(msg.sender, ADMIN_ROLE);
+    }
+
+    modifier onlyRole(bytes32 role) {
+        if (!hasRole[msg.sender][role]) revert Unauthorized(msg.sender, role);
+        _;
+    }
+
+    function grantRole(address account, bytes32 role) external onlyRole(ADMIN_ROLE) {
+        if (account == address(0)) revert ZeroAddress();
+        _grant(account, role);
+    }
+
+    /// @dev Menolak mencabut admin terakhir: tanpa admin, peran tidak bisa diberikan lagi
+    ///      dan contract terkunci selamanya (SECURITY A4).
+    function revokeRole(address account, bytes32 role) external onlyRole(ADMIN_ROLE) {
+        if (!hasRole[account][role]) return;
+        if (role == ADMIN_ROLE) {
+            if (adminCount == 1) revert LastAdmin();
+            adminCount--;
+        }
+        hasRole[account][role] = false;
+        emit RoleRevoked(account, role);
+    }
+
+    function checkRole(address account, bytes32 role) external view returns (bool) {
+        return hasRole[account][role];
+    }
+
+    /// @dev Idempoten: peran yang sudah dimiliki tidak dihitung dua kali, supaya adminCount akurat.
+    function _grant(address account, bytes32 role) private {
+        if (hasRole[account][role]) return;
+        hasRole[account][role] = true;
+        if (role == ADMIN_ROLE) adminCount++;
+        emit RoleGranted(account, role);
+    }
 }

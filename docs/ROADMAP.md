@@ -1,6 +1,6 @@
 # Roadmap
 
-Status saat ini: **Fase 0 selesai, masuk Fase 1**
+Status saat ini: **Fase 2 selesai, masuk Fase 3**
 
 Estimasi total 5 sampai 6 minggu dengan ritme santai. Sesuaikan dengan tenggat tugas. Kalau waktu mepet, urutan fase tetap sama, hanya durasinya yang dipadatkan.
 
@@ -22,14 +22,14 @@ Estimasi total 5 sampai 6 minggu dengan ritme santai. Sesuaikan dengan tenggat t
 
 ## Fase 1 — Dasar Blockchain dan Solidity
 **Durasi:** 4 sampai 5 hari
-**Status:** Belum mulai
+**Status:** Selesai (dikuasai lewat purwarupa v0: deploy Remix ke Amoy, transaksi nyata tercatat di docs/deployment.md)
 
-- [ ] Pahami konsep dasar: block, transaksi, gas, wallet, testnet
-- [ ] Pasang MetaMask, tambahkan jaringan Polygon Amoy
-- [ ] Ambil token testnet dari faucet
-- [ ] Latihan Solidity: struct, mapping, enum, modifier, event
-- [ ] Deploy contract sederhana lewat Remix ke Amoy
-- [ ] Panggil fungsinya dari Remix dan lihat hasilnya di block explorer
+- [x] Pahami konsep dasar: block, transaksi, gas, wallet, testnet
+- [x] Pasang MetaMask, tambahkan jaringan Polygon Amoy
+- [x] Ambil token testnet dari faucet
+- [x] Latihan Solidity: struct, mapping, enum, modifier, event
+- [x] Deploy contract sederhana lewat Remix ke Amoy
+- [x] Panggil fungsinya dari Remix dan lihat hasilnya di block explorer
 
 **Checkpoint:** Bisa menjelaskan dengan kalimat sendiri apa yang terjadi saat sebuah transaksi dikirim
 
@@ -41,14 +41,14 @@ Estimasi total 5 sampai 6 minggu dengan ritme santai. Sesuaikan dengan tenggat t
 
 ## Fase 2 — Setup Project dan Struktur Contract
 **Durasi:** 2 hari
-**Status:** Belum mulai
+**Status:** Selesai
 
-- [ ] Inisialisasi project Hardhat
-- [ ] Setup `.gitignore` dan `.env.example` sebelum commit pertama
-- [ ] Buat repository Git, commit pertama
-- [ ] Tulis kerangka contract: enum, struct, mapping, custom error
-- [ ] Implementasi sistem peran
-- [ ] Test manajemen peran
+- [x] Inisialisasi project Hardhat
+- [x] Setup `.gitignore` dan `.env.example` sebelum commit pertama
+- [x] Buat repository Git, commit pertama
+- [x] Tulis kerangka contract: enum, struct, mapping, custom error
+- [x] Implementasi sistem peran
+- [x] Test manajemen peran
 
 **Checkpoint:** `npx hardhat compile` berhasil, test peran lulus
 
