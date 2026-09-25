@@ -28,6 +28,7 @@
 2. **`slaughterMethod` pindah ke slot 1 `CattleRecord`.** DATA-MODEL menaruhnya sendirian di slot 7, padahal slot 1 baru terisi 16 dari 32 byte. Pindah = 6 slot, bukan 7, sesuai aturan packing di `docs/CLAUDE.md`.
 3. **`grantRole`/`revokeRole` idempoten.** Memberi peran yang sudah dimiliki atau mencabut peran yang tidak dimiliki = no-op tanpa event. Tanpa ini, `adminCount` bisa menggelembung dan guard `LastAdmin` bisa dilewati.
 4. **`hasRole` dibuat `private`.** Satu-satunya jalur baca untuk frontend adalah `checkRole` (CONTRACTS.md §4), supaya tidak ada dua getter untuk hal yang sama.
+5. **`packagedAt` pindah ke slot 1 `PackageRecord`.** Ditemukan di review akhir: slot 1 baru terisi 23 byte. Pindah = 2 slot per kemasan, bukan 3.
 
 ## Struktur File
 

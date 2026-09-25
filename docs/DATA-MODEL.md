@@ -97,20 +97,21 @@ Kenapa `bytes32` dan bukan `string`: `bytes32` berukuran tetap dan jauh lebih mu
 
 ```solidity
 struct PackageRecord {
-    // slot 1
+    // slot 1 (31 byte)
     uint64  packageId;
     uint64  cattleId;       // menunjuk ke sapi induk
     uint32  weightGrams;
     uint8   cutType;        // CutType
     uint8   status;         // PackageStatus
     bool    exists;
-    // slot 2
     uint64  packagedAt;
+    // slot 2
     uint64  shippedAt;
-    // slot 3
     address distributor;
 }
 ```
+
+> `packagedAt` ditaruh di slot 1 karena slot itu baru terisi 23 dari 32 byte. Hasilnya 2 slot per kemasan, bukan 3 — hemat sekitar 22 ribu gas per kemasan saat createPackages.
 
 ### CutType
 
@@ -136,7 +137,12 @@ mapping(uint64 => uint64[])      private cattleToPackages;
 
 uint64 private nextCattleId  = 1;
 uint64 private nextPackageId = 1;
+
+mapping(address => mapping(bytes32 => bool)) private hasRole;
+uint256 private adminCount;
 ```
+
+`hasRole` dibaca lewat `checkRole`. `adminCount` dipakai untuk menolak pencabutan admin terakhir (SECURITY A4).
 
 `cattleToPackages` menyimpan daftar kemasan dari tiap sapi. Berguna untuk menampilkan di dashboard RPH berapa kemasan yang sudah dibuat dari satu ekor.
 

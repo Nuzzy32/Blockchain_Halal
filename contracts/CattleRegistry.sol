@@ -48,17 +48,16 @@ contract CattleRegistry {
     }
 
     struct PackageRecord {
-        // slot 1
+        // slot 1 (31 byte)
         uint64  packageId;
         uint64  cattleId;        // menunjuk ke sapi induk
         uint32  weightGrams;
         uint8   cutType;         // CutType
         uint8   status;          // PackageStatus
         bool    exists;
-        // slot 2
         uint64  packagedAt;
+        // slot 2
         uint64  shippedAt;
-        // slot 3
         address distributor;
     }
 

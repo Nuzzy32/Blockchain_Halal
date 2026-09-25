@@ -67,6 +67,7 @@ describe('CattleRegistry — manajemen peran', function () {
 
   it('peran yang dicabut benar-benar kehilangan akses', async function () {
     await registry.grantRole(alice.address, ADMIN_ROLE)
+    expect(await registry.checkRole(alice.address, ADMIN_ROLE)).to.equal(true)
     await registry.revokeRole(alice.address, ADMIN_ROLE)
     await expect(registry.connect(alice).grantRole(bob.address, FARMER_ROLE))
       .to.be.revertedWithCustomError(registry, 'Unauthorized')
@@ -97,6 +98,12 @@ describe('CattleRegistry — manajemen peran', function () {
     await registry.grantRole(alice.address, ADMIN_ROLE)
     await registry.revokeRole(admin.address, ADMIN_ROLE)
     await expect(registry.connect(alice).revokeRole(alice.address, ADMIN_ROLE))
+      .to.be.revertedWithCustomError(registry, 'LastAdmin')
+  })
+
+  it('memberi peran non-admin tidak mengubah hitungan admin', async function () {
+    await registry.grantRole(alice.address, FARMER_ROLE)
+    await expect(registry.revokeRole(admin.address, ADMIN_ROLE))
       .to.be.revertedWithCustomError(registry, 'LastAdmin')
   })
 })
