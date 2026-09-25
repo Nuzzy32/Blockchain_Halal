@@ -61,6 +61,13 @@ contract CattleRegistry {
         address distributor;
     }
 
+    // ---------------------------------------------------------------- Batas validasi (DATA-MODEL §5)
+
+    uint16 private constant MIN_AGE_MONTHS     = 6;
+    uint16 private constant MAX_AGE_MONTHS     = 120;
+    uint16 private constant MIN_LIVE_WEIGHT_KG = 100;
+    uint16 private constant MAX_LIVE_WEIGHT_KG = 1500;
+
     // ---------------------------------------------------------------- Penyimpanan
 
     mapping(uint64 => CattleRecord)  private cattleRecords;
@@ -137,5 +144,54 @@ contract CattleRegistry {
         hasRole[account][role] = true;
         if (role == ADMIN_ROLE) adminCount++;
         emit RoleGranted(account, role);
+    }
+
+    // ---------------------------------------------------------------- Peternak
+
+    modifier cattleExists(uint64 cattleId) {
+        if (!cattleRecords[cattleId].exists) revert CattleNotFound(cattleId);
+        _;
+    }
+
+    function registerCattle(
+        uint16 ageInMonths,
+        uint16 liveWeightKg,
+        Grade grade,
+        FeedType feedType,
+        bytes32 farmId
+    ) external onlyRole(FARMER_ROLE) returns (uint64 cattleId) {
+        if (ageInMonths < MIN_AGE_MONTHS || ageInMonths > MAX_AGE_MONTHS) revert InvalidAge(ageInMonths);
+        if (liveWeightKg < MIN_LIVE_WEIGHT_KG || liveWeightKg > MAX_LIVE_WEIGHT_KG) revert InvalidWeight(liveWeightKg);
+        if (grade == Grade.Unspecified) revert UnspecifiedEnum("grade");
+        if (feedType == FeedType.Unspecified) revert UnspecifiedEnum("feedType");
+        if (farmId == bytes32(0)) revert EmptyField("farmId");
+
+        // ID dibuat contract, bukan input pengguna, supaya tidak bisa bertabrakan atau diserobot (DATA-MODEL §6).
+        cattleId = nextCattleId++;
+        uint64 registeredAt = uint64(block.timestamp);
+
+        CattleRecord storage c = cattleRecords[cattleId];
+        c.cattleId = cattleId;
+        c.ageInMonths = ageInMonths;
+        c.liveWeightKg = liveWeightKg;
+        c.grade = uint8(grade);
+        c.feedType = uint8(feedType);
+        c.status = uint8(CattleStatus.Registered);
+        c.exists = true;
+        c.farmer = msg.sender;
+        c.registeredAt = registeredAt;
+        c.farmId = farmId;
+
+        emit CattleRegistered(cattleId, msg.sender, farmId, registeredAt);
+    }
+
+    // ---------------------------------------------------------------- Baca publik (tanpa wallet)
+
+    function getCattle(uint64 cattleId) external view cattleExists(cattleId) returns (CattleRecord memory) {
+        return cattleRecords[cattleId];
+    }
+
+    function totalCattle() external view returns (uint64) {
+        return nextCattleId - 1;
     }
 }
