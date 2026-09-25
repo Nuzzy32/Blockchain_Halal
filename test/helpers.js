@@ -35,3 +35,11 @@ export function registerCattle(registry, farmer, overrides = {}) {
   const c = { ...CATTLE, ...overrides }
   return registry.connect(farmer).registerCattle(c.age, c.weight, c.grade, c.feed, c.farmId)
 }
+
+export const SLAUGHTER = { slaughtermanId: b32('JULEHA-0042'), halalCertNo: b32('ID00410000123'), method: SlaughterMethod.ManualNoStunning }
+
+export async function slaughterCattle(registry, abattoir, cattleId, overrides = {}) {
+  const s = { ...SLAUGHTER, ...overrides }
+  const slaughteredAt = s.slaughteredAt ?? (await networkHelpers.time.latest())
+  return registry.connect(abattoir).recordSlaughter(cattleId, slaughteredAt, s.slaughtermanId, s.halalCertNo, s.method)
+}

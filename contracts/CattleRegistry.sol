@@ -185,6 +185,36 @@ contract CattleRegistry {
         emit CattleRegistered(cattleId, msg.sender, farmId, registeredAt);
     }
 
+    // ---------------------------------------------------------------- RPH: penyembelihan
+
+    /// @notice Hanya bisa sekali per sapi dan tidak ada fungsi untuk mengubahnya — disengaja,
+    ///         karena data halal yang bisa diedit menghilangkan seluruh nilai sistem ini.
+    function recordSlaughter(
+        uint64 cattleId,
+        uint64 slaughteredAt,
+        bytes32 slaughtermanId,
+        bytes32 halalCertNo,
+        SlaughterMethod method
+    ) external onlyRole(ABATTOIR_ROLE) cattleExists(cattleId) {
+        CattleRecord storage c = cattleRecords[cattleId];
+        if (c.status != uint8(CattleStatus.Registered)) {
+            revert InvalidCattleStatus(cattleId, c.status, uint8(CattleStatus.Registered));
+        }
+        if (slaughteredAt > block.timestamp || slaughteredAt < c.registeredAt) revert InvalidTimestamp(slaughteredAt);
+        if (slaughtermanId == bytes32(0)) revert EmptyField("slaughtermanId");
+        if (halalCertNo == bytes32(0)) revert EmptyField("halalCertNo");
+        if (method == SlaughterMethod.Unspecified) revert UnspecifiedEnum("method");
+
+        c.status = uint8(CattleStatus.Slaughtered);
+        c.abattoir = msg.sender;
+        c.slaughteredAt = slaughteredAt;
+        c.slaughtermanId = slaughtermanId;
+        c.halalCertNo = halalCertNo;
+        c.slaughterMethod = uint8(method);
+
+        emit CattleSlaughtered(cattleId, msg.sender, halalCertNo, slaughteredAt);
+    }
+
     // ---------------------------------------------------------------- Baca publik (tanpa wallet)
 
     function getCattle(uint64 cattleId) external view cattleExists(cattleId) returns (CattleRecord memory) {
