@@ -55,11 +55,13 @@ describe('CattleRegistry — registrasi sapi', function () {
     await expect(registerCattle(registry, farmer, { age: 120 })).not.to.revert(ethers)
   })
 
-  it('berat di luar 100-1500 kg ditolak', async function () {
+  it('berat di luar 100-1500 kg ditolak, batasnya diterima', async function () {
     await expect(registerCattle(registry, farmer, { weight: 99 }))
       .to.be.revertedWithCustomError(registry, 'InvalidWeight').withArgs(99)
     await expect(registerCattle(registry, farmer, { weight: 1501 }))
       .to.be.revertedWithCustomError(registry, 'InvalidWeight').withArgs(1501)
+    await expect(registerCattle(registry, farmer, { weight: 100 })).not.to.revert(ethers)
+    await expect(registerCattle(registry, farmer, { weight: 1500 })).not.to.revert(ethers)
   })
 
   it('grade dan jenis pakan Unspecified ditolak', async function () {

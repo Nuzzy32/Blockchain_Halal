@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { CattleStatus, ROLE, SLAUGHTER, SlaughterMethod, deployWithRoles, networkHelpers, registerCattle, slaughterCattle } from './helpers.js'
+import { CattleStatus, ROLE, SLAUGHTER, SlaughterMethod, deployWithRoles, ethers, networkHelpers, registerCattle, slaughterCattle } from './helpers.js'
 
 describe('CattleRegistry — pencatatan sembelih', function () {
   let registry, farmer, abattoir
@@ -65,5 +65,18 @@ describe('CattleRegistry — pencatatan sembelih', function () {
   it('metode sembelih Unspecified ditolak', async function () {
     await expect(slaughterCattle(registry, abattoir, 1, { method: SlaughterMethod.Unspecified }))
       .to.be.revertedWithCustomError(registry, 'UnspecifiedEnum').withArgs('method')
+  })
+
+  it('tanggal sembelih tepat sama dengan tanggal registrasi diterima', async function () {
+    const { registeredAt } = await registry.getCattle(1)
+    await expect(slaughterCattle(registry, abattoir, 1, { slaughteredAt: registeredAt }))
+      .not.to.revert(ethers)
+  })
+
+  it('tanggal sembelih tepat sama dengan timestamp blok saat ditambang diterima', async function () {
+    const t = (await networkHelpers.time.latest()) + 10
+    await networkHelpers.time.setNextBlockTimestamp(t)
+    await expect(slaughterCattle(registry, abattoir, 1, { slaughteredAt: t }))
+      .not.to.revert(ethers)
   })
 })
