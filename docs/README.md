@@ -44,7 +44,7 @@ Mitigasi yang diterapkan di prototype ini: hanya wallet tersertifikasi yang bole
 ## Cara Menjalankan
 
 ### Prasyarat
-- Node.js 18 atau lebih baru
+- Node.js 22 atau lebih baru (syarat Hardhat 3)
 - MetaMask terpasang di browser
 - Saldo POL testnet dari faucet Polygon Amoy
 
@@ -54,14 +54,6 @@ Mitigasi yang diterapkan di prototype ini: hanya wallet tersertifikasi yang bole
 git clone <url-repo>
 cd halalchain-trace
 npm install
-cp .env.example .env
-```
-
-Isi `.env`:
-
-```
-AMOY_RPC_URL=https://rpc-amoy.polygon.technology
-PRIVATE_KEY=private_key_wallet_testnet_kamu
 ```
 
 > Gunakan wallet khusus testing. Jangan pernah memakai wallet yang berisi aset bernilai nyata.
@@ -70,16 +62,12 @@ PRIVATE_KEY=private_key_wallet_testnet_kamu
 
 ```bash
 npx hardhat compile
-npx hardhat test
+npm test
 ```
 
 ### Deploy ke testnet
 
-```bash
-npx hardhat run scripts/deploy.js --network amoy
-```
-
-Salin alamat contract hasil deploy ke `frontend/.env` sebagai `VITE_CONTRACT_ADDRESS`.
+Private key disimpan terenkripsi lewat keystore Hardhat, bukan file `.env`. Langkah lengkap (keystore, deploy, verifikasi) ada di `docs/deployment-v1.md`.
 
 ### Jalankan frontend
 

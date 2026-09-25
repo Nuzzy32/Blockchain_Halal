@@ -74,7 +74,7 @@ Kriteria diterima:
 
 Kriteria diterima:
 - Hanya kemasan yang sudah dibuat yang bisa dicatat pengirimannya
-- Tanggal kirim tidak boleh lebih awal dari tanggal sembelih
+- Tanggal kirim tidak boleh lebih awal dari tanggal kemasan dibuat (yang selalu sesudah tanggal sembelih)
 
 ### Konsumen
 > Sebagai konsumen di supermarket, saya ingin memindai QR di kemasan dan langsung melihat riwayat daging itu, supaya saya yakin dengan apa yang saya beli.
