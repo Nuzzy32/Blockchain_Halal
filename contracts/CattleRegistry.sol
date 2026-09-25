@@ -19,7 +19,7 @@ contract CattleRegistry {
     enum FeedType { Unspecified, GrassFed, GrainFed, Mixed, Organic }
     enum SlaughterMethod { Unspecified, ManualNoStunning, ManualWithStunning }
     enum CattleStatus { Registered, Slaughtered, Packaged }
-    enum PackageStatus { Created, Shipped, Delivered }
+    enum PackageStatus { Created, Shipped }
     enum CutType { Unspecified, Sirloin, Tenderloin, Ribeye, Brisket, Shank, Ground, Other }
 
     // ---------------------------------------------------------------- Struct
@@ -264,6 +264,36 @@ contract CattleRegistry {
         c.status = uint8(CattleStatus.Packaged);
     }
 
+    // ---------------------------------------------------------------- Distributor
+
+    modifier packageExists(uint64 packageId) {
+        if (!packageRecords[packageId].exists) revert PackageNotFound(packageId);
+        _;
+    }
+
+    /// @notice Satu kemasan yang tidak valid membatalkan seluruh batch, supaya tidak ada pengiriman setengah tercatat.
+    function recordShipping(uint64[] calldata packageIds, uint64 shippedAt) external onlyRole(DISTRIBUTOR_ROLE) {
+        uint256 count = packageIds.length;
+        if (count == 0) revert EmptyField("packageIds");
+        if (count > MAX_BATCH) revert BatchTooLarge(count, MAX_BATCH);
+        if (shippedAt > block.timestamp) revert InvalidTimestamp(shippedAt);
+
+        for (uint256 i = 0; i < count; i++) {
+            uint64 packageId = packageIds[i];
+            PackageRecord storage p = packageRecords[packageId];
+            if (!p.exists) revert PackageNotFound(packageId);
+            if (p.status != uint8(PackageStatus.Created)) {
+                revert InvalidPackageStatus(packageId, p.status, uint8(PackageStatus.Created));
+            }
+            if (shippedAt < p.packagedAt) revert InvalidTimestamp(shippedAt);
+
+            p.status = uint8(PackageStatus.Shipped);
+            p.shippedAt = shippedAt;
+            p.distributor = msg.sender;
+            emit PackageShipped(packageId, msg.sender, shippedAt);
+        }
+    }
+
     // ---------------------------------------------------------------- Baca publik (tanpa wallet)
 
     function getCattle(uint64 cattleId) external view cattleExists(cattleId) returns (CattleRecord memory) {
@@ -295,5 +325,16 @@ contract CattleRegistry {
 
     function totalPackages() external view returns (uint64) {
         return nextPackageId - 1;
+    }
+
+    /// @notice Dipanggil halaman konsumen saat QR dipindai: kemasan + sapi induknya dalam satu pembacaan.
+    function getPackageTrace(uint64 packageId)
+        external
+        view
+        packageExists(packageId)
+        returns (PackageRecord memory pkg, CattleRecord memory cattle)
+    {
+        pkg = packageRecords[packageId];
+        cattle = cattleRecords[pkg.cattleId];
     }
 }

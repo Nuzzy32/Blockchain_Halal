@@ -56,10 +56,11 @@ enum CattleStatus {
 ```solidity
 enum PackageStatus {
     Created,   // 0, kemasan dibuat di RPH
-    Shipped,   // 1, dikirim ke distributor
-    Delivered  // 2, sampai di retail
+    Shipped    // 1, dikirim ke distributor
 }
 ```
+
+> Nilai `Delivered` (sampai di retail) sengaja tidak ada: tidak ada fungsi yang mencatatnya dan PRD tidak mewajibkan pencatatan sampai di retail. Kalau nanti dibutuhkan, tambahkan bersama fungsi pencatatnya.
 
 ## 3. Struct
 

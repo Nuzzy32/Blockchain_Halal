@@ -192,9 +192,12 @@ function recordShipping(
 **Pemanggil:** Distributor
 
 **Validasi:**
+- Array tidak boleh kosong, kalau kosong revert `EmptyField("packageIds")`
 - Panjang array maksimal 50
 - Tiap kemasan harus ada dan berstatus `Created`
 - `shippedAt` tidak boleh di masa depan, tidak boleh sebelum `packagedAt` kemasan tersebut
+- ID yang sama dua kali dalam satu batch ditolak dengan `InvalidPackageStatus`, karena kemasan itu sudah berstatus `Shipped` saat dicek kedua kalinya
+- Satu kemasan tidak valid membatalkan seluruh batch
 
 **Efek:**
 - Mengubah status kemasan menjadi `Shipped`

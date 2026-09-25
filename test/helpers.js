@@ -17,6 +17,7 @@ export const FeedType = { Unspecified: 0, GrassFed: 1, GrainFed: 2, Mixed: 3, Or
 export const SlaughterMethod = { Unspecified: 0, ManualNoStunning: 1, ManualWithStunning: 2 }
 export const CattleStatus = { Registered: 0, Slaughtered: 1, Packaged: 2 }
 export const CutType = { Unspecified: 0, Sirloin: 1, Tenderloin: 2, Ribeye: 3, Brisket: 4, Shank: 5, Ground: 6, Other: 7 }
+export const PackageStatus = { Created: 0, Shipped: 1 }
 
 export const b32 = (text) => ethers.encodeBytes32String(text)
 
@@ -48,5 +49,11 @@ export async function createSlaughteredCattle() {
   const ctx = await deployWithRoles()
   await registerCattle(ctx.registry, ctx.farmer)
   await slaughterCattle(ctx.registry, ctx.abattoir, 1)
+  return ctx
+}
+
+export async function createPackagedCattle() {
+  const ctx = await createSlaughteredCattle()
+  await ctx.registry.connect(ctx.abattoir).createPackages(1, [CutType.Sirloin, CutType.Brisket, CutType.Ground], [500, 1000, 250])
   return ctx
 }
