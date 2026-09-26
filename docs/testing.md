@@ -46,6 +46,22 @@ Status: `[ ]` belum diuji · `✓` sesuai harapan · `✗` gagal (tulis apa yang
 
 ## v0 (arsip) — Fase 5 purwarupa
 
+Integrasi & testing end-to-end lewat **frontend**, bukan Remix. Sapi id 1 sudah terpakai
+penuh pada smoke test Fase 3, jadi pengujian ini memakai **sapi id 2**.
+
+Prasyarat: MetaMask terpasang dengan 4 akun berlabel sesuai `deployment.md`, semuanya di
+jaringan Polygon Amoy dan punya test POL.
+
+Jalankan pengujian di **situs live**, bukan localhost — hanya di sana QR code berisi URL
+yang bisa dibuka ponsel:
+
+<https://nuzzy32.github.io/Blockchain_Halal/>
+
+Untuk mengubah kode dan mengujinya sebelum publish: `cd frontend && npm run dev`, lalu
+`npm run deploy` untuk mendorong versi baru ke situs live.
+
+Status: `[ ]` belum diuji · `✓` sesuai harapan · `✗` gagal (tulis apa yang terjadi)
+
 ---
 
 ## A. Alur bahagia — bukti utama untuk laporan
