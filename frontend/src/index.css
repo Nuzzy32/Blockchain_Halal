@@ -10,6 +10,7 @@
   --color-primary-soft: #dcfce7;
 
   --color-bg: #f0fdf4;
+  --color-night: #0b1d13; /* latar gelap landing; teks #f0fdf4 16.7:1, #b9d3c1 11:1 */
   --color-surface: #ffffff;
   --color-ink: #14532d;
   --color-muted: #475569;
@@ -187,7 +188,30 @@
   .stagger > *:nth-child(4) { animation-delay: 180ms; }
 }
 
+/* Landing: butiran halus di atas latar gelap. */
+.grain::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.08;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+@keyframes marquee {
+  to { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .marquee { animation: marquee 40s linear infinite; }
+}
+
+html { scroll-behavior: smooth; }
+
 @media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+
   *, *::before, *::after {
     transition-duration: 1ms !important;
   }

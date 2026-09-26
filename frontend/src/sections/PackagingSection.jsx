@@ -68,7 +68,7 @@ export default function PackagingSection({ account }) {
   }
 
   return (
-    <Section badge="RPH" title="Buat kemasan" lead="Satu sapi bisa dibuatkan beberapa kemasan. Tiap kemasan mendapat QR sendiri.">
+    <Section badge="RPH" step={3} title="Buat kemasan" lead="Satu sapi bisa dibuatkan beberapa kemasan. Tiap kemasan mendapat QR sendiri.">
       <form onSubmit={submit} noValidate className="space-y-5">
         <fieldset disabled={review} className="space-y-5">
           <Field id="pack-cattle" label="ID sapi" error={touched ? cattleError : null}>

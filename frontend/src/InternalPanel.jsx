@@ -1,7 +1,9 @@
+import { useState } from 'react'
 import { Banner } from './components.jsx'
-import { NETWORK, addressUrl, isDeployed, scanUrl } from './chain.js'
+import { NETWORK, addressUrl, homeUrl, isDeployed, scanUrl } from './chain.js'
 import { ROLE_KEYS, ROLE_LABEL, shortAddress } from './format.js'
 import { hasMetaMask, useWallet } from './hooks.js'
+import { STAGES } from './workflow.js'
 import AdminSection from './sections/AdminSection.jsx'
 import FarmerSection from './sections/FarmerSection.jsx'
 import SlaughterSection from './sections/SlaughterSection.jsx'
@@ -22,10 +24,19 @@ export default function InternalPanel() {
           <p className="eyebrow">Panel internal · {NETWORK.name}</p>
           <h1 className="font-display mt-2 text-4xl font-bold tracking-tight sm:text-5xl">Pencatatan Rantai Pasok</h1>
           <p className="mt-4 max-w-prose leading-relaxed text-muted">
-            Setiap tahap dicatat oleh pihak yang berwenang dan disimpan permanen di blockchain.
+            Setiap tahap dicatat oleh pihak yang memegang barangnya saat itu, lalu disimpan permanen di blockchain. Form yang
+            tampil menyesuaikan peran wallet Anda.
+          </p>
+          <p className="mt-2 max-w-prose text-sm text-muted">
+            Konsumen tidak perlu halaman ini —{' '}
+            <a href={scanUrl()} className="font-medium text-primary underline underline-offset-4">
+              pindai QR di kemasan
+            </a>
+            .
           </p>
         </header>
         <div className="mt-10 space-y-6">
+          <Guide roles={wallet.account ? wallet.roles : null} />
           <Body wallet={wallet} />
         </div>
       </main>
@@ -66,11 +77,11 @@ function Body({ wallet }) {
         // Jaringan salah -> seluruh form terkunci lewat fieldset disabled.
         <fieldset disabled={wallet.wrongNetwork} className="min-w-0 space-y-6">
           <legend className="sr-only">Form pencatatan</legend>
-          {roles.ADMIN && <AdminSection wallet={wallet} />}
-          {roles.FARMER && <FarmerSection />}
-          {roles.ABATTOIR && <SlaughterSection />}
-          {roles.ABATTOIR && <PackagingSection account={wallet.account} />}
-          {roles.DISTRIBUTOR && <DistributorSection />}
+          {roles.ADMIN && <div id="tahap-admin"><AdminSection wallet={wallet} /></div>}
+          {roles.FARMER && <div id="tahap-daftar"><FarmerSection /></div>}
+          {roles.ABATTOIR && <div id="tahap-sembelih"><SlaughterSection /></div>}
+          {roles.ABATTOIR && <div id="tahap-kemas"><PackagingSection account={wallet.account} /></div>}
+          {roles.DISTRIBUTOR && <div id="tahap-kirim"><DistributorSection /></div>}
         </fieldset>
       )}
     </>
@@ -82,7 +93,7 @@ function TopBar({ wallet }) {
   return (
     <header className="sticky top-0 z-20 border-b border-divider bg-surface">
       <div className="mx-auto flex h-14 max-w-3xl items-center gap-3 px-5">
-        <span className="font-display text-[15px] font-semibold tracking-tight">HalalChain Trace</span>
+        <a href={homeUrl()} className="tap font-display text-[15px] font-semibold tracking-tight">HalalChain Trace</a>
         <a href={scanUrl()} className="tap ml-auto text-sm font-medium text-primary underline underline-offset-4">
           Pindai QR
         </a>
@@ -173,19 +184,69 @@ function NetworkBanner({ onSwitch, busy }) {
   )
 }
 
+/**
+ * Peta alur: siapa mengisi tahap mana. Setelah wallet tersambung, tahap milik wallet ini
+ * ditandai dan menjadi tautan ke form-nya; tahap lain menyebut siapa yang mengisinya.
+ */
+function Guide({ roles }) {
+  return (
+    <nav aria-label="Alur pencatatan">
+      <ol className="grid gap-px overflow-hidden rounded-xl border border-divider bg-divider sm:grid-cols-2">
+        {STAGES.map((s, i) => {
+          const mine = roles?.[s.role]
+          return (
+            <li key={s.anchor} className={`flex flex-col px-5 py-4 ${mine ? 'bg-primary-soft' : 'bg-surface'}`}>
+              <p className="eyebrow tnum">Tahap {i + 1} · {s.who}</p>
+              <p className="font-display mt-1.5 text-[17px] font-semibold leading-snug">{s.title}</p>
+              <p className="mt-1 text-sm leading-relaxed text-muted">{s.does}</p>
+              {roles &&
+                (mine ? (
+                  <a href={`#${s.anchor}`} className="tap mt-auto text-sm font-semibold text-primary underline underline-offset-4">
+                    Bagian Anda — isi sekarang
+                  </a>
+                ) : (
+                  <p className="mt-auto pt-3 text-sm text-muted">Diisi oleh {s.who}</p>
+                ))}
+            </li>
+          )
+        })}
+      </ol>
+    </nav>
+  )
+}
+
 function NoRole({ account }) {
+  const [copied, setCopied] = useState(false)
   const url = addressUrl(account)
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(account)
+      setCopied(true)
+    } catch {
+      setCopied(false)
+    }
+  }
   return (
     <Card title="Wallet ini belum punya peran">
-      Alamat{' '}
-      {url ? (
-        <a href={url} target="_blank" rel="noreferrer" className="font-mono text-primary underline underline-offset-4">
-          {account}
-        </a>
-      ) : (
-        <span className="break-all font-mono">{account}</span>
-      )}{' '}
-      belum diberi peran. Minta admin memberikan peran lewat bagian "Kelola peran", atau pindah ke akun lain di MetaMask.
+      <p>Form pencatatan baru muncul setelah admin memberi peran ke alamat wallet ini.</p>
+      <div className="mt-4 flex flex-wrap items-center gap-3 rounded-lg border border-divider bg-bg px-4 py-3">
+        {url ? (
+          <a href={url} target="_blank" rel="noreferrer" className="min-w-0 break-all font-mono text-sm text-primary underline underline-offset-4">
+            {account}
+          </a>
+        ) : (
+          <span className="min-w-0 break-all font-mono text-sm text-ink">{account}</span>
+        )}
+        <button type="button" onClick={copy} className="btn btn-ghost ml-auto shrink-0">
+          {copied ? 'Tersalin' : 'Salin alamat'}
+        </button>
+      </div>
+      <ol className="mt-5 list-decimal space-y-1.5 pl-5">
+        <li>Salin alamat di atas.</li>
+        <li>Kirim ke admin sambil menyebut peran Anda: Peternak, RPH, atau Distributor.</li>
+        <li>Setelah admin mencatatnya, muat ulang halaman ini.</li>
+      </ol>
+      <p className="mt-4 text-sm">Salah akun? Pindah akun di MetaMask — halaman menyesuaikan otomatis.</p>
     </Card>
   )
 }

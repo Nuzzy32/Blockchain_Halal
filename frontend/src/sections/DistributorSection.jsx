@@ -54,7 +54,7 @@ export default function DistributorSection() {
   }
 
   return (
-    <Section badge="Distributor" title="Catat pengiriman" lead="Satu transaksi bisa mencatat beberapa kemasan sekaligus.">
+    <Section badge="Distributor" step={4} title="Catat pengiriman" lead="Satu transaksi bisa mencatat beberapa kemasan sekaligus.">
       <form onSubmit={submit} noValidate className="space-y-5">
         <fieldset disabled={!!review} className="space-y-5">
           <Field id="ship-ids" label="ID kemasan" error={err(idsError)} hint={`Pisahkan dengan koma, misalnya 1, 2, 5. Maksimal ${maxBatch}.`}>

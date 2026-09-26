@@ -47,7 +47,7 @@ export default function FarmerSection() {
   }
 
   return (
-    <Section badge="Peternak" title="Daftarkan sapi" lead="ID sapi dibuat otomatis oleh contract. Catat ID-nya untuk tahap sembelih.">
+    <Section badge="Peternak" step={1} title="Daftarkan sapi" lead="ID sapi dibuat otomatis oleh contract. Catat ID-nya untuk tahap sembelih.">
       <form onSubmit={submit} noValidate className="space-y-5">
         <fieldset disabled={review} className="grid gap-5 sm:grid-cols-2">
           <Field id="farmer-age" label="Umur (bulan)" error={err('age')}>

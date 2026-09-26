@@ -53,7 +53,7 @@ export default function SlaughterSection() {
   }
 
   return (
-    <Section badge="RPH" title="Catat penyembelihan" lead="Data halal dicatat sekali dan tidak bisa diedit — periksa sebelum menandatangani.">
+    <Section badge="RPH" step={2} title="Catat penyembelihan" lead="Data halal dicatat sekali dan tidak bisa diedit — periksa sebelum menandatangani.">
       <form onSubmit={submit} noValidate className="space-y-5">
         <fieldset disabled={!!review} className="space-y-5">
           <Field id="slaughter-cattle" label="ID sapi" error={err('cattle')}>

@@ -21,11 +21,12 @@ export function Banner({ tone, children, action }) {
 }
 
 /** Kartu satu form peran. */
-export function Section({ badge, title, lead, children }) {
+export function Section({ badge, step, title, lead, children }) {
   return (
     <section className="card px-6 py-7">
       <div className="flex items-start justify-between gap-4">
         <div>
+          {step && <p className="eyebrow mb-1.5 tnum">Tahap {step} dari 4</p>}
           <h2 className="font-display text-xl font-semibold tracking-tight">{title}</h2>
           {lead && <p className="mt-2 max-w-md text-sm leading-relaxed text-muted">{lead}</p>}
         </div>
