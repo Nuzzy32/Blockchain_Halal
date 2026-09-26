@@ -6,6 +6,7 @@ import AdminSection from './sections/AdminSection.jsx'
 import FarmerSection from './sections/FarmerSection.jsx'
 import SlaughterSection from './sections/SlaughterSection.jsx'
 import PackagingSection from './sections/PackagingSection.jsx'
+import DistributorSection from './sections/DistributorSection.jsx'
 
 /**
  * Panel untuk admin, peternak, RPH, dan distributor. Bagian yang tampil mengikuti peran
@@ -69,6 +70,7 @@ function Body({ wallet }) {
           {roles.FARMER && <FarmerSection />}
           {roles.ABATTOIR && <SlaughterSection />}
           {roles.ABATTOIR && <PackagingSection account={wallet.account} />}
+          {roles.DISTRIBUTOR && <DistributorSection />}
         </fieldset>
       )}
     </>

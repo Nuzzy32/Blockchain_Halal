@@ -150,3 +150,35 @@ export function useCattle(idText) {
 
   return { ...state, cattleId, reload: () => setNonce((n) => n + 1) }
 }
+
+/** Data beberapa kemasan sekaligus untuk pratinjau pengiriman. Kemasan yang tidak ada -> found: false. */
+export function usePackages(ids) {
+  const key = ids.join(',')
+  const [state, setState] = useState({ status: 'idle', items: [] })
+  const [nonce, setNonce] = useState(0)
+
+  useEffect(() => {
+    if (!key) return setState({ status: 'idle', items: [] })
+    let cancelled = false
+    setState({ status: 'loading', items: [] })
+    const ct = readRegistry()
+    Promise.all(
+      key.split(',').map((id) =>
+        ct.getPackageTrace(id).then(
+          ([pkg]) => ({ id, found: true, pkg }),
+          (err) => {
+            if (isRevert(err, 'PackageNotFound')) return { id, found: false }
+            throw err
+          },
+        ),
+      ),
+    )
+      .then((items) => !cancelled && setState({ status: 'ok', items }))
+      .catch((err) => !cancelled && setState({ status: 'error', items: [], message: errorMessage(err) }))
+    return () => {
+      cancelled = true
+    }
+  }, [key, nonce])
+
+  return { ...state, reload: () => setNonce((n) => n + 1) }
+}
