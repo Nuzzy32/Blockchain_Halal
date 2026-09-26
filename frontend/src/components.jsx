@@ -1,6 +1,7 @@
-import { Fragment } from 'react'
-import { txUrl } from './chain.js'
-import { CATTLE_STATUS, FEED_TYPE, GRADE, bytes32ToText, cattleLabel, formatDate, label } from './format.js'
+import { Fragment, useRef } from 'react'
+import { QRCodeCanvas } from 'qrcode.react'
+import { traceUrl, txUrl } from './chain.js'
+import { CATTLE_STATUS, CUT_TYPE, FEED_TYPE, GRADE, bytes32ToText, cattleLabel, formatDate, label, packageLabel } from './format.js'
 
 export function Banner({ tone, children, action }) {
   const danger = tone === 'danger'
@@ -162,5 +163,47 @@ export function CattleSummary({ lookup }) {
         </div>
       ))}
     </dl>
+  )
+}
+
+/** QR label kemasan. Isinya URL halaman konsumen, bukan data mentah (ARCHITECTURE §2.3). */
+export function QrLabel({ packageId, cutType, grams }) {
+  const box = useRef(null)
+  const url = traceUrl(packageId)
+  const caption = `${packageLabel(packageId)} · ${label(CUT_TYPE, cutType)} ${Number(grams).toLocaleString('id-ID')} g`
+
+  // PNG siap cetak: QR di atas, teks label di bawah, latar putih.
+  const download = () => {
+    const qr = box.current?.querySelector('canvas')
+    if (!qr) return
+    const pad = 24
+    const out = document.createElement('canvas')
+    out.width = qr.width + pad * 2
+    out.height = qr.height + pad * 2 + 36
+    const ctx = out.getContext('2d')
+    ctx.fillStyle = '#ffffff'
+    ctx.fillRect(0, 0, out.width, out.height)
+    ctx.drawImage(qr, pad, pad)
+    ctx.fillStyle = '#14532d'
+    ctx.font = '600 16px "Work Sans", sans-serif'
+    ctx.textAlign = 'center'
+    ctx.fillText(caption, out.width / 2, qr.height + pad + 26, out.width - pad)
+    const a = document.createElement('a')
+    a.href = out.toDataURL('image/png')
+    a.download = `label-${packageLabel(packageId)}.png`
+    a.click()
+  }
+
+  return (
+    <div className="rounded-xl border border-divider bg-white p-4 text-center">
+      <div ref={box} className="flex justify-center">
+        <QRCodeCanvas value={url} size={160} level="M" marginSize={2} />
+      </div>
+      <p className="mt-2 text-sm font-semibold">{caption}</p>
+      <div className="mt-3 flex flex-wrap justify-center gap-2">
+        <button type="button" onClick={download} className="btn btn-ghost">Unduh PNG</button>
+        <a href={url} target="_blank" rel="noreferrer" className="btn btn-ghost">Buka halaman</a>
+      </div>
+    </div>
   )
 }

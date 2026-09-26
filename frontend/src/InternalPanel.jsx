@@ -5,6 +5,7 @@ import { hasMetaMask, useWallet } from './hooks.js'
 import AdminSection from './sections/AdminSection.jsx'
 import FarmerSection from './sections/FarmerSection.jsx'
 import SlaughterSection from './sections/SlaughterSection.jsx'
+import PackagingSection from './sections/PackagingSection.jsx'
 
 /**
  * Panel untuk admin, peternak, RPH, dan distributor. Bagian yang tampil mengikuti peran
@@ -67,6 +68,7 @@ function Body({ wallet }) {
           {roles.ADMIN && <AdminSection wallet={wallet} />}
           {roles.FARMER && <FarmerSection />}
           {roles.ABATTOIR && <SlaughterSection />}
+          {roles.ABATTOIR && <PackagingSection account={wallet.account} />}
         </fieldset>
       )}
     </>
