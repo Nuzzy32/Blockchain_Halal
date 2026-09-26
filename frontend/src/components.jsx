@@ -146,18 +146,19 @@ export function CattleSummary({ lookup }) {
     return <p className="text-sm font-medium" style={{ color: 'var(--color-danger)' }} role="alert">Gagal membaca data sapi: {lookup.message}</p>
   }
   const c = lookup.cattle
+  const items = [
+    ['Sapi', cattleLabel(c.cattleId)],
+    ['Status', label(CATTLE_STATUS, c.status)],
+    ['Grade', label(GRADE, c.grade)],
+    ['Berat hidup', `${c.liveWeightKg} kg`],
+    ['Pakan', label(FEED_TYPE, c.feedType)],
+    ['Peternakan', bytes32ToText(c.farmId)],
+    ['Terdaftar', formatDate(c.registeredAt)],
+  ]
   return (
     <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-divider bg-divider text-sm sm:grid-cols-4" aria-label="Data sapi">
-      {[
-        ['Sapi', cattleLabel(c.cattleId)],
-        ['Status', label(CATTLE_STATUS, c.status)],
-        ['Grade', label(GRADE, c.grade)],
-        ['Berat hidup', `${c.liveWeightKg} kg`],
-        ['Pakan', label(FEED_TYPE, c.feedType)],
-        ['Peternakan', bytes32ToText(c.farmId)],
-        ['Terdaftar', formatDate(c.registeredAt)],
-      ].map(([k, v]) => (
-        <div key={k} className="bg-surface px-3 py-2.5">
+      {items.map(([k, v], idx) => (
+        <div key={k} className={`bg-surface px-3 py-2.5${idx === items.length - 1 ? ' col-span-2 sm:col-span-2' : ''}`}>
           <dt className="eyebrow">{k}</dt>
           <dd className="mt-1 font-medium">{v}</dd>
         </div>
