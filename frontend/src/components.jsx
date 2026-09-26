@@ -59,14 +59,18 @@ export function Field({ id, label, error, hint, children }) {
   )
 }
 
-/** Atribut aksesibilitas + kelas untuk kontrol di dalam <Field>. */
+/**
+ * Atribut aksesibilitas + kelas untuk kontrol di dalam <Field>. Kalau Field merender hint
+ * (lihat komponen Field di atas), pemanggil meneruskan `{ 'aria-describedby': `${id}-hint` }`
+ * lewat `extra` — error tetap diutamakan di atas hint itu.
+ */
 export const fieldProps = (id, error, extra = {}) => ({
   id,
   name: id,
   className: 'field',
-  'aria-invalid': error ? 'true' : undefined,
-  'aria-describedby': error ? `${id}-error` : undefined,
   ...extra,
+  'aria-invalid': error ? 'true' : undefined,
+  'aria-describedby': error ? `${id}-error` : extra['aria-describedby'],
 })
 
 /** Ringkasan sebelum tanda tangan (SECURITY A12): pengguna membaca dulu apa yang dicatat permanen. */
@@ -140,10 +144,10 @@ export function CattleSummary({ lookup }) {
   if (lookup.status === 'idle') return null
   if (lookup.status === 'loading') return <p className="text-sm text-muted" role="status">Membaca data sapi…</p>
   if (lookup.status === 'notfound') {
-    return <p className="text-sm font-medium" style={{ color: 'var(--color-danger)' }} role="alert">Sapi {cattleLabel(lookup.cattleId)} tidak terdaftar.</p>
+    return <p className="text-sm font-medium" style={{ color: 'var(--color-danger)' }} role="status">Sapi {cattleLabel(lookup.cattleId)} tidak terdaftar.</p>
   }
   if (lookup.status === 'error') {
-    return <p className="text-sm font-medium" style={{ color: 'var(--color-danger)' }} role="alert">Gagal membaca data sapi: {lookup.message}</p>
+    return <p className="text-sm font-medium" style={{ color: 'var(--color-danger)' }} role="status">Gagal membaca data sapi: {lookup.message}</p>
   }
   const c = lookup.cattle
   const items = [

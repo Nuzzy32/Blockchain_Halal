@@ -58,7 +58,7 @@ export default function DistributorSection() {
       <form onSubmit={submit} noValidate className="space-y-5">
         <fieldset disabled={!!review} className="space-y-5">
           <Field id="ship-ids" label="ID kemasan" error={err(idsError)} hint={`Pisahkan dengan koma, misalnya 1, 2, 5. Maksimal ${maxBatch}.`}>
-            <input {...fieldProps('ship-ids', err(idsError), { placeholder: 'contoh: 1, 2, 5', autoComplete: 'off' })} value={text} onChange={(e) => setText(e.target.value)} />
+            <input {...fieldProps('ship-ids', err(idsError), { placeholder: 'contoh: 1, 2, 5', autoComplete: 'off', 'aria-describedby': 'ship-ids-hint' })} value={text} onChange={(e) => setText(e.target.value)} />
           </Field>
 
           {items.length > 0 && (

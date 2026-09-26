@@ -46,7 +46,12 @@ export default function PackagingSection({ account }) {
   const submit = (e) => {
     e.preventDefault()
     setTouched(true)
-    if (invalid) return
+    if (invalid) {
+      if (cattleError) return document.getElementById('pack-cattle')?.focus()
+      const i = rowErrors.findIndex((e) => e.cut || e.grams)
+      if (i !== -1) return document.getElementById(rowErrors[i].cut ? `pack-cut-${rows[i].key}` : `pack-grams-${rows[i].key}`)?.focus()
+      return
+    }
     tx.reset()
     setCreated([])
     setReview(true)
@@ -87,7 +92,7 @@ export default function PackagingSection({ account }) {
                       {options(CUT_TYPE).map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                     </select>
                   </Field>
-                  <Field id={`pack-grams-${r.key}`} label="Berat (gram)" error={errs.grams}>
+                  <Field id={`pack-grams-${r.key}`} label={`Berat kemasan ${i + 1} (gram)`} error={errs.grams}>
                     <input {...fieldProps(`pack-grams-${r.key}`, errs.grams, { inputMode: 'numeric', placeholder: '100–50000' })} value={r.grams} onChange={setRow(r.key, 'grams')} />
                   </Field>
                   <button

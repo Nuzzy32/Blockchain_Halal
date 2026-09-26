@@ -69,7 +69,7 @@ export default function FarmerSection() {
             </select>
           </Field>
           <Field id="farmer-farmId" label="Kode peternakan" error={err('farmId')} hint="Kode, bukan nama orang — data ini publik dan permanen.">
-            <input {...fieldProps('farmer-farmId', err('farmId'), { placeholder: 'contoh: FARM-JTG-001', autoComplete: 'off' })} value={v.farmId} onChange={set('farmId')} />
+            <input {...fieldProps('farmer-farmId', err('farmId'), { placeholder: 'contoh: FARM-JTG-001', autoComplete: 'off', 'aria-describedby': 'farmer-farmId-hint' })} value={v.farmId} onChange={set('farmId')} />
           </Field>
         </fieldset>
 

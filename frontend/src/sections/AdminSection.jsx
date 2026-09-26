@@ -51,38 +51,40 @@ export default function AdminSection({ wallet }) {
   return (
     <Section badge="Admin" title="Kelola peran" lead="Beri atau cabut peran wallet. Hanya admin yang bisa melakukannya.">
       <div className="space-y-5">
-        <Field id="admin-address" label="Alamat wallet" error={touched ? addressError : null}>
-          <input
-            {...fieldProps('admin-address', touched ? addressError : null)}
-            className="field font-mono"
-            placeholder="0x…"
-            autoComplete="off"
-            spellCheck="false"
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-          />
-        </Field>
+        <fieldset disabled={!!pending} className="space-y-5">
+          <Field id="admin-address" label="Alamat wallet" error={touched ? addressError : null}>
+            <input
+              {...fieldProps('admin-address', touched ? addressError : null)}
+              className="field font-mono"
+              placeholder="0x…"
+              autoComplete="off"
+              spellCheck="false"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+            />
+          </Field>
 
-        {!addressError && (
-          <p className="text-sm text-muted" role="status">
-            {held === null
-              ? 'Membaca peran alamat ini…'
-              : held === 'error'
-                ? 'Gagal membaca peran alamat ini.'
-                : `Peran saat ini: ${ROLE_KEYS.filter((k) => held[k]).map((k) => ROLE_LABEL[k]).join(', ') || 'tidak ada'}`}
-          </p>
-        )}
+          {!addressError && (
+            <p className="text-sm text-muted" role="status">
+              {held === null
+                ? 'Membaca peran alamat ini…'
+                : held === 'error'
+                  ? 'Gagal membaca peran alamat ini.'
+                  : `Peran saat ini: ${ROLE_KEYS.filter((k) => held[k]).map((k) => ROLE_LABEL[k]).join(', ') || 'tidak ada'}`}
+            </p>
+          )}
 
-        <Field id="admin-role" label="Peran" error={touched ? roleError : null}>
-          <select {...fieldProps('admin-role', touched ? roleError : null)} value={role} onChange={(e) => setRole(e.target.value)}>
-            <option value="">Pilih peran…</option>
-            {ROLE_KEYS.map((k) => (
-              <option key={k} value={k}>
-                {ROLE_LABEL[k]}
-              </option>
-            ))}
-          </select>
-        </Field>
+          <Field id="admin-role" label="Peran" error={touched ? roleError : null}>
+            <select {...fieldProps('admin-role', touched ? roleError : null)} value={role} onChange={(e) => setRole(e.target.value)}>
+              <option value="">Pilih peran…</option>
+              {ROLE_KEYS.map((k) => (
+                <option key={k} value={k}>
+                  {ROLE_LABEL[k]}
+                </option>
+              ))}
+            </select>
+          </Field>
+        </fieldset>
 
         {pending ? (
           <Review

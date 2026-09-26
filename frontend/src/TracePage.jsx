@@ -101,7 +101,7 @@ function Trace({ pkg, cattle, txs }) {
             {label(PACKAGE_STATUS, pkg.status)}
           </span>
         </div>
-        <p className="mt-3 text-sm text-muted">Dari sapi {cattleLabel(cattle.cattleId)} · disembelih {freshnessText(cattle.slaughteredAt)}</p>
+        <p className="mt-3 text-base text-muted">Dari sapi {cattleLabel(cattle.cattleId)} · disembelih {freshnessText(cattle.slaughteredAt)}</p>
       </section>
 
       <section className="card px-6 py-6" aria-labelledby="halal-title">
@@ -114,7 +114,7 @@ function Trace({ pkg, cattle, txs }) {
           <Fact term="ID juru sembelih" value={bytes32ToText(cattle.slaughtermanId)} mono />
           <Fact term="Metode" value={label(SLAUGHTER_METHOD, cattle.slaughterMethod)} />
         </dl>
-        <p className="mt-5 border-t border-divider pt-4 text-sm leading-relaxed text-muted">
+        <p className="mt-5 border-t border-divider pt-4 text-base leading-relaxed text-muted">
           Sistem ini mencatat klaim RPH secara permanen, bukan menerbitkan sertifikasi. Penilaian sah tidaknya
           penyembelihan tetap wewenang lembaga sertifikasi halal.
         </p>
@@ -162,9 +162,9 @@ function Step({ n, step, done, last, txsFailed }) {
           <p className="mt-1 text-sm text-muted">Belum dikirim</p>
         ) : (
           <>
-            <p className="mt-1 text-sm font-medium tnum text-muted">{formatDate(step.date)}</p>
+            <p className="mt-1 text-base font-medium tnum text-muted">{formatDate(step.date)}</p>
             {step.facts && (
-              <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-3">
+              <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-base sm:grid-cols-3">
                 {step.facts.map(([k, v]) => (
                   <div key={k}>
                     <dt className="text-muted">{k}</dt>
@@ -173,7 +173,7 @@ function Step({ n, step, done, last, txsFailed }) {
                 ))}
               </dl>
             )}
-            <p className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+            <p className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-base">
               <span>
                 <span className="eyebrow mr-2">{step.actorRole}</span>
                 {actorUrl ? (
@@ -189,7 +189,7 @@ function Step({ n, step, done, last, txsFailed }) {
                   Lihat transaksi
                 </a>
               ) : step.tx ? (
-                <span className="break-all font-mono text-xs text-muted">tx {step.tx}</span>
+                <span className="break-all font-mono text-base text-muted">tx {step.tx}</span>
               ) : (
                 !txsFailed && <span className="text-xs text-muted">Mencari transaksi…</span>
               )}
@@ -206,7 +206,7 @@ function Provenance() {
   return (
     <section className="rounded-xl border border-divider bg-warn-bg px-5 py-5">
       <h2 className="eyebrow" style={{ color: 'var(--color-warn-text)' }}>Cara memverifikasi sendiri</h2>
-      <p className="mt-2 max-w-prose text-sm leading-relaxed">
+      <p className="mt-2 max-w-prose text-base leading-relaxed">
         Data ini dibaca langsung dari smart contract di jaringan {NETWORK.name}. Siapa pun dapat memeriksanya di block
         explorer tanpa mempercayai situs ini.
       </p>

@@ -71,7 +71,7 @@ export default function SlaughterSection() {
               </select>
             </Field>
             <Field id="slaughter-slaughterman" label="ID sertifikat juru sembelih" error={err('slaughterman')} hint="ID sertifikat, bukan nama orang.">
-              <input {...fieldProps('slaughter-slaughterman', err('slaughterman'), { placeholder: 'contoh: JULEHA-0042', autoComplete: 'off' })} value={v.slaughterman} onChange={set('slaughterman')} />
+              <input {...fieldProps('slaughter-slaughterman', err('slaughterman'), { placeholder: 'contoh: JULEHA-0042', autoComplete: 'off', 'aria-describedby': 'slaughter-slaughterman-hint' })} value={v.slaughterman} onChange={set('slaughterman')} />
             </Field>
             <Field id="slaughter-cert" label="Nomor sertifikat halal" error={err('cert')}>
               <input {...fieldProps('slaughter-cert', err('cert'), { placeholder: 'contoh: ID00410000123', autoComplete: 'off' })} value={v.cert} onChange={set('cert')} />
