@@ -4,7 +4,9 @@
   "type": "module",
   "scripts": {
     "compile": "hardhat compile",
-    "test": "hardhat test mocha"
+    "test": "hardhat test mocha",
+    "export-abi": "hardhat build --build-profile production && node scripts/export-abi.js",
+    "check": "node scripts/check.mjs"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox-mocha-ethers": "^4.0.0",

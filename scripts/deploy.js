@@ -1,20 +1,32 @@
 // Deploy CattleRegistry lalu berikan peran ke wallet aktor demo.
 //
-//   Simulasi lokal:  npx hardhat run scripts/deploy.js
-//   Polygon Amoy:    npx hardhat run --build-profile production scripts/deploy.js --network amoy
-//
-// Build profile production dipakai supaya bytecode sama dengan yang dicocokkan `hardhat verify`.
+//   Simulasi in-process: npx hardhat run scripts/deploy.js
+//   Node lokal:          npx hardhat run scripts/deploy.js --network localhost
+//   Polygon Amoy:        npx hardhat run --build-profile production scripts/deploy.js --network amoy
 import { network } from 'hardhat'
 
 // Wallet aktor demo yang sama dengan purwarupa v0 (docs/deployment.md). Alamat publik, bukan rahasia.
-const ACTORS = [
+const V0_ACTORS = [
   ['FARMER_ROLE', '0x060b8A144800DAB4b638c3e350613BE744aF8A6c'], // Peternak
   ['ABATTOIR_ROLE', '0x4cb58bd06DE17e01079441Ebcd98DCE11238b476'], // RumahPotong
   ['DISTRIBUTOR_ROLE', '0x6a9f05b6D81a5061a85ef2B3998b9dB811717e11'], // Distributor
 ]
 
+// Jaringan simulasi (node lokal atau in-process) memakai akun tes Hardhat #1-#3, supaya
+// frontend bisa dicoba dengan akun yang di-import ke MetaMask. Kunci akun ini publik.
+const LOCAL_NETWORKS = ['localhost', 'default']
+
 const { ethers, networkName } = await network.create()
-const [deployer] = await ethers.getSigners()
+const signers = await ethers.getSigners()
+const deployer = signers[0]
+const ACTORS = LOCAL_NETWORKS.includes(networkName)
+  ? [
+      ['FARMER_ROLE', signers[1].address],
+      ['ABATTOIR_ROLE', signers[2].address],
+      ['DISTRIBUTOR_ROLE', signers[3].address],
+    ]
+  : V0_ACTORS
+
 console.log(`Jaringan : ${networkName}`)
 console.log(`Deployer : ${deployer.address}`)
 

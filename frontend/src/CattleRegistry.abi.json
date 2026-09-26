@@ -1,0 +1,935 @@
+[
+  {
+    "inputs": [],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "given",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "max",
+        "type": "uint256"
+      }
+    ],
+    "name": "BatchTooLarge",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint64",
+        "name": "cattleId",
+        "type": "uint64"
+      }
+    ],
+    "name": "CattleNotFound",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "field",
+        "type": "string"
+      }
+    ],
+    "name": "EmptyField",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint16",
+        "name": "given",
+        "type": "uint16"
+      }
+    ],
+    "name": "InvalidAge",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint64",
+        "name": "cattleId",
+        "type": "uint64"
+      },
+      {
+        "internalType": "uint8",
+        "name": "current",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint8",
+        "name": "expected",
+        "type": "uint8"
+      }
+    ],
+    "name": "InvalidCattleStatus",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint64",
+        "name": "packageId",
+        "type": "uint64"
+      },
+      {
+        "internalType": "uint8",
+        "name": "current",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint8",
+        "name": "expected",
+        "type": "uint8"
+      }
+    ],
+    "name": "InvalidPackageStatus",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint64",
+        "name": "given",
+        "type": "uint64"
+      }
+    ],
+    "name": "InvalidTimestamp",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint32",
+        "name": "given",
+        "type": "uint32"
+      }
+    ],
+    "name": "InvalidWeight",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "LastAdmin",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "cutTypes",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "weights",
+        "type": "uint256"
+      }
+    ],
+    "name": "LengthMismatch",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint64",
+        "name": "packageId",
+        "type": "uint64"
+      }
+    ],
+    "name": "PackageNotFound",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint64",
+        "name": "cattleId",
+        "type": "uint64"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalGrams",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "maxGrams",
+        "type": "uint256"
+      }
+    ],
+    "name": "PackageWeightExceeded",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "caller",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "requiredRole",
+        "type": "bytes32"
+      }
+    ],
+    "name": "Unauthorized",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "field",
+        "type": "string"
+      }
+    ],
+    "name": "UnspecifiedEnum",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint64",
+        "name": "cattleId",
+        "type": "uint64"
+      },
+      {
+        "internalType": "address",
+        "name": "abattoir",
+        "type": "address"
+      }
+    ],
+    "name": "WrongAbattoir",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ZeroAddress",
+    "type": "error"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint64",
+        "name": "cattleId",
+        "type": "uint64"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "farmer",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "farmId",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "timestamp",
+        "type": "uint64"
+      }
+    ],
+    "name": "CattleRegistered",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint64",
+        "name": "cattleId",
+        "type": "uint64"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "abattoir",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "halalCertNo",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "slaughteredAt",
+        "type": "uint64"
+      }
+    ],
+    "name": "CattleSlaughtered",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint64",
+        "name": "packageId",
+        "type": "uint64"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint64",
+        "name": "cattleId",
+        "type": "uint64"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint8",
+        "name": "cutType",
+        "type": "uint8"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint32",
+        "name": "weightGrams",
+        "type": "uint32"
+      }
+    ],
+    "name": "PackageCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint64",
+        "name": "packageId",
+        "type": "uint64"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "distributor",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "shippedAt",
+        "type": "uint64"
+      }
+    ],
+    "name": "PackageShipped",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "role",
+        "type": "bytes32"
+      }
+    ],
+    "name": "RoleGranted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "role",
+        "type": "bytes32"
+      }
+    ],
+    "name": "RoleRevoked",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "ABATTOIR_ROLE",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "ADMIN_ROLE",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "DISTRIBUTOR_ROLE",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "FARMER_ROLE",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "MAX_BATCH",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "role",
+        "type": "bytes32"
+      }
+    ],
+    "name": "checkRole",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint64",
+        "name": "cattleId",
+        "type": "uint64"
+      },
+      {
+        "internalType": "enum CattleRegistry.CutType[]",
+        "name": "cutTypes",
+        "type": "uint8[]"
+      },
+      {
+        "internalType": "uint32[]",
+        "name": "weightsGrams",
+        "type": "uint32[]"
+      }
+    ],
+    "name": "createPackages",
+    "outputs": [
+      {
+        "internalType": "uint64[]",
+        "name": "packageIds",
+        "type": "uint64[]"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint64",
+        "name": "cattleId",
+        "type": "uint64"
+      }
+    ],
+    "name": "getCattle",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint64",
+            "name": "cattleId",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint16",
+            "name": "ageInMonths",
+            "type": "uint16"
+          },
+          {
+            "internalType": "uint16",
+            "name": "liveWeightKg",
+            "type": "uint16"
+          },
+          {
+            "internalType": "uint8",
+            "name": "grade",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint8",
+            "name": "feedType",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint8",
+            "name": "status",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint8",
+            "name": "slaughterMethod",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint32",
+            "name": "packagedGrams",
+            "type": "uint32"
+          },
+          {
+            "internalType": "bool",
+            "name": "exists",
+            "type": "bool"
+          },
+          {
+            "internalType": "address",
+            "name": "farmer",
+            "type": "address"
+          },
+          {
+            "internalType": "uint64",
+            "name": "registeredAt",
+            "type": "uint64"
+          },
+          {
+            "internalType": "address",
+            "name": "abattoir",
+            "type": "address"
+          },
+          {
+            "internalType": "uint64",
+            "name": "slaughteredAt",
+            "type": "uint64"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "farmId",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "slaughtermanId",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "halalCertNo",
+            "type": "bytes32"
+          }
+        ],
+        "internalType": "struct CattleRegistry.CattleRecord",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint64",
+        "name": "packageId",
+        "type": "uint64"
+      }
+    ],
+    "name": "getPackageTrace",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint64",
+            "name": "packageId",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "cattleId",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint32",
+            "name": "weightGrams",
+            "type": "uint32"
+          },
+          {
+            "internalType": "uint8",
+            "name": "cutType",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint8",
+            "name": "status",
+            "type": "uint8"
+          },
+          {
+            "internalType": "bool",
+            "name": "exists",
+            "type": "bool"
+          },
+          {
+            "internalType": "uint64",
+            "name": "packagedAt",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "shippedAt",
+            "type": "uint64"
+          },
+          {
+            "internalType": "address",
+            "name": "distributor",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct CattleRegistry.PackageRecord",
+        "name": "pkg",
+        "type": "tuple"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint64",
+            "name": "cattleId",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint16",
+            "name": "ageInMonths",
+            "type": "uint16"
+          },
+          {
+            "internalType": "uint16",
+            "name": "liveWeightKg",
+            "type": "uint16"
+          },
+          {
+            "internalType": "uint8",
+            "name": "grade",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint8",
+            "name": "feedType",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint8",
+            "name": "status",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint8",
+            "name": "slaughterMethod",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint32",
+            "name": "packagedGrams",
+            "type": "uint32"
+          },
+          {
+            "internalType": "bool",
+            "name": "exists",
+            "type": "bool"
+          },
+          {
+            "internalType": "address",
+            "name": "farmer",
+            "type": "address"
+          },
+          {
+            "internalType": "uint64",
+            "name": "registeredAt",
+            "type": "uint64"
+          },
+          {
+            "internalType": "address",
+            "name": "abattoir",
+            "type": "address"
+          },
+          {
+            "internalType": "uint64",
+            "name": "slaughteredAt",
+            "type": "uint64"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "farmId",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "slaughtermanId",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "halalCertNo",
+            "type": "bytes32"
+          }
+        ],
+        "internalType": "struct CattleRegistry.CattleRecord",
+        "name": "cattle",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint64",
+        "name": "cattleId",
+        "type": "uint64"
+      },
+      {
+        "internalType": "uint256",
+        "name": "offset",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "limit",
+        "type": "uint256"
+      }
+    ],
+    "name": "getPackagesByCattle",
+    "outputs": [
+      {
+        "internalType": "uint64[]",
+        "name": "ids",
+        "type": "uint64[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "total",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "role",
+        "type": "bytes32"
+      }
+    ],
+    "name": "grantRole",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint64[]",
+        "name": "packageIds",
+        "type": "uint64[]"
+      },
+      {
+        "internalType": "uint64",
+        "name": "shippedAt",
+        "type": "uint64"
+      }
+    ],
+    "name": "recordShipping",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint64",
+        "name": "cattleId",
+        "type": "uint64"
+      },
+      {
+        "internalType": "uint64",
+        "name": "slaughteredAt",
+        "type": "uint64"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "slaughtermanId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "halalCertNo",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "enum CattleRegistry.SlaughterMethod",
+        "name": "method",
+        "type": "uint8"
+      }
+    ],
+    "name": "recordSlaughter",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint16",
+        "name": "ageInMonths",
+        "type": "uint16"
+      },
+      {
+        "internalType": "uint16",
+        "name": "liveWeightKg",
+        "type": "uint16"
+      },
+      {
+        "internalType": "enum CattleRegistry.Grade",
+        "name": "grade",
+        "type": "uint8"
+      },
+      {
+        "internalType": "enum CattleRegistry.FeedType",
+        "name": "feedType",
+        "type": "uint8"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "farmId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "registerCattle",
+    "outputs": [
+      {
+        "internalType": "uint64",
+        "name": "cattleId",
+        "type": "uint64"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "role",
+        "type": "bytes32"
+      }
+    ],
+    "name": "revokeRole",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "totalCattle",
+    "outputs": [
+      {
+        "internalType": "uint64",
+        "name": "",
+        "type": "uint64"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "totalPackages",
+    "outputs": [
+      {
+        "internalType": "uint64",
+        "name": "",
+        "type": "uint64"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

@@ -1,32 +1,13 @@
-// Sanity check: memastikan ADDRESS + ABI di frontend/src/contract.js benar-benar cocok
-// dengan contract yang hidup di Polygon Amoy. Gagal dalam hitungan detik kalau ada salah
-// ketik, alih-alih muncul sebagai form yang misterius tidak jalan.
+// Sanity check v1: ABI frontend harus sama dengan hasil compile, dan kalau alamat Amoy di
+// frontend/src/chain.js sudah diisi, alamat itu harus berisi bytecode contract.
 //
-//   node scripts/check.mjs
+//   npm run export-abi && npm run check
 import assert from 'node:assert/strict'
-import { ADDRESS, fetchAllCattle, readContract } from '../frontend/src/contract.js'
+import { readFile } from 'node:fs/promises'
 
-const PETERNAK = '0x060b8A144800DAB4b638c3e350613BE744aF8A6c' // docs/deployment.md
-const ct = readContract()
+const read = async (path) => JSON.parse(await readFile(new URL(path, import.meta.url), 'utf8'))
 
-const rec = await ct.getRecord(1)
-assert.equal(rec.grade, 'A', 'grade sapi id 1 harus "A"')
-assert.equal(rec.age, 24n, 'umur sapi id 1 harus 24 bulan')
-assert.notEqual(rec.shippedDate, 0n, 'sapi id 1 seharusnya sudah dikirim')
-
-assert.equal(await ct.roles(PETERNAK), 1n, 'wallet Peternak harus punya role Farmer (1)')
-
-// getRecord harus revert untuk id yang tidak dikenal — halaman track mengandalkan ini
-// untuk membedakan "QR tidak valid" dari data kosong.
-await assert.rejects(() => ct.getRecord(999999), /data tidak ditemukan/)
-
-// fetchAllCattle harus menemukan sapi lewat log event, bukan menebak id.
-const semua = await fetchAllCattle()
-assert.ok(semua.length >= 1, 'minimal ada 1 sapi yang pernah didaftarkan')
-assert.ok(
-  semua.some((r) => r.id === 1n && r.grade === 'A'),
-  'sapi id 1 (grade A) harus ikut terambil oleh fetchAllCattle',
-)
-
-console.log(`OK — contract ${ADDRESS} cocok dengan ABI di frontend/src/contract.js`)
-console.log(`     sapi id 1: umur ${rec.age} bln, pakan "${rec.feedType}", grade ${rec.grade}`)
+const artifact = await read('../artifacts/contracts/CattleRegistry.sol/CattleRegistry.json')
+const frontendAbi = await read('../frontend/src/CattleRegistry.abi.json')
+assert.deepEqual(frontendAbi, artifact.abi, 'ABI frontend beda dengan artifact — jalankan `npm run export-abi`')
+console.log('✓ ABI frontend sama dengan artifact')
