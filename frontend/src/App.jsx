@@ -1,7 +1,16 @@
-import InternalPanel from './InternalPanel.jsx'
-import ScanPage from './ScanPage.jsx'
+import { Suspense, lazy } from 'react'
 import TracePage from './TracePage.jsx'
 import { parseId } from './validation.js'
+
+// Lazy: halaman konsumen (?trace=) tidak perlu mengunduh kode panel internal atau scanner kamera.
+const InternalPanel = lazy(() => import('./InternalPanel.jsx'))
+const ScanPage = lazy(() => import('./ScanPage.jsx'))
+
+const fallback = (
+  <p className="p-8 text-muted" role="status">
+    Memuat…
+  </p>
+)
 
 /**
  * Halaman dipilih dari query param, tanpa router — GitHub Pages tidak punya SPA rewrite,
@@ -14,6 +23,16 @@ import { parseId } from './validation.js'
 export default function App() {
   const params = new URLSearchParams(window.location.search)
   if (params.has('trace')) return <TracePage id={parseId(params.get('trace'))} />
-  if (params.has('scan')) return <ScanPage />
-  return <InternalPanel />
+  if (params.has('scan')) {
+    return (
+      <Suspense fallback={fallback}>
+        <ScanPage />
+      </Suspense>
+    )
+  }
+  return (
+    <Suspense fallback={fallback}>
+      <InternalPanel />
+    </Suspense>
+  )
 }

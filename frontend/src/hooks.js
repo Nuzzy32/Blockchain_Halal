@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { NETWORK, addChainParams } from './chain.js'
 import { errorMessage, isRevert, readRegistry, rolesOf, writeRegistry } from './registry.js'
 import { parseId } from './validation.js'
@@ -15,14 +15,20 @@ export function useWallet() {
   const [switching, setSwitching] = useState(false)
   const [error, setError] = useState(null)
 
+  // Alamat yang terakhir diminta: hasil rolesOf untuk permintaan yang sudah usang (mis. alamat
+  // berganti dua kali cepat berturut-turut) diabaikan supaya tidak menimpa hasil yang lebih baru.
+  const latestAddr = useRef(null)
+
   const loadRoles = useCallback(async (addr) => {
+    latestAddr.current = addr
     setRoles(null)
     setRolesError(null)
     if (!addr) return
     try {
-      setRoles(await rolesOf(addr))
+      const roles = await rolesOf(addr)
+      if (latestAddr.current === addr) setRoles(roles)
     } catch (err) {
-      setRolesError(errorMessage(err))
+      if (latestAddr.current === addr) setRolesError(errorMessage(err))
     }
   }, [])
 
@@ -38,8 +44,8 @@ export function useWallet() {
   useEffect(() => {
     if (!hasMetaMask()) return
     const eth = window.ethereum
-    eth.request({ method: 'eth_accounts' }).then((a) => a[0] && load(a[0]))
-    eth.request({ method: 'eth_chainId' }).then((c) => setChainId(BigInt(c)))
+    eth.request({ method: 'eth_accounts' }).then((a) => a[0] && load(a[0])).catch(() => {})
+    eth.request({ method: 'eth_chainId' }).then((c) => setChainId(BigInt(c))).catch(() => {})
     const onAccounts = (a) => load(a[0] ?? null)
     const onChain = (c) => setChainId(BigInt(c))
     eth.on('accountsChanged', onAccounts)

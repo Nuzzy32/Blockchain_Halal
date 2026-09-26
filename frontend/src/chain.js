@@ -51,5 +51,4 @@ export const addChainParams = () => ({
 
 // Tautan ikut base Vite supaya benar di dev maupun di GitHub Pages (subpath /Blockchain_Halal/).
 export const traceUrl = (packageId) => `${window.location.origin}${import.meta.env.BASE_URL}?trace=${packageId}`
-export const homeUrl = () => import.meta.env.BASE_URL
 export const scanUrl = () => `${import.meta.env.BASE_URL}?scan=1`

@@ -13,6 +13,11 @@ if (networkName !== 'localhost') {
   throw new Error(`seed.js hanya untuk --network localhost (sekarang: ${networkName})`)
 }
 
+const code = await ethers.provider.getCode(ADDRESS)
+if (code === '0x') {
+  throw new Error(`Belum ada contract di ${ADDRESS} — jalankan scripts/deploy.js --network localhost dulu (node baru).`)
+}
+
 const [, farmer, abattoir, distributor] = await ethers.getSigners()
 const registry = await ethers.getContractAt('CattleRegistry', ADDRESS)
 const b32 = ethers.encodeBytes32String

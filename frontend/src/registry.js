@@ -49,9 +49,16 @@ function revertOf(err) {
 export const isRevert = (err, name) => revertOf(err)?.name === name
 
 export function errorMessage(err) {
-  if (err?.code === 'ACTION_REJECTED') return 'Transaksi dibatalkan di MetaMask.'
+  if (err?.code === 'ACTION_REJECTED' || err?.code === 4001 || err?.info?.error?.code === 4001) {
+    return 'Transaksi dibatalkan di MetaMask.'
+  }
+  if (err?.code === 'INSUFFICIENT_FUNDS') return 'Saldo wallet tidak cukup untuk biaya gas. Isi saldo testnet dulu.'
+  if (err?.code === -32002 || err?.info?.error?.code === -32002) {
+    return 'Permintaan MetaMask sebelumnya masih terbuka. Buka MetaMask dan selesaikan dulu.'
+  }
   const revert = revertOf(err)
   if (revert) return describeRevert(revert.name, [...revert.args])
+  if (err?.code === 'CALL_EXCEPTION') return 'Transaksi ditolak contract tanpa keterangan.'
   return err?.shortMessage ?? err?.message ?? 'Terjadi kesalahan yang tidak diketahui.'
 }
 
