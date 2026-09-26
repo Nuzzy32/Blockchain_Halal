@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { NETWORK, addChainParams } from './chain.js'
-import { errorMessage, rolesOf, writeRegistry } from './registry.js'
+import { errorMessage, isRevert, readRegistry, rolesOf, writeRegistry } from './registry.js'
+import { parseId } from './validation.js'
 
 export const hasMetaMask = () => typeof window.ethereum !== 'undefined'
 
@@ -123,4 +124,29 @@ export function useTx() {
     run,
     reset: () => setState({ status: 'idle' }),
   }
+}
+
+/** Data sapi untuk pratinjau form. `idText` mentah dari input; tidak valid -> idle. */
+export function useCattle(idText) {
+  const cattleId = parseId(idText)
+  const [state, setState] = useState({ status: 'idle' })
+  const [nonce, setNonce] = useState(0)
+
+  useEffect(() => {
+    if (!cattleId) return setState({ status: 'idle' })
+    let cancelled = false
+    setState({ status: 'loading' })
+    readRegistry()
+      .getCattle(cattleId)
+      .then((cattle) => !cancelled && setState({ status: 'ok', cattle }))
+      .catch((err) => {
+        if (cancelled) return
+        setState(isRevert(err, 'CattleNotFound') ? { status: 'notfound' } : { status: 'error', message: errorMessage(err) })
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [cattleId, nonce])
+
+  return { ...state, cattleId, reload: () => setNonce((n) => n + 1) }
 }

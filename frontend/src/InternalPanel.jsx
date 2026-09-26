@@ -3,6 +3,8 @@ import { NETWORK, addressUrl, isDeployed, scanUrl } from './chain.js'
 import { ROLE_KEYS, ROLE_LABEL, shortAddress } from './format.js'
 import { hasMetaMask, useWallet } from './hooks.js'
 import AdminSection from './sections/AdminSection.jsx'
+import FarmerSection from './sections/FarmerSection.jsx'
+import SlaughterSection from './sections/SlaughterSection.jsx'
 
 /**
  * Panel untuk admin, peternak, RPH, dan distributor. Bagian yang tampil mengikuti peran
@@ -63,6 +65,8 @@ function Body({ wallet }) {
         <fieldset disabled={wallet.wrongNetwork} className="min-w-0 space-y-6">
           <legend className="sr-only">Form pencatatan</legend>
           {roles.ADMIN && <AdminSection wallet={wallet} />}
+          {roles.FARMER && <FarmerSection />}
+          {roles.ABATTOIR && <SlaughterSection />}
         </fieldset>
       )}
     </>
