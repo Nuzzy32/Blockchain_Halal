@@ -6,43 +6,45 @@ Jalankan di node Hardhat lokal sesuai `docs/deployment-v1.md` bagian "Pengembang
 
 Status: `[ ]` belum diuji · `✓` sesuai harapan · `✗` gagal (tulis apa yang terjadi)
 
+Putaran 2026-09-26: diuji di browser pratinjau terhadap node Hardhat lokal (deploy + seed), dengan penyedia EIP-1193 uji yang meneruskan transaksi ke akun Hardhat — **bukan MetaMask asli**. B10 (pindah jaringan), C3 (node mati), dan C4/C5 (kamera) belum diuji; kamera diblokir di browser pratinjau, logika penolakan URL scanner sudah dicakup uji murni `validation.test.js`. Ulangi seluruh tabel dengan MetaMask sebelum demo.
+
 ### A. Alur bahagia
 
 | # | Akun MetaMask | Aksi | Harapan | Status |
 |---|---|---|---|---|
-| A1 | #1 Peternak | Daftarkan sapi: umur 28, berat 460, Prime, Rumput, `FARM-TES-001` | Ringkasan tampil → tanda tangan → "ID sapi baru: HCT-C-000005" | `[ ]` |
-| A2 | #2 RPH | Catat sembelih sapi 5 (waktu default, metode manual tanpa pemingsanan, `JULEHA-0042`, `ID00410000123`) | Sukses; pratinjau sapi berubah ke Disembelih | `[ ]` |
-| A3 | #2 RPH | Buat 2 kemasan dari sapi 5: Sirloin 500 g, Brisket 1000 g | Dua label QR HCT-P-000006 dan HCT-P-000007 tampil | `[ ]` |
-| A4 | — | Unduh PNG label HCT-P-000006 | File `label-HCT-P-000006.png` berisi QR + teks label | `[ ]` |
-| A5 | #3 Distributor | Kirim `6, 7` | Sukses; pratinjau kedua kemasan berubah ke Dikirim | `[ ]` |
-| A6 | tanpa wallet | Buka `?trace=6` | Kartu halal terisi, 4 langkah linimasa terisi, tautan/hash tx tiap langkah | `[ ]` |
-| A7 | #0 Admin | Beri peran Peternak ke alamat akun #4, lalu cabut | Daftar "Peran saat ini" ikut berubah | `[ ]` |
+| A1 | #1 Peternak | Daftarkan sapi: umur 28, berat 460, Prime, Rumput, `FARM-TES-001` | Ringkasan tampil → tanda tangan → "ID sapi baru: HCT-C-000005" | `✓` |
+| A2 | #2 RPH | Catat sembelih sapi 5 (waktu default, metode manual tanpa pemingsanan, `JULEHA-0042`, `ID00410000123`) | Sukses; pratinjau sapi berubah ke Disembelih | `✓` |
+| A3 | #2 RPH | Buat 2 kemasan dari sapi 5: Sirloin 500 g, Brisket 1000 g | Dua label QR HCT-P-000006 dan HCT-P-000007 tampil | `✓` |
+| A4 | — | Unduh PNG label HCT-P-000006 | File `label-HCT-P-000006.png` berisi QR + teks label | `✓` |
+| A5 | #3 Distributor | Kirim `6, 7` | Sukses; pratinjau kedua kemasan berubah ke Dikirim | `✓` |
+| A6 | tanpa wallet | Buka `?trace=6` | Kartu halal terisi, 4 langkah linimasa terisi, tautan/hash tx tiap langkah | `✓` |
+| A7 | #0 Admin | Beri peran Peternak ke alamat akun #4, lalu cabut | Daftar "Peran saat ini" ikut berubah | `✓` |
 
 ### B. Penolakan
 
 | # | Akun | Aksi | Harapan | Status |
 |---|---|---|---|---|
-| B1 | #1 Peternak | Umur 5 | Pesan inline "Umur harus antara 6 dan 120 bulan", MetaMask tidak muncul | `[ ]` |
-| B2 | #2 RPH | Sembelih sapi 1 (sudah disembelih) | Pesan inline status, tombol tidak lanjut | `[ ]` |
-| B3 | #2 RPH | Kemasan dari sapi 4 (belum disembelih) | "Sapi ini belum disembelih." | `[ ]` |
-| B4 | #2 RPH | Kemasan sapi 3 total 400.000 g (8 × 50.000) | "melebihi sisa berat" | `[ ]` |
-| B5 | #3 Distributor | Kirim `1` (sudah dikirim) | "Sudah dikirim: HCT-P-000001." | `[ ]` |
-| B6 | #3 Distributor | Kirim `999` | "Tidak ditemukan: HCT-P-000999." | `[ ]` |
-| B7 | #0 Admin | Cabut peran Admin dari akun #0 sendiri | Pesan contract "Admin terakhir tidak bisa dicabut…" | `[ ]` |
-| B8 | akun #4 tanpa peran | Buka panel | Kartu "Wallet ini belum punya peran" | `[ ]` |
-| B9 | siapa saja | Tolak tanda tangan di MetaMask | "Transaksi dibatalkan di MetaMask." | `[ ]` |
+| B1 | #1 Peternak | Umur 5 | Pesan inline "Umur harus antara 6 dan 120 bulan", MetaMask tidak muncul | `✓` |
+| B2 | #2 RPH | Sembelih sapi 1 (sudah disembelih) | Pesan inline status, tombol tidak lanjut | `✓` |
+| B3 | #2 RPH | Kemasan dari sapi 4 (belum disembelih) | "Sapi ini belum disembelih." | `✓` |
+| B4 | #2 RPH | Kemasan sapi 3 total 400.000 g (8 × 50.000) | "melebihi sisa berat" | `✓` |
+| B5 | #3 Distributor | Kirim `1` (sudah dikirim) | "Sudah dikirim: HCT-P-000001." | `✓` |
+| B6 | #3 Distributor | Kirim `999` | "Tidak ditemukan: HCT-P-000999." | `✓` |
+| B7 | #0 Admin | Cabut peran Admin dari akun #0 sendiri | Pesan contract "Admin terakhir tidak bisa dicabut…" | `✓` |
+| B8 | akun #4 tanpa peran | Buka panel | Kartu "Wallet ini belum punya peran" | `✓` |
+| B9 | siapa saja | Tolak tanda tangan di MetaMask | "Transaksi dibatalkan di MetaMask." | `✓` |
 | B10 | siapa saja | MetaMask di jaringan lain | Banner "Jaringan salah", form terkunci, tombol pindah jaringan berfungsi | `[ ]` |
 
 ### C. Halaman konsumen dan scanner
 
 | # | Aksi | Harapan | Status |
 |---|---|---|---|
-| C1 | Buka `?trace=4` | Langkah "Dikirim distributor" berstatus "Belum dikirim" | `[ ]` |
-| C2 | Buka `?trace=999` dan `?trace=abc` | "Kemasan tidak ditemukan" + peringatan label palsu | `[ ]` |
+| C1 | Buka `?trace=4` | Langkah "Dikirim distributor" berstatus "Belum dikirim" | `✓` |
+| C2 | Buka `?trace=999` dan `?trace=abc` | "Kemasan tidak ditemukan" + peringatan label palsu | `✓` |
 | C3 | Matikan node, buka `?trace=1` | "Gagal memuat data" + tombol Coba lagi | `[ ]` |
 | C4 | `?scan=1` di laptop, pindai label A4 | Pindah ke `?trace=6` | `[ ]` |
 | C5 | `?scan=1`, pindai QR berisi URL situs lain | "QR ini bukan label HalalChain Trace", tidak dibuka | `[ ]` |
-| C6 | Buka `?trace=1` di ponsel (lebar 375 px) | Tanpa geser horizontal, teks terbaca, target sentuh ≥ 44 px | `[ ]` |
+| C6 | Buka `?trace=1` di ponsel (lebar 375 px) | Tanpa geser horizontal, teks terbaca, target sentuh ≥ 44 px | `✓` |
 
 ## v0 (arsip) — Fase 5 purwarupa
 
