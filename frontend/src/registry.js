@@ -3,7 +3,7 @@ import { BrowserProvider, Contract, Interface } from 'ethers'
 import abi from './CattleRegistry.abi.json'
 import { NETWORK, readProvider } from './chain.js'
 import { describeRevert } from './errors.js'
-import { ROLE, ROLE_KEYS } from './format.js'
+import { ROLE, ROLE_KEYS, blockRanges } from './format.js'
 
 const iface = new Interface(abi)
 
@@ -53,4 +53,27 @@ export function errorMessage(err) {
   const revert = revertOf(err)
   if (revert) return describeRevert(revert.name, [...revert.args])
   return err?.shortMessage ?? err?.message ?? 'Terjadi kesalahan yang tidak diketahui.'
+}
+
+/**
+ * Hash transaksi tiap tahap untuk tautan verifikasi, dari event yang di-index per ID.
+ * ponytail: rentang log dipecah per 10.000 blok karena batas RPC publik; jumlah permintaan
+ * bertambah seiring umur contract (~4 per hari di Amoy). Kalau terasa lambat, simpan blok
+ * tiap tahap di contract v2 supaya tidak perlu memindai log.
+ */
+export async function findStepTxs(cattleId, packageId) {
+  const provider = readProvider()
+  const ct = new Contract(NETWORK.address, abi, provider)
+  const ranges = blockRanges(NETWORK.deployBlock, await provider.getBlockNumber(), 10_000)
+  const first = async (filter) => {
+    const chunks = await Promise.all(ranges.map(([from, to]) => ct.queryFilter(filter, from, to)))
+    return chunks.flat()[0]?.transactionHash ?? null
+  }
+  const [registered, slaughtered, packaged, shipped] = await Promise.all([
+    first(ct.filters.CattleRegistered(cattleId)),
+    first(ct.filters.CattleSlaughtered(cattleId)),
+    first(ct.filters.PackageCreated(packageId)),
+    first(ct.filters.PackageShipped(packageId)),
+  ])
+  return { registered, slaughtered, packaged, shipped }
 }
