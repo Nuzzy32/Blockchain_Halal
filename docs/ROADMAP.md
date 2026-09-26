@@ -1,6 +1,6 @@
 # Roadmap
 
-Status saat ini: **Fase 3 berjalan — contract dan test selesai, menunggu deploy ke Amoy oleh owner**
+Status saat ini: **Fase 3 menunggu deploy ke Amoy (POL testnet belum ada); Fase 4 dan 5 selesai di jaringan lokal**
 
 Estimasi total 5 sampai 6 minggu dengan ritme santai. Sesuaikan dengan tenggat tugas. Kalau waktu mepet, urutan fase tetap sama, hanya durasinya yang dipadatkan.
 
@@ -76,18 +76,18 @@ Estimasi total 5 sampai 6 minggu dengan ritme santai. Sesuaikan dengan tenggat t
 
 ## Fase 4 — Frontend Pengguna Internal
 **Durasi:** 5 sampai 6 hari
-**Status:** Belum mulai
+**Status:** Selesai di jaringan lokal, menunggu deploy Amoy untuk checkpoint explorer
 
-- [ ] Setup React dan Vite dan Tailwind
-- [ ] Terapkan token dari `DESIGN-SYSTEM.md`
-- [ ] Integrasi koneksi wallet lewat MetaMask
-- [ ] Deteksi peran wallet, kunci form yang tidak sesuai
-- [ ] Halaman admin untuk manajemen peran
-- [ ] Form peternak untuk registrasi sapi
-- [ ] Form RPH untuk pencatatan sembelih
-- [ ] Form RPH untuk pembuatan kemasan
-- [ ] Form distributor untuk pencatatan kirim
-- [ ] Tangani status loading, error, dan sukses di setiap form
+- [x] Setup React dan Vite dan Tailwind
+- [x] Terapkan token dari `design-system/traceability-sapi/MASTER.md`
+- [x] Integrasi koneksi wallet lewat MetaMask
+- [x] Deteksi peran wallet, kunci form yang tidak sesuai
+- [x] Halaman admin untuk manajemen peran
+- [x] Form peternak untuk registrasi sapi
+- [x] Form RPH untuk pencatatan sembelih
+- [x] Form RPH untuk pembuatan kemasan
+- [x] Form distributor untuk pencatatan kirim
+- [x] Tangani status loading, error, dan sukses di setiap form
 - [ ] Tampilkan tautan block explorer setelah transaksi berhasil
 
 **Checkpoint:** Data yang diinput lewat frontend benar-benar tercatat di blockchain dan terlihat di explorer
@@ -96,15 +96,15 @@ Estimasi total 5 sampai 6 minggu dengan ritme santai. Sesuaikan dengan tenggat t
 
 ## Fase 5 — QR Code dan Halaman Konsumen
 **Durasi:** 4 hari
-**Status:** Belum mulai
+**Status:** Selesai di jaringan lokal
 
-- [ ] Generate QR per kemasan setelah dibuat
-- [ ] Fitur unduh QR sebagai gambar untuk dicetak
+- [x] Generate QR per kemasan setelah dibuat
+- [x] Fitur unduh QR sebagai gambar untuk dicetak
 - [ ] Halaman cetak label berisi beberapa QR sekaligus
-- [ ] Rute publik `/trace/:packageId` dengan provider read-only
-- [ ] Komponen linimasa riwayat
-- [ ] Tampilan kemasan tidak ditemukan yang ramah
-- [ ] Bagian verifikasi dengan tautan ke explorer
+- [x] Rute publik `?trace=<packageId>` (query param karena GitHub Pages)
+- [x] Komponen linimasa riwayat
+- [x] Tampilan kemasan tidak ditemukan yang ramah
+- [x] Bagian verifikasi dengan tautan ke explorer
 - [ ] Uji buka halaman di ponsel tanpa wallet terpasang
 
 **Checkpoint:** QR dicetak, dipindai pakai kamera ponsel, halaman terbuka dan data benar

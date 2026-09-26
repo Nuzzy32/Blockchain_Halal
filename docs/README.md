@@ -71,9 +71,13 @@ Private key disimpan terenkripsi lewat keystore Hardhat, bukan file `.env`. Lang
 
 ### Jalankan frontend
 
+`npm run dev` memakai node Hardhat lokal, jadi bisa dicoba tanpa POL. Langkah lengkapnya (node, deploy, seed, MetaMask) ada di `docs/deployment-v1.md` bagian "Pengembangan lokal".
+
 ```bash
 cd frontend
-npm run dev
+npm install
+npm test          # uji murni format, validasi, terjemahan error
+npm run dev -- --port 5175
 ```
 
 ## Struktur Folder

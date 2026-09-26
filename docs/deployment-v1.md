@@ -39,6 +39,44 @@ Private key hanya pernah diketik owner sendiri. Jangan pernah menempelkannya ke 
 
 5. Salin seluruh output langkah 3 dan 4 ke tabel di bawah.
 
+## Pengembangan lokal (tanpa POL)
+
+Frontend dikembangkan melawan node Hardhat di laptop. Datanya simulasi dan hilang setiap node dimatikan.
+
+1. Jalankan node (biarkan terminal ini terbuka):
+
+   ```bash
+   npx hardhat node
+   ```
+
+   Tambahkan `--hostname 0.0.0.0` kalau halaman ingin dibuka dari ponsel se-Wi-Fi.
+
+2. Di terminal lain, deploy dan isi contoh data:
+
+   ```bash
+   npx hardhat run scripts/deploy.js --network localhost
+   npx hardhat run scripts/seed.js --network localhost
+   ```
+
+3. Jalankan frontend: `cd frontend && npm run dev -- --port 5175`, buka `http://localhost:5175/Blockchain_Halal/`.
+
+4. MetaMask: tambah jaringan **Hardhat Local** (RPC `http://127.0.0.1:8545`, chainId `31337`, simbol `ETH`), lalu import akun tes Hardhat. Private key-nya tercetak di terminal langkah 1 — publik dan hanya berlaku di node lokal, jangan pernah dipakai di jaringan lain.
+
+   | Akun Hardhat | Peran | Alamat |
+   |---|---|---|
+   | #0 | Admin (deployer) | `0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266` |
+   | #1 | Peternak | `0x70997970C51812dc3A010C7d01b50e0d17dc79C8` |
+   | #2 | RPH | `0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC` |
+   | #3 | Distributor | `0x90F79bf6EB2c4f870365E785982E1f101E93b906` |
+
+5. Setiap node dijalankan ulang: ulangi langkah 2, lalu di MetaMask **Settings → Advanced → Clear activity tab data** untuk tiap akun, supaya nonce tidak bentrok.
+
+## Setelah deploy ke Amoy
+
+1. Isi `address` dan `deployBlock` pada `NETWORKS.amoy` di `frontend/src/chain.js` dari tabel di bawah.
+2. `npm run export-abi && npm run check` — harus mencetak `✓ ABI…` dan `✓ Contract ada di Amoy…`.
+3. `cd frontend && npm run deploy` — pengaman `predeploy` menolak jalan selama alamat Amoy masih kosong.
+
 ## Contract
 
 | | |
