@@ -50,24 +50,24 @@ Alasan memakai satu contract, bukan beberapa: di skala prototype, memisah contra
 
 ### 2.2 Frontend
 
-Aplikasi React satu halaman dengan empat area:
+Aplikasi React satu halaman, tanpa router — GitHub Pages tidak punya SPA rewrite (URL selain
+`index.html` mengembalikan 404), jadi halaman dipilih lewat query param yang selalu mengenai
+`index.html`:
 
-| Rute | Untuk siapa | Butuh wallet |
+| Query param | Untuk siapa | Butuh wallet |
 |---|---|---|
-| `/admin` | Admin | Ya |
-| `/farmer` | Peternak | Ya |
-| `/abattoir` | RPH | Ya |
-| `/distributor` | Distributor | Ya |
-| `/trace/:packageId` | Konsumen | Tidak |
+| `?trace=<packageId>` | Konsumen | Tidak |
+| `?scan=1` | Konsumen (scanner QR kamera) | Tidak |
+| (tanpa param) | Panel internal — bagian yang tampil menyesuaikan peran on-chain wallet yang tersambung (admin, peternak, RPH, distributor bisa memegang beberapa peran sekaligus) | Ya |
 
-Rute `/trace/:packageId` adalah yang dituju oleh QR code. Halaman ini memakai RPC provider read-only, jadi terbuka di ponsel mana pun tanpa setup apa pun.
+`?trace=<packageId>` adalah yang dituju oleh QR code. Halaman ini memakai RPC provider read-only, jadi terbuka di ponsel mana pun tanpa setup apa pun.
 
 ### 2.3 QR Code
 
 QR berisi URL, bukan data. Formatnya:
 
 ```
-https://<domain-aplikasi>/trace/<packageId>
+https://<domain-aplikasi>/?trace=<packageId>
 ```
 
 Alasan menyimpan URL dan bukan data langsung di QR:
@@ -97,7 +97,7 @@ Alasan menyimpan URL dan bukan data langsung di QR:
 
 ```
 1. Konsumen memindai QR dengan kamera ponsel
-2. Browser membuka /trace/<packageId>
+2. Browser membuka ?trace=<packageId>
 3. Frontend membuat provider read-only (tanpa wallet)
 4. Memanggil getPackageTrace(packageId)
 5. Contract mengembalikan data kemasan dan data sapi induknya

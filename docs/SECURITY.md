@@ -159,8 +159,9 @@ Penyelesaian sebenarnya butuh lapisan di luar sistem: audit fisik oleh lembaga i
 **Dampak:** Tinggi kalau wallet-nya berisi aset nyata.
 
 **Mitigasi:**
-- Private key deployer disimpan terenkripsi lewat `npx hardhat keystore set AMOY_PRIVATE_KEY`, di folder konfigurasi Hardhat milik pengguna, di luar repository. Tidak ada file `.env`
-- `.env` tetap masuk `.gitignore` sebagai jaga-jaga
+- Private key deployer disimpan terenkripsi lewat `npx hardhat keystore set AMOY_PRIVATE_KEY`, di folder konfigurasi Hardhat milik pengguna, di luar repository
+- Rahasia (private key, mnemonic, API key) tidak pernah masuk file `.env`. File `frontend/.env.development` dan `frontend/.env.production` yang ter-commit hanya memilih jaringan (`VITE_NETWORK=local` / `VITE_NETWORK=amoy`) dan tidak berisi rahasia apa pun
+- `.env` lain tetap masuk `.gitignore` sebagai jaga-jaga
 - Wallet yang dipakai khusus testnet, tidak pernah berisi aset bernilai
 - Cek `git status` sebelum setiap push
 

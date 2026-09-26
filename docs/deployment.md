@@ -1,5 +1,7 @@
 # Deployment — CattleTraceability
 
+> Arsip purwarupa v0. Contract v1 (CattleRegistry) didokumentasikan di docs/deployment-v1.md; kode frontend v0 yang disebut di bawah sudah diganti.
+
 Diisi saat Fase 3. Frontend (Fase 4) membaca alamat + ABI dari file ini.
 
 ## Compiler

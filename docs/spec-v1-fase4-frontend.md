@@ -110,17 +110,19 @@ Satu panggilan `getPackageTrace(N)` lewat RPC read-only.
 frontend/src/
   chain.js                  setelan jaringan, provider read-only, tautan explorer
   CattleRegistry.abi.json   ABI hasil ekspor
-  registry.js               contract baca/tulis, label enum, bytes32 <-> teks, format ID,
-                            penerjemah error, pencarian tx per langkah
+  format.js                 label enum, bytes32 <-> teks, format ID/tanggal/alamat
+  errors.js                 penerjemah custom error contract -> kalimat Indonesia
   validation.js             validator murni sesuai batas contract
+  registry.js               contract baca/tulis, penerjemah error runtime, pencarian tx per langkah
   *.test.js                 uji murni (node --test)
+  hooks.js                  useWallet, useTx, useCattle, usePackages
+  components.jsx            Banner, Section, Field, Review, TxStatus, CattleSummary, QrLabel
   App.jsx                   pemilih halaman dari query param
-  InternalPanel.jsx         bilah wallet + susunan bagian per peran
+  InternalPanel.jsx         bilah wallet + susunan bagian per peran (lazy-loaded dari App.jsx)
   sections/                 AdminSection, FarmerSection, SlaughterSection,
                             PackagingSection, DistributorSection
-  TracePage.jsx             halaman konsumen
-  ScanPage.jsx              scanner
-  components/               TxFlow, QrLabel, Field, Banner
+  TracePage.jsx             halaman konsumen (static import, tidak lazy)
+  ScanPage.jsx              scanner (lazy-loaded dari App.jsx)
 ```
 
 Dihapus: `ActorPanel.jsx`, `TrackPage.jsx`, `DashboardPage.jsx`, `stats.js`, `contract.js` (digantikan `chain.js` + `registry.js`). Bagian tampilan yang masih cocok dipakai ulang.

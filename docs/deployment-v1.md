@@ -75,7 +75,9 @@ Frontend dikembangkan melawan node Hardhat di laptop. Datanya simulasi dan hilan
 
 1. Isi `address` dan `deployBlock` pada `NETWORKS.amoy` di `frontend/src/chain.js` dari tabel di bawah.
 2. `npm run export-abi && npm run check` — harus mencetak `✓ ABI…` dan `✓ Contract ada di Amoy…`.
-3. `cd frontend && npm run deploy` — pengaman `predeploy` menolak jalan selama alamat Amoy masih kosong.
+3. `git diff --exit-code frontend/src/CattleRegistry.abi.json` — harus tidak mencetak apa pun. Kalau mencetak diff, artinya contract berubah sejak frontend terakhir dibangun — berhenti dan uji ulang sebelum lanjut.
+4. Commit `frontend/src/chain.js` (dan `frontend/src/CattleRegistry.abi.json` kalau ikut berubah) sebelum `npm run deploy` — situs yang di-deploy harus dibangun dari kode yang sudah tercatat di Git.
+5. `cd frontend && npm run deploy` — pengaman `predeploy` menolak jalan selama alamat Amoy masih kosong, `deployBlock` masih 0, atau contract tidak ditemukan di alamat itu.
 
 ## Contract
 
