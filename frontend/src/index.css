@@ -80,22 +80,27 @@
   .card {
     background-color: var(--color-surface);
     border: 1px solid var(--color-divider);
-    border-radius: 0.75rem;
-    box-shadow: var(--shadow-sm);
+    border-radius: 1.5rem;
+    box-shadow: 0 1px 2px rgb(11 29 19 / 0.04), 0 18px 40px -28px rgb(11 29 19 / 0.25);
   }
 
   .field {
     width: 100%;
     border: 1px solid var(--color-border);
-    border-radius: 0.5rem;
-    background-color: var(--color-surface);
-    padding: 0.625rem 0.875rem;
+    border-radius: 0.875rem;
+    background-color: #fbfefc;
+    padding: 0.75rem 1rem;
     font-size: 1rem; /* 16px: mencegah iOS auto-zoom saat fokus */
-    min-height: 44px; /* target sentuh minimum */
-    transition: border-color 200ms, box-shadow 200ms;
+    min-height: 48px; /* target sentuh minimum */
+    transition: border-color 200ms, box-shadow 200ms, background-color 200ms;
+  }
+  .field:hover:not(:disabled) {
+    border-color: var(--color-ink);
   }
   .field:focus {
     border-color: var(--color-primary);
+    background-color: var(--color-surface);
+    box-shadow: 0 0 0 4px rgb(21 128 61 / 0.14);
   }
   .field[aria-invalid='true'] {
     border-color: var(--color-danger);
@@ -111,14 +116,20 @@
     align-items: center;
     justify-content: center;
     gap: var(--space-sm);
-    min-height: 44px;
-    border-radius: 0.5rem;
-    padding: 0.625rem 1.25rem;
+    min-height: 48px;
+    border-radius: 9999px;
+    padding: 0.75rem 1.5rem;
     font-family: var(--font-display);
     font-size: 0.9375rem;
     font-weight: 600;
     cursor: pointer;
-    transition: background-color 200ms, opacity 200ms;
+    transition: background-color 200ms, opacity 200ms, transform 200ms, border-color 200ms;
+  }
+  .btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+  .btn:active:not(:disabled) {
+    transform: translateY(1px);
   }
   .btn:disabled {
     opacity: 0.5;
@@ -139,6 +150,7 @@
     color: var(--color-ink);
   }
   .btn-ghost:hover:not(:disabled) {
+    border-color: var(--color-primary);
     background-color: var(--color-primary-soft);
   }
 

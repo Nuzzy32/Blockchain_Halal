@@ -109,7 +109,7 @@ function Nav() {
           ))}
         </ul>
         <a href={panelUrl()} className="ml-auto hidden rounded-full px-4 py-2.5 text-sm font-semibold transition-colors hover:bg-primary-soft sm:block md:ml-2">
-          Masuk panel
+          Dashboard pencatatan
         </a>
         <a href={scanUrl()} className="rounded-full bg-night px-4 py-2.5 text-sm font-semibold text-white transition-transform hover:-translate-y-px active:translate-y-px max-sm:ml-auto">
           Pindai QR
@@ -253,7 +253,7 @@ function HowItWorks() {
             sebelumnya selesai, jadi urutannya tidak bisa diakali.
           </p>
           <a href={panelUrl()} className="btn btn-primary mt-10">
-            Buka panel pencatatan
+            Buka dashboard pencatatan
           </a>
         </div>
 
@@ -452,7 +452,7 @@ function Footer() {
         <p>HalalChain Trace · {NETWORK.name}</p>
         <ul className="flex flex-wrap gap-x-6 gap-y-2">
           <li><a className="tap hover:text-white" href={exampleUrl()}>Contoh kemasan</a></li>
-          <li><a className="tap hover:text-white" href={panelUrl()}>Panel pencatatan</a></li>
+          <li><a className="tap hover:text-white" href={panelUrl()}>Dashboard pencatatan</a></li>
           {contract && (
             <li><a className="tap hover:text-white" href={contract} target="_blank" rel="noreferrer">Contract di explorer</a></li>
           )}

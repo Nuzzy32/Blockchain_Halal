@@ -173,27 +173,49 @@ function Step({ n, step, done, last, txsFailed }) {
                 ))}
               </dl>
             )}
-            <p className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-base">
-              <span>
-                <span className="eyebrow mr-2">{step.actorRole}</span>
-                {actorUrl ? (
-                  <a href={actorUrl} target="_blank" rel="noreferrer" className="font-mono font-medium text-primary underline underline-offset-4">
-                    {shortAddress(step.actor)}
-                  </a>
-                ) : (
-                  <span className="font-mono">{shortAddress(step.actor)}</span>
-                )}
-              </span>
-              {url ? (
-                <a href={url} target="_blank" rel="noreferrer" className="tap font-medium text-primary underline underline-offset-4">
-                  Lihat transaksi
-                </a>
-              ) : step.tx ? (
-                <span className="break-all font-mono text-base text-muted">tx {step.tx}</span>
-              ) : (
-                !txsFailed && <span className="text-xs text-muted">Mencari transaksi…</span>
-              )}
+            <p className="mt-3 flex items-center gap-2 text-base">
+              <Check className="h-4 w-4 shrink-0 text-primary" />
+              Dicatat oleh {step.actorRole} yang terdaftar
             </p>
+            {/* Alamat wallet dan hash transaksi tidak berarti bagi pembeli biasa; tetap tersedia untuk yang ingin memeriksa. */}
+            <details className="group mt-1">
+              <summary className="tap cursor-pointer list-none gap-1.5 text-sm font-medium text-primary [&::-webkit-details-marker]:hidden">
+                <svg viewBox="0 0 20 20" fill="none" aria-hidden className="h-3.5 w-3.5 transition-transform group-open:rotate-90">
+                  <path d="M7.5 5l5 5-5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                Bukti teknis
+              </summary>
+              <dl className="mt-1 space-y-2 border-l-2 border-divider pl-4 text-sm">
+                <div>
+                  <dt className="text-muted">Akun pencatat ({step.actorRole})</dt>
+                  <dd>
+                    {actorUrl ? (
+                      <a href={actorUrl} target="_blank" rel="noreferrer" className="font-mono text-primary underline underline-offset-4">
+                        {shortAddress(step.actor)}
+                      </a>
+                    ) : (
+                      <span className="font-mono">{shortAddress(step.actor)}</span>
+                    )}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-muted">Transaksi blockchain</dt>
+                  <dd>
+                    {url ? (
+                      <a href={url} target="_blank" rel="noreferrer" className="font-medium text-primary underline underline-offset-4">
+                        Buka di block explorer
+                      </a>
+                    ) : step.tx ? (
+                      <span className="break-all font-mono">{step.tx}</span>
+                    ) : txsFailed ? (
+                      <span className="text-muted">Tidak dapat dimuat</span>
+                    ) : (
+                      <span className="text-muted">Mencari transaksi…</span>
+                    )}
+                  </dd>
+                </div>
+              </dl>
+            </details>
           </>
         )}
       </div>

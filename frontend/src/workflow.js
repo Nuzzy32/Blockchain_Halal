@@ -1,4 +1,4 @@
-// Alur pencatatan: satu sumber untuk landing page dan panduan di panel internal.
+// Alur pencatatan: satu sumber untuk landing page dan panduan di dashboard pencatatan.
 // `role` = kunci ROLE_KEYS di format.js; `anchor` = id bagian form di panel.
 
 export const STAGES = [

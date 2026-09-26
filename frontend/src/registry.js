@@ -1,4 +1,5 @@
-// Akses contract CattleRegistry: baca lewat RPC publik (tanpa wallet), tulis lewat MetaMask.
+// Akses contract CattleRegistry: baca lewat RPC publik (tanpa wallet), tulis lewat MetaMask
+// (atau akun demo node lokal, lihat demoAvailable).
 import { BrowserProvider, Contract, Interface } from 'ethers'
 import abi from './CattleRegistry.abi.json'
 import { NETWORK, readProvider } from './chain.js'
@@ -9,8 +10,26 @@ const iface = new Interface(abi)
 
 export const readRegistry = () => new Contract(NETWORK.address, abi, readProvider())
 
+// Mode demo (hanya node Hardhat lokal): node sendiri yang menandatangani untuk akun tesnya yang
+// terbuka, jadi tidak ada private key di frontend. Di jaringan lain eth_accounts RPC kosong.
+export const demoAvailable = () => NETWORK.key === 'local'
+let demoAccount = null
+export const setDemoAccount = (addr) => {
+  demoAccount = demoAvailable() ? addr : null
+}
+export const demoActive = () => demoAccount !== null
+
+/** Akun tes node lokal yang memegang minimal satu peran, beserta perannya. */
+export async function demoAccounts() {
+  const addrs = (await readProvider().send('eth_accounts', [])).slice(0, 10)
+  const withRoles = await Promise.all(addrs.map(async (address) => ({ address, roles: await rolesOf(address) })))
+  return withRoles.filter((a) => ROLE_KEYS.some((k) => a.roles[k]))
+}
+
 export async function writeRegistry() {
-  const signer = await new BrowserProvider(window.ethereum).getSigner()
+  const signer = demoAccount
+    ? await readProvider().getSigner(demoAccount)
+    : await new BrowserProvider(window.ethereum).getSigner()
   return new Contract(NETWORK.address, abi, signer)
 }
 

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { NETWORK, addChainParams } from './chain.js'
-import { errorMessage, isRevert, readRegistry, rolesOf, writeRegistry } from './registry.js'
+import { errorMessage, isRevert, readRegistry, rolesOf, setDemoAccount, writeRegistry } from './registry.js'
 import { parseId } from './validation.js'
 
 export const hasMetaMask = () => typeof window.ethereum !== 'undefined'
@@ -14,6 +14,9 @@ export function useWallet() {
   const [connecting, setConnecting] = useState(false)
   const [switching, setSwitching] = useState(false)
   const [error, setError] = useState(null)
+  const [demo, setDemo] = useState(false)
+  // Selama mode demo, event akun MetaMask diabaikan supaya tidak menimpa akun demo.
+  const demoRef = useRef(false)
 
   // Alamat yang terakhir diminta: hasil rolesOf untuk permintaan yang sudah usang (mis. alamat
   // berganti dua kali cepat berturut-turut) diabaikan supaya tidak menimpa hasil yang lebih baru.
@@ -44,9 +47,9 @@ export function useWallet() {
   useEffect(() => {
     if (!hasMetaMask()) return
     const eth = window.ethereum
-    eth.request({ method: 'eth_accounts' }).then((a) => a[0] && load(a[0])).catch(() => {})
+    eth.request({ method: 'eth_accounts' }).then((a) => a[0] && !demoRef.current && load(a[0])).catch(() => {})
     eth.request({ method: 'eth_chainId' }).then((c) => setChainId(BigInt(c))).catch(() => {})
-    const onAccounts = (a) => load(a[0] ?? null)
+    const onAccounts = (a) => !demoRef.current && load(a[0] ?? null)
     const onChain = (c) => setChainId(BigInt(c))
     eth.on('accountsChanged', onAccounts)
     eth.on('chainChanged', onChain)
@@ -92,14 +95,32 @@ export function useWallet() {
     }
   }
 
+  const demoLogin = (addr) => {
+    demoRef.current = true
+    setDemoAccount(addr)
+    setDemo(true)
+    setError(null)
+    load(addr)
+  }
+
+  const demoLogout = () => {
+    demoRef.current = false
+    setDemoAccount(null)
+    setDemo(false)
+    load(null)
+  }
+
   return {
     account,
+    demo,
+    demoLogin,
+    demoLogout,
     roles,
     rolesError,
     connecting,
     switching,
     error,
-    wrongNetwork: chainId !== null && chainId !== NETWORK.chainId,
+    wrongNetwork: !demo && chainId !== null && chainId !== NETWORK.chainId,
     connect,
     switchNetwork,
     refreshRoles: () => loadRoles(account),

@@ -2,6 +2,7 @@ import { Fragment, useRef } from 'react'
 import { QRCodeCanvas } from 'qrcode.react'
 import { traceUrl, txUrl } from './chain.js'
 import { CATTLE_STATUS, CUT_TYPE, FEED_TYPE, GRADE, bytes32ToText, cattleLabel, formatDate, label, packageLabel } from './format.js'
+import { demoActive } from './registry.js'
 
 export function Banner({ tone, children, action }) {
   const danger = tone === 'danger'
@@ -23,19 +24,34 @@ export function Banner({ tone, children, action }) {
 /** Kartu satu form peran. */
 export function Section({ badge, step, title, lead, children }) {
   return (
-    <section className="card px-6 py-7">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          {step && <p className="eyebrow mb-1.5 tnum">Tahap {step} dari 4</p>}
-          <h2 className="font-display text-xl font-semibold tracking-tight">{title}</h2>
-          {lead && <p className="mt-2 max-w-md text-sm leading-relaxed text-muted">{lead}</p>}
-        </div>
-        <span className="shrink-0 rounded-full bg-primary-soft px-3 py-1 text-xs font-semibold text-primary">
-          {badge}
+    <section data-rise className="card overflow-hidden">
+      <header className="flex items-start gap-5 border-b border-divider px-6 py-6 sm:px-8 sm:py-7">
+        <span
+          aria-hidden
+          className="font-display flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-night text-lg font-semibold text-[#f0fdf4] tnum"
+        >
+          {step ?? <KeyIcon className="h-5 w-5" />}
         </span>
-      </div>
-      <div className="mt-7">{children}</div>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold text-primary tnum">
+            {step ? `Tahap ${step} dari 4 · ` : ''}
+            {badge}
+          </p>
+          <h2 className="font-display mt-1 text-2xl font-semibold tracking-tight">{title}</h2>
+          {lead && <p className="mt-1.5 max-w-lg text-[15px] leading-relaxed text-muted">{lead}</p>}
+        </div>
+      </header>
+      <div className="px-6 py-7 sm:px-8">{children}</div>
     </section>
+  )
+}
+
+function KeyIcon(props) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden {...props}>
+      <circle cx="8" cy="15" r="4.5" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M11.2 11.8L20 3m-3 3l2.5 2.5M14.5 8.5l2 2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
   )
 }
 
@@ -91,7 +107,13 @@ export function Review({ rows, status, onConfirm, onCancel }) {
       </dl>
       <div className="mt-5 flex flex-wrap gap-3">
         <button type="button" className="btn btn-primary" onClick={onConfirm} disabled={busy}>
-          {status === 'signing' ? 'Menunggu tanda tangan…' : status === 'mining' ? 'Menunggu konfirmasi…' : 'Tandatangani di MetaMask'}
+          {status === 'signing'
+            ? 'Menunggu tanda tangan…'
+            : status === 'mining'
+              ? 'Menunggu konfirmasi…'
+              : demoActive()
+                ? 'Simpan ke blockchain (akun demo)'
+                : 'Tandatangani di MetaMask'}
         </button>
         <button type="button" className="btn btn-ghost" onClick={onCancel} disabled={busy}>
           Ubah data

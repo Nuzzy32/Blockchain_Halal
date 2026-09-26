@@ -2,7 +2,7 @@ import { Suspense, lazy } from 'react'
 import TracePage from './TracePage.jsx'
 import { parseId } from './validation.js'
 
-// Lazy: halaman konsumen (?trace=) tidak perlu mengunduh kode landing (GSAP), panel internal, atau scanner kamera.
+// Lazy: halaman konsumen (?trace=) tidak perlu mengunduh kode landing (GSAP), dashboard pencatatan, atau scanner kamera.
 const Landing = lazy(() => import('./Landing.jsx'))
 const InternalPanel = lazy(() => import('./InternalPanel.jsx'))
 const ScanPage = lazy(() => import('./ScanPage.jsx'))
@@ -19,7 +19,7 @@ const fallback = (
  *
  *   ?trace=5  halaman konsumen kemasan #5 (tujuan QR). Nilai tidak valid -> "tidak ditemukan".
  *   ?scan=1   scanner QR kamera
- *   ?panel=1  panel internal, butuh MetaMask
+ *   ?panel=1  dashboard pencatatan, butuh MetaMask
  *   (tanpa)   landing page
  */
 export default function App() {
