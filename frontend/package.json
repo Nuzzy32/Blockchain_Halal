@@ -10,7 +10,9 @@
     "predeploy": "node scripts/predeploy.mjs",
     "deploy": "vite build && gh-pages -d dist",
     "test": "node --test src/*.test.js",
-    "check": "node ../scripts/check.mjs"
+    "check": "node ../scripts/check.mjs",
+    "demo:build": "vite build --mode development --outDir dist-demo",
+    "demo": "npm run demo:build && vite preview --outDir dist-demo --port 4173 --strictPort"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

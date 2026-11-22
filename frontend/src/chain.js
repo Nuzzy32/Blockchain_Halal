@@ -7,9 +7,9 @@ export const NETWORKS = {
     key: 'local',
     name: 'Hardhat Local',
     chainId: 31337n,
-    // Hostname halaman, bukan 127.0.0.1 tetap: ponsel se-Wi-Fi yang membuka http://<ip-laptop>:5175
-    // ikut menjangkau node di laptop (jalankan node dengan --hostname 0.0.0.0).
-    rpc: () => `http://${globalThis.location?.hostname ?? '127.0.0.1'}:8545`,
+    // Lewat proxy /rpc di origin halaman (vite.config.js), jadi ponsel se-Wi-Fi atau lewat tunnel
+    // ikut menjangkau node di laptop tanpa membuka port 8545. Skrip node tidak punya location.
+    rpc: () => (globalThis.location ? `${location.origin}/rpc` : 'http://127.0.0.1:8545'),
     // Deploy pertama akun #0 di node Hardhat yang baru selalu mendarat di alamat ini.
     address: '0x5FbDB2315678afecb367f032d93F642f64180aa3',
     deployBlock: 0,

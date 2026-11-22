@@ -49,7 +49,7 @@ Frontend dikembangkan melawan node Hardhat di laptop. Datanya simulasi dan hilan
    npx hardhat node
    ```
 
-   Tambahkan `--hostname 0.0.0.0` kalau halaman ingin dibuka dari ponsel se-Wi-Fi.
+   Frontend menghubungi node lewat proxy `/rpc` (`frontend/vite.config.js`), jadi node cukup mendengar di `127.0.0.1`.
 
 2. Di terminal lain, deploy dan isi contoh data:
 
@@ -59,6 +59,8 @@ Frontend dikembangkan melawan node Hardhat di laptop. Datanya simulasi dan hilan
    ```
 
 3. Jalankan frontend: `cd frontend && npm run dev -- --port 5175`, buka `http://localhost:5175/Blockchain_Halal/`.
+
+   Untuk dibuka dari ponsel se-Wi-Fi, tambahkan `--host` lalu buka `http://<ip-laptop>:5175/Blockchain_Halal/`. Dari jaringan lain (misalnya saat presentasi), lihat `docs/demo-presentasi.md`.
 
 4. MetaMask: tambah jaringan **Hardhat Local** (RPC `http://127.0.0.1:8545`, chainId `31337`, simbol `ETH`), lalu import akun tes Hardhat. Private key-nya tercetak di terminal langkah 1 — publik dan hanya berlaku di node lokal, jangan pernah dipakai di jaringan lain.
 

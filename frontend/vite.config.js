@@ -8,4 +8,11 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   base: '/Blockchain_Halal/',
   plugins: [react(), tailwindcss()],
+  // Jaringan lokal: halaman memanggil node Hardhat lewat /rpc di origin yang sama, jadi cukup satu port
+  // yang dibuka ke ponsel se-Wi-Fi atau ke internet lewat tunnel (docs/demo-presentasi.md).
+  // `vite preview` ikut memakai setelan server ini.
+  server: {
+    proxy: { '/rpc': { target: 'http://127.0.0.1:8545', rewrite: () => '/' } },
+    allowedHosts: ['.trycloudflare.com'],
+  },
 })
