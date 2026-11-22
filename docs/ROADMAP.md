@@ -1,6 +1,6 @@
 # Roadmap
 
-Status saat ini: **Fase 3 menunggu deploy ke Amoy (POL testnet belum ada); Fase 4 dan 5 selesai di jaringan lokal**
+Status saat ini (2026-11-22): **Fase 3 menunggu deploy ke Amoy (POL testnet belum cukup); Fase 4 dan 5 selesai di jaringan lokal, termasuk foto, ciri fisik, dan eartag sapi**
 
 Estimasi total 5 sampai 6 minggu dengan ritme santai. Sesuaikan dengan tenggat tugas. Kalau waktu mepet, urutan fase tetap sama, hanya durasinya yang dipadatkan.
 
@@ -65,12 +65,17 @@ Estimasi total 5 sampai 6 minggu dengan ritme santai. Sesuaikan dengan tenggat t
 - [x] Implementasi seluruh fungsi baca
 - [x] Tulis unit test jalur normal
 - [x] Tulis unit test jalur penolakan
+- [x] Ciri fisik sapi (ras, jenis kelamin, warna) dan foto di event `CattlePhoto`
+- [x] Eartag unik per sapi, wajib dicocokkan RPH saat sembelih (67 test lulus)
+- [ ] Kumpulkan POL Amoy, target sekitar 0,5 POL (lihat catatan di bawah)
 - [ ] Deploy ke Polygon Amoy
 - [ ] Verifikasi contract di block explorer
 
 **Checkpoint:** Seluruh test lulus, contract terverifikasi dan bisa dibaca publik di explorer
 
 **Ini fase terpenting.** Kalau contract sudah benar dan teruji, sisanya jauh lebih mudah.
+
+**Catatan POL (2026-11-22):** deploy butuh 2,4 juta gas, sekitar 0,135 POL pada gas price 56 gwei. Pendaftaran sapi dengan foto 30 KB kira-kira 0,03 sampai 0,05 POL per sapi (taksiran). Saldo empat wallet v0 saat itu totalnya sekitar 0,033 POL. Faucet resmi Polygon sudah tidak aktif, jadi pakai faucet pihak ketiga atau minta transfer dari teman.
 
 ---
 
@@ -83,12 +88,12 @@ Estimasi total 5 sampai 6 minggu dengan ritme santai. Sesuaikan dengan tenggat t
 - [x] Integrasi koneksi wallet lewat MetaMask
 - [x] Deteksi peran wallet, kunci form yang tidak sesuai
 - [x] Halaman admin untuk manajemen peran
-- [x] Form peternak untuk registrasi sapi
-- [x] Form RPH untuk pencatatan sembelih
+- [x] Form peternak untuk registrasi sapi, termasuk foto (dikecilkan di browser, EXIF dibuang), ciri fisik, dan eartag
+- [x] Form RPH untuk pencatatan sembelih, termasuk pencocokan foto dan eartag
 - [x] Form RPH untuk pembuatan kemasan
 - [x] Form distributor untuk pencatatan kirim
 - [x] Tangani status loading, error, dan sukses di setiap form
-- [ ] Tampilkan tautan block explorer setelah transaksi berhasil
+- [ ] Tampilkan tautan block explorer setelah transaksi berhasil (kode sudah ada, baru muncul di jaringan Amoy)
 
 **Checkpoint:** Data yang diinput lewat frontend benar-benar tercatat di blockchain dan terlihat di explorer
 
@@ -103,6 +108,7 @@ Estimasi total 5 sampai 6 minggu dengan ritme santai. Sesuaikan dengan tenggat t
 - [ ] Halaman cetak label berisi beberapa QR sekaligus
 - [x] Rute publik `?trace=<packageId>` (query param karena GitHub Pages)
 - [x] Komponen linimasa riwayat
+- [x] Foto, ciri fisik, dan eartag sapi di halaman konsumen
 - [x] Tampilan kemasan tidak ditemukan yang ramah
 - [x] Bagian verifikasi dengan tautan ke explorer
 - [ ] Uji buka halaman di ponsel tanpa wallet terpasang
@@ -115,8 +121,9 @@ Estimasi total 5 sampai 6 minggu dengan ritme santai. Sesuaikan dengan tenggat t
 
 ## Fase 6 — Pengujian Menyeluruh
 **Durasi:** 3 hari
-**Status:** Belum mulai
+**Status:** Belum mulai (matriks uji di `docs/testing.md` sudah memuat foto dan eartag)
 
+- [ ] Ulangi `docs/testing.md` dengan MetaMask asli, bukan penyedia uji
 - [ ] Uji alur penuh dari registrasi sampai pemindaian
 - [ ] Uji kasus batas: umur di luar rentang, tanggal masa depan, batch terlalu besar
 - [ ] Uji akses ditolak untuk wallet tanpa peran
@@ -156,7 +163,7 @@ Estimasi total 5 sampai 6 minggu dengan ritme santai. Sesuaikan dengan tenggat t
 **Pertanyaan yang kemungkinan besar ditanyakan dosen:**
 
 1. Kenapa harus blockchain, kenapa tidak database biasa saja?
-2. Bagaimana kalau orang yang menginput datanya berbohong?
+2. Bagaimana kalau orang yang menginput datanya berbohong? (eartag + foto membantu menangkap salah sapi karena lalai, bukan penipuan yang disengaja; lihat SECURITY.md A2)
 3. Siapa yang membayar biaya gas kalau ini dipakai sungguhan?
 4. Apa bedanya dengan sistem sertifikasi halal yang sudah ada?
 5. Kenapa memilih Polygon dan bukan Ethereum?
