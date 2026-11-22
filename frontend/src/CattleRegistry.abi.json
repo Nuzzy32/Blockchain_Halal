@@ -277,6 +277,25 @@
         "type": "bytes"
       }
     ],
+    "name": "AnteMortemPhoto",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint64",
+        "name": "cattleId",
+        "type": "uint64"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes",
+        "name": "photo",
+        "type": "bytes"
+      }
+    ],
     "name": "CattlePhoto",
     "type": "event"
   },
@@ -665,6 +684,11 @@
             "type": "uint64"
           },
           {
+            "internalType": "uint32",
+            "name": "anteMortemPhotoBlock",
+            "type": "uint32"
+          },
+          {
             "internalType": "bytes32",
             "name": "farmId",
             "type": "bytes32"
@@ -843,6 +867,11 @@
             "type": "uint64"
           },
           {
+            "internalType": "uint32",
+            "name": "anteMortemPhotoBlock",
+            "type": "uint32"
+          },
+          {
             "internalType": "bytes32",
             "name": "farmId",
             "type": "bytes32"
@@ -972,6 +1001,11 @@
         "internalType": "enum CattleRegistry.SlaughterMethod",
         "name": "method",
         "type": "uint8"
+      },
+      {
+        "internalType": "bytes",
+        "name": "anteMortemPhoto",
+        "type": "bytes"
       }
     ],
     "name": "recordSlaughter",

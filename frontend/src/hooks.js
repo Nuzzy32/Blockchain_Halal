@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { NETWORK, addChainParams } from './chain.js'
-import { imageMime } from './photo.js'
+import { compressPhoto, imageMime } from './photo.js'
 import {
   cattlePhoto, errorMessage, isRevert, listCattle, listPackages, readRegistry, rolesOf, setDemoAccount, writeRegistry,
 } from './registry.js'
@@ -185,22 +185,44 @@ export function useCattle(idText) {
   return { ...state, cattleId, reload: () => setNonce((n) => n + 1) }
 }
 
-/** Foto sapi dari event CattlePhoto: { status: 'idle' | 'loading' | 'ok' | 'none' | 'failed', bytes }. */
-export function useCattlePhoto(cattle) {
+/** Foto sapi dari blockchain (lihat cattlePhoto): { status: 'idle' | 'loading' | 'ok' | 'none' | 'failed', bytes }. */
+export function useCattlePhoto(cattle, anteMortem = false) {
   const [state, setState] = useState({ status: 'idle' })
   useEffect(() => {
     if (!cattle) return setState({ status: 'idle' })
     let cancelled = false
     setState({ status: 'loading' })
-    cattlePhoto(cattle)
+    cattlePhoto(cattle, anteMortem)
       .then((bytes) => !cancelled && setState(bytes ? { status: 'ok', bytes } : { status: 'none' }))
       .catch(() => !cancelled && setState({ status: 'failed' }))
     return () => {
       cancelled = true
     }
-  }, [cattle])
+  }, [cattle, anteMortem])
   return state
 }
+
+const NO_PHOTO = { bytes: null, error: null, busy: false }
+
+/** Foto dari <input type="file">, dikecilkan lewat compressPhoto: { photo, pick, clear }. */
+export function usePhotoPicker() {
+  const [photo, setPhoto] = useState(NO_PHOTO)
+  const pick = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return setPhoto(NO_PHOTO)
+    setPhoto({ ...NO_PHOTO, busy: true })
+    try {
+      setPhoto({ ...NO_PHOTO, bytes: await compressPhoto(file) })
+    } catch (err) {
+      setPhoto({ ...NO_PHOTO, error: err.message })
+    }
+  }
+  return { photo, pick, clear: () => setPhoto(NO_PHOTO) }
+}
+
+/** Pesan validasi foto wajib, atau null kalau sudah siap dikirim. */
+export const photoError = (photo, what) =>
+  photo.error ?? (photo.busy ? 'Foto masih diproses…' : photo.bytes ? null : `${what} wajib diunggah.`)
 
 /** Byte gambar -> object URL untuk <img>, dilepas otomatis. Bukan WebP/JPEG/PNG -> null. */
 export function usePhotoUrl(bytes) {

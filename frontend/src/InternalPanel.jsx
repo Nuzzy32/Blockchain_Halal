@@ -44,6 +44,15 @@ export default function InternalPanel() {
     wallet.demoLogin(acct.address)
     setPendingAnchor(STAGES.find((s) => s.role === roleKey)?.anchor ?? 'tahap-admin')
   }
+  // Ponsel: setelah masuk (MetaMask atau akun demo), langsung ke form peran itu, supaya peternak tidak perlu
+  // menggulir melewati judul dan kartu tahap dulu. Di layar lebar form sudah terlihat di samping.
+  const scrolledFor = useRef(null)
+  useEffect(() => {
+    if (!wallet.account || !wallet.roles || scrolledFor.current === wallet.account) return
+    scrolledFor.current = wallet.account
+    const stage = STAGES.find((s) => wallet.roles[s.role])
+    if (stage && window.matchMedia('(max-width: 1023px)').matches) setPendingAnchor(stage.anchor)
+  }, [wallet.account, wallet.roles])
   useEffect(() => {
     if (!pendingAnchor || !wallet.roles) return
     document.getElementById(pendingAnchor)?.scrollIntoView({ block: 'start' })
@@ -497,7 +506,25 @@ function NotDeployed() {
   )
 }
 
+// Browser ponsel biasa tidak bisa memakai MetaMask; halaman harus dibuka dari browser di dalam aplikasinya.
+const isPhone = () => /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+const metaMaskAppUrl = () => `https://metamask.app.link/dapp/${location.host}${location.pathname}${location.search}`
+
 function NoWallet() {
+  if (isPhone()) {
+    return (
+      <Card title="Buka lewat aplikasi MetaMask">
+        <p>
+          Di ponsel, dashboard ini dibuka dari browser di dalam aplikasi MetaMask. Tombol di bawah membuka halaman ini
+          langsung di sana; kalau aplikasinya belum terpasang, Anda diarahkan ke toko aplikasi.
+        </p>
+        <a href={metaMaskAppUrl()} className="btn btn-primary mt-6">
+          Buka di aplikasi MetaMask
+        </a>
+        <p className="mt-6 border-t border-divider pt-4 text-sm">Konsumen tidak membutuhkan wallet — halaman hasil pindai QR bisa dibuka siapa saja.</p>
+      </Card>
+    )
+  }
   return (
     <Card title="MetaMask tidak terdeteksi">
       <p>Dashboard ini menulis transaksi ke blockchain, jadi membutuhkan wallet. Pasang MetaMask, lalu muat ulang halaman.</p>

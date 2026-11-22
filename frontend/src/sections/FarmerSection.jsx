@@ -1,20 +1,19 @@
 import { useState } from 'react'
-import { Field, NextStep, Review, Section, TxStatus, fieldProps } from '../components.jsx'
+import { Field, NextStep, PhotoField, Review, Section, TxStatus, fieldProps } from '../components.jsx'
 import { BREED, COAT_COLOR, FEED_TYPE, GRADE, GRADE_HINT, SEX, cattleLabel, label, normalizeEartag, options, textToBytes32 } from '../format.js'
-import { usePhotoUrl, useTx } from '../hooks.js'
-import { compressPhoto } from '../photo.js'
+import { photoError, usePhotoPicker, usePhotoUrl, useTx } from '../hooks.js'
 import { eventsOf } from '../registry.js'
 import { validateAge, validateChoice, validateLiveWeight, validateShortText } from '../validation.js'
 
 const EMPTY = { age: '', weight: '', grade: '', feed: '', breed: '', sex: '', coat: '', farmId: '', eartag: '' }
-const NO_PHOTO = { bytes: null, error: null, busy: false }
 
 export default function FarmerSection() {
   const [v, setV] = useState(EMPTY)
   const [touched, setTouched] = useState(false)
   const [review, setReview] = useState(false)
   const [created, setCreated] = useState(null)
-  const [photo, setPhoto] = useState(NO_PHOTO)
+  const picker = usePhotoPicker()
+  const { photo } = picker
   const photoUrl = usePhotoUrl(photo.bytes)
   const tx = useTx()
 
@@ -28,21 +27,10 @@ export default function FarmerSection() {
     coat: validateChoice(v.coat, 'Warna bulu'),
     farmId: validateShortText(v.farmId, 'Kode peternakan'),
     eartag: validateShortText(normalizeEartag(v.eartag), 'Nomor eartag'),
-    photo: photo.error ?? (photo.busy ? 'Foto masih diproses…' : photo.bytes ? null : 'Foto sapi wajib diunggah.'),
+    photo: photoError(photo, 'Foto sapi'),
   }
   const err = (k) => (touched ? errors[k] : null)
   const set = (k) => (e) => setV({ ...v, [k]: e.target.value })
-
-  const pickPhoto = async (e) => {
-    const file = e.target.files?.[0]
-    if (!file) return setPhoto(NO_PHOTO)
-    setPhoto({ ...NO_PHOTO, busy: true })
-    try {
-      setPhoto({ ...NO_PHOTO, bytes: await compressPhoto(file) })
-    } catch (err) {
-      setPhoto({ ...NO_PHOTO, error: err.message })
-    }
-  }
 
   const submit = (e) => {
     e.preventDefault()
@@ -66,7 +54,7 @@ export default function FarmerSection() {
     const [ev] = eventsOf(receipt, 'CattleRegistered')
     setCreated(ev?.args.cattleId ?? null)
     setV(EMPTY)
-    setPhoto(NO_PHOTO)
+    picker.clear()
     setTouched(false)
   }
 
@@ -117,27 +105,15 @@ export default function FarmerSection() {
             <input {...fieldProps('farmer-eartag', err('eartag'), { placeholder: 'contoh: 3201-0001', autoComplete: 'off', 'aria-describedby': 'farmer-eartag-hint' })} value={v.eartag} onChange={set('eartag')} />
           </Field>
           <div className="sm:col-span-2">
-            <Field
+            <PhotoField
               id="farmer-photo"
               label="Foto sapi"
+              hint="Seluruh badan sapi dari samping, cahaya terang. Dikecilkan otomatis (maks. 30 KB) dan lokasi GPS di foto dibuang."
               error={err('photo')}
-              hint={photo.busy ? 'Mengecilkan foto…' : 'Seluruh badan sapi dari samping, cahaya terang. Dikecilkan otomatis (maks. 30 KB) dan lokasi GPS di foto dibuang.'}
-            >
-              <div className="flex flex-wrap items-center gap-4">
-                {photoUrl && <img src={photoUrl} alt="Pratinjau foto sapi" className="h-24 w-32 rounded-lg border border-divider object-cover" />}
-                <input
-                  key={String(created)}
-                  {...fieldProps('farmer-photo', err('photo'), { 'aria-describedby': 'farmer-photo-hint' })}
-                  type="file"
-                  accept="image/*"
-                  onChange={pickPhoto}
-                  className="field min-w-0 flex-1 file:mr-3 file:rounded-md file:border-0 file:bg-primary-soft file:px-3 file:py-1.5 file:font-medium file:text-primary"
-                />
-              </div>
-            </Field>
-            {photo.bytes && (
-              <p className="mt-1.5 text-sm text-muted" role="status">{(photo.bytes.length / 1000).toLocaleString('id-ID', { maximumFractionDigits: 1 })} KB, siap dicatat.</p>
-            )}
+              picker={picker}
+              url={photoUrl}
+              resetKey={String(created)}
+            />
           </div>
         </fieldset>
 

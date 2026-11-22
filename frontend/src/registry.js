@@ -57,12 +57,16 @@ export async function listPackages() {
   return Promise.all(Array.from({ length: n }, (_, i) => ct.getPackageTrace(i + 1).then(([pkg]) => pkg)))
 }
 
-/** Byte foto sapi dari event CattlePhoto di blok `photoBlock`, atau null kalau sapi tanpa foto. */
-export async function cattlePhoto(cattle) {
-  const block = Number(cattle.photoBlock)
+/**
+ * Byte foto sapi, atau null kalau tanpa foto. Foto pendaftaran ada di event CattlePhoto (blok `photoBlock`),
+ * foto ante-mortem dari RPH di event AnteMortemPhoto (blok `anteMortemPhotoBlock`).
+ */
+export async function cattlePhoto(cattle, anteMortem = false) {
+  const block = Number(anteMortem ? cattle.anteMortemPhotoBlock : cattle.photoBlock)
   if (!block) return null
   const ct = readRegistry()
-  const [log] = await ct.queryFilter(ct.filters.CattlePhoto(cattle.cattleId), block, block)
+  const filter = anteMortem ? ct.filters.AnteMortemPhoto(cattle.cattleId) : ct.filters.CattlePhoto(cattle.cattleId)
+  const [log] = await ct.queryFilter(filter, block, block)
   return log ? getBytes(log.args.photo) : null
 }
 

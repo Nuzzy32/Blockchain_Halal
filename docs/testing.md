@@ -8,7 +8,7 @@ Status: `[ ]` belum diuji · `✓` sesuai harapan · `✗` gagal (tulis apa yang
 
 Putaran 2026-09-26: diuji di browser pratinjau terhadap node Hardhat lokal (deploy + seed), dengan penyedia EIP-1193 uji yang meneruskan transaksi ke akun Hardhat — **bukan MetaMask asli**. B10 (pindah jaringan), C3 (node mati), dan C4/C5 (kamera) belum diuji; kamera diblokir di browser pratinjau, logika penolakan URL scanner sudah dicakup uji murni `validation.test.js`. Ulangi seluruh tabel dengan MetaMask sebelum demo.
 
-Putaran 2026-11-22 (fitur foto, ciri fisik, eartag): cara uji sama seperti di atas. Seed sekarang memakai foto asli dan eartag `ID-SEED-<id sapi>`, jadi baris A dan B ditulis ulang. A1, B13, dan B14 diuji dengan akun demo lokal; file foto dipasang ke `<input type=file>` lewat skrip karena browser pratinjau tidak punya dialog file.
+Putaran 2026-11-22 (fitur foto, ciri fisik, eartag): cara uji sama seperti di atas. Seed sekarang memakai foto asli dan eartag `ID-SEED-<id sapi>`, jadi baris A dan B ditulis ulang. A1, B13, B14, dan (putaran berikutnya, masukan dosen) A8, B15, C9, C10 diuji dengan akun demo lokal; file foto dipasang ke `<input type=file>` lewat skrip karena browser pratinjau tidak punya dialog file.
 
 ### A. Alur bahagia
 
@@ -21,6 +21,7 @@ Putaran 2026-11-22 (fitur foto, ciri fisik, eartag): cara uji sama seperti di at
 | A5 | #3 Distributor | Kirim `6, 7` | Sukses; pratinjau kedua kemasan berubah ke Dikirim | `✓` |
 | A6 | tanpa wallet | Buka `?trace=6` | Kartu halal terisi, foto dan ciri fisik sapi tampil, baris Eartag terisi, 4 langkah linimasa terisi, tautan/hash tx tiap langkah | `✓` |
 | A7 | #0 Admin | Beri peran Peternak ke alamat akun #4, lalu cabut | Daftar "Peran saat ini" ikut berubah | `✓` |
+| A8 | #2 RPH (lebar 375 px, lewat tunnel) | Sembelih sapi 4: eartag `id-seed-4`, ID juru sembelih `juleha-0042`, foto sebelum disembelih | Petunjuk "Terdaftar di daftar juru sembelih: Ahmad Fauzi"; ringkasan menampilkan nama dan foto; on-chain: event `AnteMortemPhoto` 25.786 byte, `anteMortemPhotoBlock` terisi, 1,04 juta gas | `✓` |
 
 ### B. Penolakan
 
@@ -40,6 +41,7 @@ Putaran 2026-11-22 (fitur foto, ciri fisik, eartag): cara uji sama seperti di at
 | B12 | #1 Peternak | Daftarkan sapi baru dengan eartag `ID-SEED-1` | Pesan contract "Eartag ID-SEED-1 sudah dipakai sapi HCT-C-000001." | `✓` |
 | B13 | #1 Peternak | Kirim form tanpa foto | Pesan inline "Foto sapi wajib diunggah." | `✓` |
 | B14 | #1 Peternak | Pilih file PDF sebagai foto | "File ini tidak bisa dibaca sebagai gambar…" | `✓` |
+| B15 | #2 RPH | Kirim form sembelih tanpa foto sebelum disembelih | "Foto sapi sebelum disembelih wajib diunggah." | `✓` |
 
 ### C. Halaman konsumen dan scanner
 
@@ -53,6 +55,9 @@ Putaran 2026-11-22 (fitur foto, ciri fisik, eartag): cara uji sama seperti di at
 | C6 | Buka `?trace=1` di ponsel (lebar 375 px) | Tanpa geser horizontal, teks terbaca, target sentuh ≥ 44 px | `✓` |
 | C7 | Buka `?trace=1` | Foto Limousin asli dari event `CattlePhoto` tampil, tidak ada error di konsol | `✓` |
 | C8 | Buka `?trace=1` di ponsel sungguhan tanpa MetaMask (setelah deploy Amoy) | Halaman tampil penuh termasuk foto | `[ ]` |
+| C9 | Buka `?trace=1` di ponsel (lebar 375 px) | Kartu halal: "Juru sembelih Ahmad Fauzi" + `JULEHA-0042`, foto sebelum disembelih dengan keterangan ante-mortem | `✓` |
+| C10 | Masuk akun demo di lebar 375 px | Layar langsung bergulir ke form peran itu | `✓` |
+| C11 | Buka `?panel=1` di browser ponsel biasa (situs Amoy, tanpa MetaMask) | Kartu "Buka lewat aplikasi MetaMask", tombolnya membuka halaman di aplikasi MetaMask | `[ ]` |
 
 ## v0 (arsip) — Fase 5 purwarupa
 

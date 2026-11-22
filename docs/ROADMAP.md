@@ -66,8 +66,9 @@ Estimasi total 5 sampai 6 minggu dengan ritme santai. Sesuaikan dengan tenggat t
 - [x] Tulis unit test jalur normal
 - [x] Tulis unit test jalur penolakan
 - [x] Ciri fisik sapi (ras, jenis kelamin, warna) dan foto di event `CattlePhoto`
-- [x] Eartag unik per sapi, wajib dicocokkan RPH saat sembelih (67 test lulus)
-- [ ] Kumpulkan POL Amoy, target sekitar 0,5 POL (lihat catatan di bawah)
+- [x] Eartag unik per sapi, wajib dicocokkan RPH saat sembelih
+- [x] Masukan dosen: foto ante-mortem oleh RPH (event `AnteMortemPhoto`) dan nama juru sembelih dari daftar di luar blockchain (69 test lulus)
+- [ ] Kumpulkan POL Amoy, minimal sekitar 0,35 POL untuk satu alur demo (lihat docs/demo-presentasi.md) (lihat catatan di bawah)
 - [ ] Deploy ke Polygon Amoy
 - [ ] Verifikasi contract di block explorer
 

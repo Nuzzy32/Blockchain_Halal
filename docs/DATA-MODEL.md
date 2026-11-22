@@ -85,9 +85,10 @@ struct CattleRecord {
     address farmer;
     uint64  registeredAt;
     uint32  photoBlock;      // blok berisi event CattlePhoto; 0 = tanpa foto
-    // slot 3
+    // slot 3 (32 byte)
     address abattoir;
     uint64  slaughteredAt;
+    uint32  anteMortemPhotoBlock; // blok berisi event AnteMortemPhoto; 0 = tanpa foto
     // slot 4-7
     bytes32 farmId;          // kode peternakan, bukan nama orang
     bytes32 slaughtermanId;  // ID sertifikat juru sembelih
@@ -155,6 +156,10 @@ Foto tidak disimpan di storage (30 KB = ~940 slot, ~19 juta gas), melainkan di e
 (sekitar 1 juta gas untuk 30 KB; terukur 853 ribu gas untuk satu `registerCattle` dengan foto 21 KB). Log event sama permanennya dengan storage, hanya tidak bisa dibaca
 contract lain — dan memang hanya frontend yang perlu membacanya. Nomor blok event disimpan di
 `photoBlock`, jadi halaman konsumen cukup meminta log satu blok itu.
+
+Foto kedua, foto ante-mortem, diambil RPH saat mencatat sembelih dan dipancarkan lewat event
+`AnteMortemPhoto` dengan cara yang sama (blok di `anteMortemPhotoBlock`, mengisi sisa slot 3, jadi tidak
+menambah slot). Terukur 1,04 juta gas untuk `recordSlaughter` dengan foto 25,8 KB.
 
 Frontend mengecilkan foto ke WebP/JPEG ≤ 30 KB lewat `<canvas>` (sekaligus membuang EXIF, termasuk
 lokasi GPS) di `frontend/src/photo.js`. Foto hanya ditampilkan kalau byte awalnya WebP, JPEG, atau PNG.
@@ -262,6 +267,11 @@ event CattleRegistered(
 event CattlePhoto(
     uint64 indexed cattleId,
     bytes photo              // hanya dipancarkan kalau foto tidak kosong
+);
+
+event AnteMortemPhoto(
+    uint64 indexed cattleId,
+    bytes photo              // foto sapi hidup sebelum disembelih, dari RPH; hanya kalau tidak kosong
 );
 
 event CattleSlaughtered(

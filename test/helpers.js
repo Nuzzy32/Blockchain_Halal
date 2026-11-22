@@ -54,14 +54,15 @@ export function registerCattle(registry, farmer, overrides = {}) {
   return registry.connect(farmer).registerCattle(...cattleArgs(overrides))
 }
 
-export const SLAUGHTER = { slaughtermanId: b32('JULEHA-0042'), halalCertNo: b32('ID00410000123'), method: SlaughterMethod.ManualNoStunning }
+export const ANTE_MORTEM_PHOTO = '0x' + 'cd'.repeat(64)
+export const SLAUGHTER = { slaughtermanId: b32('JULEHA-0042'), halalCertNo: b32('ID00410000123'), method: SlaughterMethod.ManualNoStunning, photo: ANTE_MORTEM_PHOTO }
 
 export async function slaughterCattle(registry, abattoir, cattleId, overrides = {}) {
   const s = { ...SLAUGHTER, ...overrides }
   const slaughteredAt = s.slaughteredAt ?? (await networkHelpers.time.latest())
   // Default: eartag yang benar dari catatan sapi (sapi tak terdaftar -> nol, biar CattleNotFound yang muncul).
   const eartag = s.eartag ?? (await registry.getCattle(cattleId).then((c) => c.eartag, () => ethers.ZeroHash))
-  return registry.connect(abattoir).recordSlaughter(cattleId, eartag, slaughteredAt, s.slaughtermanId, s.halalCertNo, s.method)
+  return registry.connect(abattoir).recordSlaughter(cattleId, eartag, slaughteredAt, s.slaughtermanId, s.halalCertNo, s.method, s.photo)
 }
 
 export async function createSlaughteredCattle() {

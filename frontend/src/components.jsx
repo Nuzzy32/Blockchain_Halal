@@ -117,6 +117,31 @@ export const fieldProps = (id, error, extra = {}) => ({
   'aria-describedby': error ? `${id}-error` : extra['aria-describedby'],
 })
 
+/** Unggah foto dari kamera/galeri: pratinjau dan ukuran setelah dikecilkan. `resetKey` berganti -> input dikosongkan. */
+export function PhotoField({ id, label, hint, error, picker, url, resetKey }) {
+  const { photo, pick } = picker
+  return (
+    <div>
+      <Field id={id} label={label} error={error} hint={photo.busy ? 'Mengecilkan foto…' : hint}>
+        <div className="flex flex-wrap items-center gap-4">
+          {url && <img src={url} alt={`Pratinjau ${label.toLowerCase()}`} className="h-24 w-32 rounded-lg border border-divider object-cover" />}
+          <input
+            key={resetKey}
+            {...fieldProps(id, error, { 'aria-describedby': `${id}-hint` })}
+            type="file"
+            accept="image/*"
+            onChange={pick}
+            className="field min-w-0 flex-1 file:mr-3 file:rounded-md file:border-0 file:bg-primary-soft file:px-3 file:py-1.5 file:font-medium file:text-primary"
+          />
+        </div>
+      </Field>
+      {photo.bytes && (
+        <p className="mt-1.5 text-sm text-muted" role="status">{(photo.bytes.length / 1000).toLocaleString('id-ID', { maximumFractionDigits: 1 })} KB, siap dicatat.</p>
+      )}
+    </div>
+  )
+}
+
 /** Ringkasan sebelum tanda tangan (SECURITY A12): pengguna membaca dulu apa yang dicatat permanen. */
 export function Review({ rows, status, onConfirm, onCancel }) {
   const busy = status === 'signing' || status === 'mining'

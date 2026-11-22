@@ -6,6 +6,7 @@ import {
 } from './format.js'
 import { useCattlePhoto, usePhotoUrl } from './hooks.js'
 import { errorMessage, findStepTxs, isRevert, readRegistry } from './registry.js'
+import { slaughtermanName } from './slaughtermen.js'
 
 const SHIPPED = 1n
 
@@ -43,13 +44,14 @@ export default function TracePage({ id }) {
     }
   }, [id, nonce])
   const photo = useCattlePhoto(state.status === 'ok' ? state.cattle : null)
+  const antePhoto = useCattlePhoto(state.status === 'ok' ? state.cattle : null, true)
 
   let body
   if (!isDeployed()) body = <Message title="Belum tersedia">Contract HalalChain Trace v1 belum di-deploy ke {NETWORK.name}.</Message>
   else if (!id || state.status === 'notfound') body = <NotFound id={id} />
   else if (state.status === 'loading') body = <Loading />
   else if (state.status === 'error') body = <LoadError message={state.message} onRetry={() => setNonce((n) => n + 1)} />
-  else body = <Trace pkg={state.pkg} cattle={state.cattle} txs={txs} photo={photo} />
+  else body = <Trace pkg={state.pkg} cattle={state.cattle} txs={txs} photo={photo} antePhoto={antePhoto} />
 
   return (
     <div className="min-h-dvh">
@@ -67,7 +69,7 @@ export default function TracePage({ id }) {
   )
 }
 
-function Trace({ pkg, cattle, txs, photo }) {
+function Trace({ pkg, cattle, txs, photo, antePhoto }) {
   const shipped = pkg.status === SHIPPED
   const steps = [
     {
@@ -107,9 +109,10 @@ function Trace({ pkg, cattle, txs, photo }) {
         </div>
         <dl className="mt-5 grid gap-4 sm:grid-cols-3">
           <Fact term="Nomor sertifikat halal" value={bytes32ToText(cattle.halalCertNo)} mono />
-          <Fact term="ID juru sembelih" value={bytes32ToText(cattle.slaughtermanId)} mono />
+          <SlaughtermanFact id={bytes32ToText(cattle.slaughtermanId)} />
           <Fact term="Metode" value={label(SLAUGHTER_METHOD, cattle.slaughterMethod)} />
         </dl>
+        <AnteMortemPhoto cattle={cattle} photo={antePhoto} />
         <p className="mt-5 border-t border-divider pt-4 text-base leading-relaxed text-muted">
           Sistem ini mencatat klaim RPH secara permanen, bukan menerbitkan sertifikasi. Penilaian sah tidaknya
           penyembelihan tetap wewenang lembaga sertifikasi halal.
@@ -129,6 +132,37 @@ function Trace({ pkg, cattle, txs, photo }) {
 
       <Provenance />
     </div>
+  )
+}
+
+/** Nama dari daftar juru sembelih (di luar blockchain), ID sertifikatnya dari blockchain. */
+function SlaughtermanFact({ id }) {
+  const name = slaughtermanName(id)
+  if (!name) return <Fact term="ID juru sembelih" value={id} mono />
+  return (
+    <div>
+      <dt className="eyebrow">Juru sembelih</dt>
+      <dd className="font-display mt-1.5 break-words text-lg font-semibold">{name}</dd>
+      <dd className="mt-0.5 font-mono text-sm text-muted">{id}</dd>
+    </div>
+  )
+}
+
+/** Foto sapi hidup yang diambil RPH tepat sebelum disembelih (event AnteMortemPhoto). */
+function AnteMortemPhoto({ cattle, photo }) {
+  const url = usePhotoUrl(photo.status === 'ok' ? photo.bytes : null)
+  if (photo.status === 'none') return <p className="mt-5 text-base text-muted">RPH tidak menyertakan foto sapi sebelum disembelih.</p>
+  return (
+    <figure className="mt-5">
+      {url ? (
+        <img src={url} alt={`Foto sapi ${cattleLabel(cattle.cattleId)} sebelum disembelih`} className="aspect-[4/3] w-full rounded-lg bg-divider object-cover" />
+      ) : (
+        <div className={`flex aspect-[4/3] w-full items-center justify-center rounded-lg bg-divider/50 px-6 text-center text-base text-muted${photo.status === 'failed' ? '' : ' animate-pulse'}`}>
+          {photo.status === 'failed' ? 'Foto tidak dapat dimuat.' : photo.status === 'ok' ? 'Format foto tidak dikenali.' : 'Memuat foto dari blockchain…'}
+        </div>
+      )}
+      <figcaption className="mt-2 text-sm text-muted">Kondisi sapi sebelum disembelih, difoto RPH saat pemeriksaan ante-mortem.</figcaption>
+    </figure>
   )
 }
 

@@ -143,7 +143,8 @@ function recordSlaughter(
     uint64 slaughteredAt,
     bytes32 slaughtermanId,
     bytes32 halalCertNo,
-    SlaughterMethod method
+    SlaughterMethod method,
+    bytes calldata anteMortemPhoto
 ) external onlyRole(ABATTOIR_ROLE) cattleExists(cattleId)
 ```
 
@@ -155,11 +156,15 @@ function recordSlaughter(
 - `slaughteredAt` tidak boleh lebih besar dari `block.timestamp`, tidak boleh lebih kecil dari `registeredAt`
 - `slaughtermanId` dan `halalCertNo` tidak boleh kosong
 - `method` bukan `Unspecified`
+- `anteMortemPhoto` maksimal `MAX_PHOTO_BYTES`, kalau tidak revert `PhotoTooLarge`. Boleh kosong di contract; form RPH mewajibkannya
 
 **Efek:**
 - Mengubah status sapi menjadi `Slaughtered`
 - Menyimpan `abattoir = msg.sender` dan data halal
 - Memancarkan `CattleSlaughtered`
+- Kalau foto ada: memancarkan `AnteMortemPhoto` dan menyimpan nomor bloknya di `anteMortemPhotoBlock`. Foto ini sapi hidup di RPH sesaat sebelum disembelih (pemeriksaan ante-mortem), bukti kondisinya saat itu
+
+`slaughtermanId` hanya ID sertifikat. Nama juru sembelih yang tampil di halaman konsumen diambil dari `frontend/src/slaughtermen.js`, di luar blockchain (SECURITY A3).
 
 **Catatan desain:** fungsi ini hanya bisa dipanggil sekali per sapi. Tidak ada fungsi untuk mengubah data sembelih setelah tercatat. Ini disengaja, karena kemampuan mengubah data akan menghilangkan seluruh nilai sistem ini.
 

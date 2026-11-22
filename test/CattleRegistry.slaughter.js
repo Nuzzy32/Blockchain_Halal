@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { CattleStatus, b32, ROLE, SLAUGHTER, SlaughterMethod, deployWithRoles, ethers, networkHelpers, registerCattle, slaughterCattle } from './helpers.js'
+import { ANTE_MORTEM_PHOTO, CattleStatus, b32, ROLE, SLAUGHTER, SlaughterMethod, deployWithRoles, ethers, networkHelpers, registerCattle, slaughterCattle } from './helpers.js'
 
 describe('CattleRegistry — pencatatan sembelih', function () {
   let registry, farmer, abattoir
@@ -22,6 +22,21 @@ describe('CattleRegistry — pencatatan sembelih', function () {
     expect(c.slaughtermanId).to.equal(SLAUGHTER.slaughtermanId)
     expect(c.halalCertNo).to.equal(SLAUGHTER.halalCertNo)
     expect(c.slaughterMethod).to.equal(BigInt(SlaughterMethod.ManualNoStunning))
+  })
+
+  it('foto ante-mortem dipancarkan lewat AnteMortemPhoto dan bloknya dicatat', async function () {
+    const tx = await slaughterCattle(registry, abattoir, 1)
+    await expect(tx).to.emit(registry, 'AnteMortemPhoto').withArgs(1, ANTE_MORTEM_PHOTO)
+    const { blockNumber } = await tx.wait()
+    expect((await registry.getCattle(1)).anteMortemPhotoBlock).to.equal(BigInt(blockNumber))
+  })
+
+  it('tanpa foto ante-mortem: tidak ada event dan bloknya 0; foto terlalu besar ditolak', async function () {
+    const max = Number(await registry.MAX_PHOTO_BYTES())
+    await expect(slaughterCattle(registry, abattoir, 1, { photo: '0x' + 'ff'.repeat(max + 1) }))
+      .to.be.revertedWithCustomError(registry, 'PhotoTooLarge').withArgs(max + 1, max)
+    await expect(slaughterCattle(registry, abattoir, 1, { photo: '0x' })).not.to.emit(registry, 'AnteMortemPhoto')
+    expect((await registry.getCattle(1)).anteMortemPhotoBlock).to.equal(0n)
   })
 
   it('eartag yang tidak cocok dengan catatan sapi ditolak', async function () {

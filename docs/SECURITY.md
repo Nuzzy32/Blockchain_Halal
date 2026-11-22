@@ -52,6 +52,8 @@ Penyelesaian sebenarnya butuh lapisan di luar sistem: audit fisik oleh lembaga i
 
 **Mitigasi:** Tidak ada field data pribadi di struct mana pun. Identitas diwakili alamat wallet, kode peternakan, dan nomor sertifikat. Aturan ini juga dicantumkan di `CLAUDE.md` supaya tidak dilanggar tanpa sengaja saat pengembangan.
 
+Nama juru sembelih (diminta dosen untuk halaman konsumen) tidak ditulis ke contract. On-chain hanya ID sertifikatnya; nama diambil dari daftar di `frontend/src/slaughtermen.js`, diisi hanya dengan persetujuan orangnya, dan bisa dihapus kapan saja tanpa menyentuh catatan penyembelihan.
+
 **Status:** Tertangani lewat desain
 
 ---

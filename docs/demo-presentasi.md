@@ -20,9 +20,9 @@ dibuka di laptop itu sendiri.
 |---|---|---|
 | Owner `0x088D…51db` | *Deploy* (2,4 juta *gas*) + 3 × `grantRole` | 0,15 POL |
 | Peternak `0x060b…8A6c` | 1 sapi dengan foto (1,05 juta *gas*) | 0,07 POL |
-| RumahPotong `0x4cb5…b476` | Sembelih + buat kemasan | 0,03 POL |
+| RumahPotong `0x4cb5…b476` | Sembelih dengan foto (1,04 juta *gas*) + buat kemasan | 0,09 POL |
 | Distributor `0x6a9f…7e11` | Catat pengiriman | 0,01 POL |
-| **Total** | | **sekitar 0,3 POL** |
+| **Total** | | **sekitar 0,35 POL** |
 
 Dihitung pada harga *gas* 56 *gwei* (22 November 2026). Saldo semua wallet ini saat itu: Owner 0,022,
 Peternak 0,008, RumahPotong 0,002, Distributor 0,001.

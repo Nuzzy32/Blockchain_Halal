@@ -47,9 +47,10 @@ contract CattleRegistry {
         address farmer;
         uint64  registeredAt;
         uint32  photoBlock;      // blok berisi event CattlePhoto; 0 = tanpa foto
-        // slot 3
+        // slot 3 (32 byte)
         address abattoir;
         uint64  slaughteredAt;
+        uint32  anteMortemPhotoBlock; // blok berisi event AnteMortemPhoto; 0 = tanpa foto
         // slot 4-7
         bytes32 farmId;          // kode peternakan, bukan nama orang
         bytes32 slaughtermanId;  // ID sertifikat juru sembelih
@@ -129,6 +130,8 @@ contract CattleRegistry {
 
     event CattleRegistered(uint64 indexed cattleId, address indexed farmer, bytes32 farmId, uint64 timestamp);
     event CattlePhoto(uint64 indexed cattleId, bytes photo);
+    /// @notice Foto sapi hidup diambil RPH tepat sebelum disembelih (pemeriksaan ante-mortem).
+    event AnteMortemPhoto(uint64 indexed cattleId, bytes photo);
     event CattleSlaughtered(uint64 indexed cattleId, address indexed abattoir, bytes32 halalCertNo, uint64 slaughteredAt);
     event PackageCreated(uint64 indexed packageId, uint64 indexed cattleId, uint8 cutType, uint32 weightGrams);
     event PackageShipped(uint64 indexed packageId, address indexed distributor, uint64 shippedAt);
@@ -248,7 +251,8 @@ contract CattleRegistry {
         uint64 slaughteredAt,
         bytes32 slaughtermanId,
         bytes32 halalCertNo,
-        SlaughterMethod method
+        SlaughterMethod method,
+        bytes calldata anteMortemPhoto
     ) external onlyRole(ABATTOIR_ROLE) cattleExists(cattleId) {
         CattleRecord storage c = cattleRecords[cattleId];
         if (c.status != uint8(CattleStatus.Registered)) {
@@ -259,6 +263,8 @@ contract CattleRegistry {
         if (slaughtermanId == bytes32(0)) revert EmptyField("slaughtermanId");
         if (halalCertNo == bytes32(0)) revert EmptyField("halalCertNo");
         if (method == SlaughterMethod.Unspecified) revert UnspecifiedEnum("method");
+        // Sama seperti foto pendaftaran: opsional di contract (form RPH mewajibkannya), ukurannya dijaga.
+        if (anteMortemPhoto.length > MAX_PHOTO_BYTES) revert PhotoTooLarge(anteMortemPhoto.length, MAX_PHOTO_BYTES);
 
         c.status = uint8(CattleStatus.Slaughtered);
         c.abattoir = msg.sender;
@@ -268,6 +274,10 @@ contract CattleRegistry {
         c.slaughterMethod = uint8(method);
 
         emit CattleSlaughtered(cattleId, msg.sender, halalCertNo, slaughteredAt);
+        if (anteMortemPhoto.length > 0) {
+            c.anteMortemPhotoBlock = uint32(block.number);
+            emit AnteMortemPhoto(cattleId, anteMortemPhoto);
+        }
     }
 
     // ---------------------------------------------------------------- RPH: pengemasan

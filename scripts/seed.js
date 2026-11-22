@@ -41,13 +41,17 @@ const photo = (name) => readFileSync(new URL(`./seed-photos/${name}.webp`, impor
 // Eartag seed: ID-SEED-<id sapi>. RPH mengetik nomor yang sama saat mencatat sembelih.
 const tag = (cattleId) => b32(`ID-SEED-${cattleId}`)
 let seeded = 0
+const photoOf = {} // id sapi -> nama foto, dipakai ulang sebagai foto ante-mortem
 async function register(age, weightKg, grade, feed, breed, sex, coat, farmId, photoName) {
+  photoOf[seeded + 1] = photoName
   await send(registry.connect(farmer).registerCattle(age, weightKg, grade, feed, breed, sex, coat, b32(farmId), tag(++seeded), photo(photoName)))
 }
 async function slaughter(cattleId, method) {
-  await send(registry.connect(abattoir).recordSlaughter(cattleId, tag(cattleId), await latest(), b32('JULEHA-0042'), b32('ID00410000123'), method))
+  await send(registry.connect(abattoir).recordSlaughter(cattleId, tag(cattleId), await latest(), b32('JULEHA-0042'), b32('ID00410000123'), method, photo(photoOf[cattleId])))
 }
 
+// Foto ante-mortem seed memakai foto yang sama dengan pendaftaran (sapinya sama); di RPH sungguhan
+// fotonya diambil baru saat sapi tiba.
 // Sapi 1: sampai dikirim. Sapi 2: dikemas, belum dikirim. Sapi 3: disembelih. Sapi 4: terdaftar.
 // Ciri fisik disesuaikan dengan fotonya.
 await register(30, 480, Grade.Prime, Feed.GrassFed, Breed.Limousin, Sex.Male, Coat.RedBrown, 'FARM-JTG-001', 'limousin')

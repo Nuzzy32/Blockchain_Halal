@@ -81,6 +81,17 @@ catatan digital dan hewan fisiknya:
 - **Dinormalisasi.** Spasi dibuang dan huruf diubah ke kapital sebelum dikirim, sehingga
   "id 3201 0099" dan "ID32010099" dianggap sama.
 
+### 2.4 Foto sebelum disembelih dan nama juru sembelih (masukan dosen)
+
+- **Foto ante-mortem.** Saat mencatat penyembelihan, RPH wajib memotret sapi hidup di RPH. Foto ini
+  tersimpan di *event* `AnteMortemPhoto` dan tampil di kartu data halal halaman konsumen, sebagai bukti
+  kondisi sapi sesaat sebelum disembelih. Biayanya sekitar 1,04 juta *gas* per penyembelihan.
+- **Nama juru sembelih.** Nama tidak ditulis ke *blockchain*, karena nama adalah data pribadi dan data
+  *blockchain* permanen. Di *blockchain* hanya ID sertifikatnya; nama ditampilkan dari daftar terpisah
+  yang bisa diperbarui atau dihapus, misalnya "Ahmad Fauzi (JULEHA-0042)".
+- **Akses ponsel.** Setelah masuk, layar langsung bergulir ke form sesuai peran, foto bisa diambil
+  langsung dari kamera, dan browser ponsel biasa diarahkan untuk membuka halaman di aplikasi MetaMask.
+
 ## 3. Struktur Data
 
 | Data | Tipe on-chain | Validasi di kontrak | Validasi di aplikasi web |
