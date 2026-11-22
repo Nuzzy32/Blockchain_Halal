@@ -307,4 +307,5 @@ Tanpa param (`/`) sekarang landing page yang menjelaskan sistem; panel internal 
   `overflow-x: clip`, bukan `hidden` — `hidden` mematikan sticky.
 - Latar gelap `--color-night: #0B1D13` hanya di hero dan CTA penutup (pembuka dan penutup yang
   disengaja). Teks di atasnya: `#F0FDF4` 16.7:1, `#B9D3C1` 11:1.
-- Gambar dari picsum.photos adalah placeholder; ganti dengan foto asli peternakan/RPH mitra.
+- Foto asli dari Wikimedia Commons di `frontend/public/photos/` (WebP), kredit di footer (`PHOTO_CREDITS` di
+  `Landing.jsx`). Kalau sudah ada foto peternakan/RPH mitra sendiri, ganti file dengan nama yang sama.

@@ -7,7 +7,19 @@ import { STAGES } from './workflow.js'
 
 gsap.registerPlugin(ScrollTrigger, useGSAP)
 
-const img = (seed, w = 1600, h = 1200) => `https://picsum.photos/seed/${seed}/${w}/${h}`
+// Foto asli dari Wikimedia Commons, disimpan lokal di public/photos (kredit di PHOTO_CREDITS).
+const img = (name) => `${import.meta.env.BASE_URL}photos/${name}.webp`
+
+const PHOTO_CREDITS = [
+  ['Tenang di pelukan alam', 'Kevin rivaldi', 'CC BY-SA 4.0', 'Tenang_di_pelukan_alam.jpg'],
+  ['Slaughterhouse cattle bodies', 'Thomas Bjørkan', 'CC BY-SA 3.0', 'Slaughterhouse_cattle_bodies.jpg'],
+  ['Cattle in Indonesia with QR code eartag', 'RianHS', 'CC BY-SA 4.0', 'Cattle_in_Indonesia_with_QR_code_eartag_containing_health_information.jpg'],
+  ['Peternak Sapi di Kaki Rinjani', 'Focusfeel', 'CC BY-SA 4.0', 'Peternak_Sapi_di_Kaki_Rinjani.jpg'],
+  ['USDA historical imagery 0209', 'USDA', 'Domain publik', '150th_Anniversary_of_U_S_Department_of_Agriculture-Historical_imagery_(20120106-OC-AMW-0209).jpg'],
+  ['Hino 500 Ranger green box truck', 'Exynoss78739', 'CC BY 4.0', 'Hino_500_Ranger_green_box_truck.jpg'],
+  ['Dagangan daging potong', 'Nafisaacdr', 'CC BY 4.0', 'Dagangan_daging_potong.jpg'],
+  ['Laptop on a neat desk', 'Norbert Levajsics', 'CC0', 'Laptop_on_a_neat_desk_(Unsplash).jpg'],
+]
 const exampleUrl = () => `${import.meta.env.BASE_URL}?trace=1`
 
 const RECORDED = [
@@ -133,7 +145,7 @@ function Hero() {
             <span
               aria-hidden
               className="mx-[0.18em] inline-block h-[0.78em] w-[1.9em] rounded-full bg-cover bg-center align-[-0.06em] grayscale contrast-125"
-              style={{ backgroundImage: `url(${img('pasture-green', 480, 240)})` }}
+              style={{ backgroundImage: `url(${img('pasture')})` }}
             />
             sampai kemasan, riwayatnya bisa Anda periksa sendiri.
           </h1>
@@ -156,7 +168,7 @@ function Hero() {
           className="relative mt-20 ml-auto w-full max-w-xl overflow-hidden rounded-[1.75rem] border border-white/10 md:-mt-10 lg:-mt-40 lg:mr-[-2rem]"
         >
           <img
-            src={img('abattoir-cold', 1200, 800)}
+            src={img('abattoir')}
             alt="Ruang pendingin rumah potong hewan"
             className="aspect-[3/2] w-full object-cover opacity-80 grayscale contrast-125"
             loading="eager"
@@ -203,7 +215,7 @@ function Why() {
       <div className="mt-16 grid grid-flow-dense grid-cols-1 gap-4 md:grid-cols-4 md:grid-rows-[minmax(18rem,auto)_minmax(18rem,auto)]">
         <article className="group relative isolate flex flex-col justify-end overflow-hidden rounded-[1.75rem] bg-night p-8 text-[#f0fdf4] md:col-span-2 md:row-span-2 md:p-10">
           <img
-            src={img('phone-market', 1200, 1400)}
+            src={img('qr-eartag')}
             alt=""
             className="absolute inset-0 -z-10 h-full w-full object-cover opacity-45 grayscale contrast-125 transition-transform duration-700 ease-out group-hover:scale-105"
             loading="lazy"
@@ -307,7 +319,7 @@ const ROLES = [
     need: 'MetaMask dan peran Peternak dari admin.',
     href: `${panelUrl()}#tahap-daftar`,
     cta: 'Daftarkan sapi',
-    seed: 'cattle-field',
+    photo: 'farmer',
   },
   {
     who: 'RPH',
@@ -315,7 +327,7 @@ const ROLES = [
     need: 'MetaMask dan peran RPH dari admin.',
     href: `${panelUrl()}#tahap-sembelih`,
     cta: 'Catat penyembelihan',
-    seed: 'butcher-steel',
+    photo: 'processing',
   },
   {
     who: 'Distributor',
@@ -323,7 +335,7 @@ const ROLES = [
     need: 'MetaMask dan peran Distributor dari admin.',
     href: `${panelUrl()}#tahap-kirim`,
     cta: 'Catat pengiriman',
-    seed: 'truck-road',
+    photo: 'truck',
   },
   {
     who: 'Konsumen',
@@ -331,7 +343,7 @@ const ROLES = [
     need: 'Cukup kamera ponsel.',
     href: scanUrl(),
     cta: 'Pindai QR',
-    seed: 'grocery-shelf',
+    photo: 'meat-stall',
   },
   {
     who: 'Admin',
@@ -339,7 +351,7 @@ const ROLES = [
     need: 'Wallet yang men-deploy contract.',
     href: `${panelUrl()}#tahap-admin`,
     cta: 'Kelola peran',
-    seed: 'office-desk',
+    photo: 'office',
   },
 ]
 
@@ -366,7 +378,7 @@ function Roles() {
               } lg:basis-0`}
             >
               <img
-                src={img(r.seed, 900, 1000)}
+                src={img(r.photo)}
                 alt=""
                 className="absolute inset-0 -z-10 h-full w-full object-cover opacity-40 grayscale contrast-125 transition-transform duration-700 ease-out group-hover:scale-105"
                 loading="lazy"
@@ -458,6 +470,20 @@ function Footer() {
           )}
         </ul>
       </div>
+      <details className="mx-auto max-w-7xl px-5 pb-8 text-xs sm:px-8">
+        <summary className="tap cursor-pointer hover:text-white">Kredit foto</summary>
+        <p className="mt-3">Semua foto dari Wikimedia Commons, diperkecil dan ditampilkan hitam-putih.</p>
+        <ul className="mt-2 space-y-1">
+          {PHOTO_CREDITS.map(([title, author, license, file]) => (
+            <li key={file}>
+              <a className="underline underline-offset-2 hover:text-white" href={`https://commons.wikimedia.org/wiki/File:${encodeURIComponent(file)}`} target="_blank" rel="noreferrer">
+                {title}
+              </a>{' '}
+              · {author} · {license}
+            </li>
+          ))}
+        </ul>
+      </details>
     </footer>
   )
 }

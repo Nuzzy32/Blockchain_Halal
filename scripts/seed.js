@@ -4,6 +4,7 @@
 //
 // Hanya untuk localhost: skrip ini menandatangani sebagai peternak, RPH, dan distributor
 // sekaligus, dan itu hanya mungkin dengan akun tes Hardhat yang kuncinya publik.
+import { readFileSync } from 'node:fs'
 import { network } from 'hardhat'
 
 const ADDRESS = '0x5FbDB2315678afecb367f032d93F642f64180aa3' // deploy pertama akun #0 di node baru
@@ -30,25 +31,29 @@ const Feed = { GrassFed: 1, GrainFed: 2, Mixed: 3, Organic: 4 }
 const Method = { NoStunning: 1, WithStunning: 2 }
 const Breed = { Bali: 1, Madura: 2, PO: 3, Limousin: 4, Simmental: 5 }
 const Sex = { Male: 1, Female: 2 }
-const Coat = { White: 1, Cream: 3, RedBrown: 4 }
+const Coat = { White: 1, RedBrown: 4, Mixed: 6 }
 const Cut = { Sirloin: 1, Tenderloin: 2, Ribeye: 3, Brisket: 4, Shank: 5, Ground: 6 }
 
-// Tanpa foto ('0x'): unggah foto lewat form peternak di dashboard untuk mencoba tampilannya.
+// Foto asli ras tiap sapi (Wikimedia Commons, kredit di scripts/seed-photos/CREDITS.md), sudah
+// dikecilkan ke WebP <= 30 KB tanpa metadata, sama seperti hasil form peternak.
+const photo = (name) => readFileSync(new URL(`./seed-photos/${name}.webp`, import.meta.url))
+
 // Eartag seed: ID-SEED-<id sapi>. RPH mengetik nomor yang sama saat mencatat sembelih.
 const tag = (cattleId) => b32(`ID-SEED-${cattleId}`)
 let seeded = 0
-async function register(age, weightKg, grade, feed, breed, sex, coat, farmId) {
-  await send(registry.connect(farmer).registerCattle(age, weightKg, grade, feed, breed, sex, coat, b32(farmId), tag(++seeded), '0x'))
+async function register(age, weightKg, grade, feed, breed, sex, coat, farmId, photoName) {
+  await send(registry.connect(farmer).registerCattle(age, weightKg, grade, feed, breed, sex, coat, b32(farmId), tag(++seeded), photo(photoName)))
 }
 async function slaughter(cattleId, method) {
   await send(registry.connect(abattoir).recordSlaughter(cattleId, tag(cattleId), await latest(), b32('JULEHA-0042'), b32('ID00410000123'), method))
 }
 
 // Sapi 1: sampai dikirim. Sapi 2: dikemas, belum dikirim. Sapi 3: disembelih. Sapi 4: terdaftar.
-await register(30, 480, Grade.Prime, Feed.GrassFed, Breed.Limousin, Sex.Male, Coat.RedBrown, 'FARM-JTG-001')
-await register(26, 420, Grade.Choice, Feed.Mixed, Breed.PO, Sex.Male, Coat.White, 'FARM-JTG-001')
-await register(24, 390, Grade.Standard, Feed.GrainFed, Breed.Bali, Sex.Female, Coat.RedBrown, 'FARM-BYL-007')
-await register(34, 510, Grade.Prime, Feed.Organic, Breed.Simmental, Sex.Male, Coat.Cream, 'FARM-BYL-007')
+// Ciri fisik disesuaikan dengan fotonya.
+await register(30, 480, Grade.Prime, Feed.GrassFed, Breed.Limousin, Sex.Male, Coat.RedBrown, 'FARM-JTG-001', 'limousin')
+await register(26, 420, Grade.Choice, Feed.Mixed, Breed.PO, Sex.Female, Coat.White, 'FARM-JTG-001', 'po')
+await register(24, 290, Grade.Standard, Feed.GrainFed, Breed.Bali, Sex.Female, Coat.RedBrown, 'FARM-BYL-007', 'bali')
+await register(34, 510, Grade.Prime, Feed.Organic, Breed.Simmental, Sex.Female, Coat.Mixed, 'FARM-BYL-007', 'simmental')
 
 await slaughter(1, Method.NoStunning)
 await slaughter(2, Method.WithStunning)
