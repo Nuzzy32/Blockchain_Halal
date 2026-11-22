@@ -18,6 +18,9 @@ export const SlaughterMethod = { Unspecified: 0, ManualNoStunning: 1, ManualWith
 export const CattleStatus = { Registered: 0, Slaughtered: 1, Packaged: 2 }
 export const CutType = { Unspecified: 0, Sirloin: 1, Tenderloin: 2, Ribeye: 3, Brisket: 4, Shank: 5, Ground: 6, Other: 7 }
 export const PackageStatus = { Created: 0, Shipped: 1 }
+export const Breed = { Unspecified: 0, Bali: 1, Madura: 2, PeranakanOngole: 3, Limousin: 4, Simmental: 5, Brahman: 6, Other: 7 }
+export const Sex = { Unspecified: 0, Male: 1, Female: 2 }
+export const CoatColor = { Unspecified: 0, White: 1, Grey: 2, Cream: 3, RedBrown: 4, Black: 5, Mixed: 6 }
 
 export const b32 = (text) => ethers.encodeBytes32String(text)
 
@@ -30,11 +33,21 @@ export async function deployWithRoles() {
   return { registry, admin, farmer, abattoir, distributor, stranger }
 }
 
-export const CATTLE = { age: 24, weight: 450, grade: Grade.Prime, feed: FeedType.GrassFed, farmId: b32('FARM-JTG-001') }
+// Foto tiruan: isi tidak diperiksa contract, hanya ukurannya.
+export const PHOTO = '0x' + 'ab'.repeat(64)
+
+export const CATTLE = {
+  age: 24, weight: 450, grade: Grade.Prime, feed: FeedType.GrassFed,
+  breed: Breed.Bali, sex: Sex.Male, coatColor: CoatColor.RedBrown, farmId: b32('FARM-JTG-001'), photo: PHOTO,
+}
+
+export const cattleArgs = (overrides = {}) => {
+  const c = { ...CATTLE, ...overrides }
+  return [c.age, c.weight, c.grade, c.feed, c.breed, c.sex, c.coatColor, c.farmId, c.photo]
+}
 
 export function registerCattle(registry, farmer, overrides = {}) {
-  const c = { ...CATTLE, ...overrides }
-  return registry.connect(farmer).registerCattle(c.age, c.weight, c.grade, c.feed, c.farmId)
+  return registry.connect(farmer).registerCattle(...cattleArgs(overrides))
 }
 
 export const SLAUGHTER = { slaughtermanId: b32('JULEHA-0042'), halalCertNo: b32('ID00410000123'), method: SlaughterMethod.ManualNoStunning }

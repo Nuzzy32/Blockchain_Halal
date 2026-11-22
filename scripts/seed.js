@@ -28,20 +28,24 @@ const send = async (txPromise) => (await txPromise).wait()
 const Grade = { Standard: 1, Choice: 2, Prime: 3 }
 const Feed = { GrassFed: 1, GrainFed: 2, Mixed: 3, Organic: 4 }
 const Method = { NoStunning: 1, WithStunning: 2 }
+const Breed = { Bali: 1, Madura: 2, PO: 3, Limousin: 4, Simmental: 5 }
+const Sex = { Male: 1, Female: 2 }
+const Coat = { White: 1, Cream: 3, RedBrown: 4 }
 const Cut = { Sirloin: 1, Tenderloin: 2, Ribeye: 3, Brisket: 4, Shank: 5, Ground: 6 }
 
-async function register(age, weightKg, grade, feed, farmId) {
-  await send(registry.connect(farmer).registerCattle(age, weightKg, grade, feed, b32(farmId)))
+// Tanpa foto ('0x'): unggah foto lewat form peternak di dashboard untuk mencoba tampilannya.
+async function register(age, weightKg, grade, feed, breed, sex, coat, farmId) {
+  await send(registry.connect(farmer).registerCattle(age, weightKg, grade, feed, breed, sex, coat, b32(farmId), '0x'))
 }
 async function slaughter(cattleId, method) {
   await send(registry.connect(abattoir).recordSlaughter(cattleId, await latest(), b32('JULEHA-0042'), b32('ID00410000123'), method))
 }
 
 // Sapi 1: sampai dikirim. Sapi 2: dikemas, belum dikirim. Sapi 3: disembelih. Sapi 4: terdaftar.
-await register(30, 480, Grade.Prime, Feed.GrassFed, 'FARM-JTG-001')
-await register(26, 420, Grade.Choice, Feed.Mixed, 'FARM-JTG-001')
-await register(24, 390, Grade.Standard, Feed.GrainFed, 'FARM-BYL-007')
-await register(34, 510, Grade.Prime, Feed.Organic, 'FARM-BYL-007')
+await register(30, 480, Grade.Prime, Feed.GrassFed, Breed.Limousin, Sex.Male, Coat.RedBrown, 'FARM-JTG-001')
+await register(26, 420, Grade.Choice, Feed.Mixed, Breed.PO, Sex.Male, Coat.White, 'FARM-JTG-001')
+await register(24, 390, Grade.Standard, Feed.GrainFed, Breed.Bali, Sex.Female, Coat.RedBrown, 'FARM-BYL-007')
+await register(34, 510, Grade.Prime, Feed.Organic, Breed.Simmental, Sex.Male, Coat.Cream, 'FARM-BYL-007')
 
 await slaughter(1, Method.NoStunning)
 await slaughter(2, Method.WithStunning)

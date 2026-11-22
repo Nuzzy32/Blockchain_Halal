@@ -36,6 +36,7 @@ error LastAdmin();
 error LengthMismatch(uint256 cutTypes, uint256 weights);
 error WrongAbattoir(uint64 cattleId, address abattoir);
 error PackageWeightExceeded(uint64 cattleId, uint256 totalGrams, uint256 maxGrams);
+error PhotoTooLarge(uint256 given, uint256 max);
 ```
 
 Custom error lebih hemat gas dibanding `require` dengan pesan string, dan frontend bisa menangkap tipe error spesifiknya untuk menampilkan pesan yang tepat.
@@ -100,7 +101,11 @@ function registerCattle(
     uint16 liveWeightKg,
     Grade grade,
     FeedType feedType,
-    bytes32 farmId
+    Breed breed,
+    Sex sex,
+    CoatColor coatColor,
+    bytes32 farmId,
+    bytes calldata photo
 ) external onlyRole(FARMER_ROLE) returns (uint64 cattleId)
 ```
 
@@ -111,12 +116,15 @@ function registerCattle(
 - `liveWeightKg` antara 100 dan 1500, kalau tidak revert `InvalidWeight`
 - `grade` bukan `Unspecified`, kalau tidak revert `UnspecifiedEnum`
 - `feedType` bukan `Unspecified`, kalau tidak revert `UnspecifiedEnum`
+- `breed`, `sex`, `coatColor` bukan `Unspecified`, kalau tidak revert `UnspecifiedEnum`
 - `farmId` bukan bytes32 kosong, kalau tidak revert `EmptyField`
+- `photo` maksimal `MAX_PHOTO_BYTES` (30.000), kalau tidak revert `PhotoTooLarge`
 
 **Efek:**
 - Membuat `cattleId` baru dari counter
 - Menyimpan record dengan status `Registered`, `farmer = msg.sender`, `registeredAt = block.timestamp`
 - Memancarkan `CattleRegistered`
+- Kalau `photo` tidak kosong: `photoBlock = block.number` dan memancarkan `CattlePhoto`
 
 **Mengembalikan:** `cattleId` yang baru dibuat
 

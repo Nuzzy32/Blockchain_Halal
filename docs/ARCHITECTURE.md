@@ -58,7 +58,14 @@ Aplikasi React satu halaman, tanpa router — GitHub Pages tidak punya SPA rewri
 |---|---|---|
 | `?trace=<packageId>` | Konsumen | Tidak |
 | `?scan=1` | Konsumen (scanner QR kamera) | Tidak |
-| (tanpa param) | Panel internal — bagian yang tampil menyesuaikan peran on-chain wallet yang tersambung (admin, peternak, RPH, distributor bisa memegang beberapa peran sekaligus) | Ya |
+| `?panel=1` | Dashboard pencatatan — bagian yang tampil menyesuaikan peran on-chain wallet yang tersambung (admin, peternak, RPH, distributor bisa memegang beberapa peran sekaligus). Tiap form punya anchor `#tahap-admin`, `#tahap-daftar`, `#tahap-sembelih`, `#tahap-kemas`, `#tahap-kirim` | Ya |
+| (tanpa param) | Landing page: menjelaskan sistem, alur empat tahap, dan siapa mengisi apa (`src/workflow.js`) | Tidak |
+
+**Mode demo (hanya `VITE_NETWORK=local`).** Dashboard menawarkan tombol "Masuk sebagai
+Peternak/RPH/Distributor/Admin" untuk akun tes node Hardhat yang punya peran. Transaksi dikirim
+lewat `eth_sendTransaction` ke node, yang menandatangani dengan akun tesnya sendiri — tidak ada
+private key di frontend. Di Amoy fitur ini tidak tampil (`demoAvailable()` di `registry.js`), dan
+semua penandatanganan tetap lewat MetaMask.
 
 `?trace=<packageId>` adalah yang dituju oleh QR code. Halaman ini memakai RPC provider read-only, jadi terbuka di ponsel mana pun tanpa setup apa pun.
 
@@ -123,7 +130,7 @@ Dengan dua level, `packageId` menunjuk ke `cattleId` induknya. Konsumen memindai
 
 Data yang disimpan berupa angka dan teks pendek. Total per sapi di bawah 300 byte. Memakai IPFS untuk data sekecil ini menambah dependency dan titik kegagalan baru (file IPFS bisa hilang kalau tidak ada yang melakukan pinning), tanpa penghematan gas yang berarti.
 
-Kalau nanti ada kebutuhan menyimpan foto hewan atau dokumen sertifikat, barulah IPFS relevan. Itu di luar scope prototype ini.
+Foto sapi pun tidak butuh IPFS: dikecilkan ke ≤ 30 KB di browser lalu disimpan di event `CattlePhoto` (lihat DATA-MODEL §2). IPFS baru relevan kalau perlu foto resolusi tinggi atau dokumen sertifikat — di luar scope prototype ini, dan uploadnya butuh API key yang tidak boleh ada di frontend tanpa backend.
 
 ### Kenapa Polygon Amoy, bukan Ethereum Sepolia
 

@@ -21,12 +21,16 @@ contract CattleRegistry {
     enum CattleStatus { Registered, Slaughtered, Packaged }
     enum PackageStatus { Created, Shipped }
     enum CutType { Unspecified, Sirloin, Tenderloin, Ribeye, Brisket, Shank, Ground, Other }
+    // Ciri fisik: supaya konsumen tahu sapi seperti apa asal dagingnya.
+    enum Breed { Unspecified, Bali, Madura, PeranakanOngole, Limousin, Simmental, Brahman, Other }
+    enum Sex { Unspecified, Male, Female }
+    enum CoatColor { Unspecified, White, Grey, Cream, RedBrown, Black, Mixed }
 
     // ---------------------------------------------------------------- Struct
     // Urutan field disusun supaya muat sesedikit mungkin slot 32 byte.
 
     struct CattleRecord {
-        // slot 1 (21 byte)
+        // slot 1 (24 byte)
         uint64  cattleId;
         uint16  ageInMonths;
         uint16  liveWeightKg;
@@ -36,9 +40,13 @@ contract CattleRegistry {
         uint8   slaughterMethod; // SlaughterMethod
         uint32  packagedGrams;   // total berat seluruh kemasan dari sapi ini
         bool    exists;
-        // slot 2
+        uint8   breed;           // Breed
+        uint8   sex;             // Sex
+        uint8   coatColor;       // CoatColor
+        // slot 2 (32 byte)
         address farmer;
         uint64  registeredAt;
+        uint32  photoBlock;      // blok berisi event CattlePhoto; 0 = tanpa foto
         // slot 3
         address abattoir;
         uint64  slaughteredAt;
@@ -75,6 +83,10 @@ contract CattleRegistry {
     ///         Public supaya frontend membaca batas yang sama dari contract.
     uint256 public constant MAX_BATCH = 50;
 
+    /// @notice Foto sapi dikecilkan di browser lalu disimpan di event, bukan storage: 30 KB di storage
+    ///         butuh ~940 slot (~19 juta gas), di event sekitar 1 juta gas dan tetap permanen.
+    uint256 public constant MAX_PHOTO_BYTES = 30_000;
+
     // ---------------------------------------------------------------- Penyimpanan
 
     mapping(uint64 => CattleRecord)  private cattleRecords;
@@ -106,10 +118,12 @@ contract CattleRegistry {
     error LengthMismatch(uint256 cutTypes, uint256 weights);
     error WrongAbattoir(uint64 cattleId, address abattoir);
     error PackageWeightExceeded(uint64 cattleId, uint256 totalGrams, uint256 maxGrams);
+    error PhotoTooLarge(uint256 given, uint256 max);
 
     // ---------------------------------------------------------------- Event
 
     event CattleRegistered(uint64 indexed cattleId, address indexed farmer, bytes32 farmId, uint64 timestamp);
+    event CattlePhoto(uint64 indexed cattleId, bytes photo);
     event CattleSlaughtered(uint64 indexed cattleId, address indexed abattoir, bytes32 halalCertNo, uint64 slaughteredAt);
     event PackageCreated(uint64 indexed packageId, uint64 indexed cattleId, uint8 cutType, uint32 weightGrams);
     event PackageShipped(uint64 indexed packageId, address indexed distributor, uint64 shippedAt);
@@ -168,13 +182,22 @@ contract CattleRegistry {
         uint16 liveWeightKg,
         Grade grade,
         FeedType feedType,
-        bytes32 farmId
+        Breed breed,
+        Sex sex,
+        CoatColor coatColor,
+        bytes32 farmId,
+        bytes calldata photo
     ) external onlyRole(FARMER_ROLE) returns (uint64 cattleId) {
         if (ageInMonths < MIN_AGE_MONTHS || ageInMonths > MAX_AGE_MONTHS) revert InvalidAge(ageInMonths);
         if (liveWeightKg < MIN_LIVE_WEIGHT_KG || liveWeightKg > MAX_LIVE_WEIGHT_KG) revert InvalidWeight(liveWeightKg);
         if (grade == Grade.Unspecified) revert UnspecifiedEnum("grade");
         if (feedType == FeedType.Unspecified) revert UnspecifiedEnum("feedType");
+        if (breed == Breed.Unspecified) revert UnspecifiedEnum("breed");
+        if (sex == Sex.Unspecified) revert UnspecifiedEnum("sex");
+        if (coatColor == CoatColor.Unspecified) revert UnspecifiedEnum("coatColor");
         if (farmId == bytes32(0)) revert EmptyField("farmId");
+        // Foto opsional di contract (form mewajibkannya); yang dijaga di sini hanya ukurannya.
+        if (photo.length > MAX_PHOTO_BYTES) revert PhotoTooLarge(photo.length, MAX_PHOTO_BYTES);
 
         // ID dibuat contract, bukan input pengguna, supaya tidak bisa bertabrakan atau diserobot (DATA-MODEL §6).
         cattleId = nextCattleId++;
@@ -191,8 +214,16 @@ contract CattleRegistry {
         c.farmer = msg.sender;
         c.registeredAt = registeredAt;
         c.farmId = farmId;
+        c.breed = uint8(breed);
+        c.sex = uint8(sex);
+        c.coatColor = uint8(coatColor);
 
         emit CattleRegistered(cattleId, msg.sender, farmId, registeredAt);
+        if (photo.length > 0) {
+            // Nomor blok disimpan supaya halaman konsumen cukup membaca log satu blok ini.
+            c.photoBlock = uint32(block.number);
+            emit CattlePhoto(cattleId, photo);
+        }
     }
 
     // ---------------------------------------------------------------- RPH: penyembelihan

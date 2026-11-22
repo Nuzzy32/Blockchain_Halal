@@ -1,5 +1,8 @@
 import { expect } from 'chai'
-import { CATTLE, CattleStatus, FeedType, Grade, ROLE, deployWithRoles, ethers, networkHelpers, registerCattle } from './helpers.js'
+import {
+  Breed, CATTLE, CattleStatus, CoatColor, FeedType, Grade, PHOTO, ROLE, Sex, cattleArgs, deployWithRoles, ethers, networkHelpers,
+  registerCattle,
+} from './helpers.js'
 
 describe('CattleRegistry — registrasi sapi', function () {
   let registry, farmer, stranger
@@ -9,10 +12,9 @@ describe('CattleRegistry — registrasi sapi', function () {
   })
 
   it('mengembalikan ID urut mulai dari 1', async function () {
-    const c = CATTLE
-    expect(await registry.connect(farmer).registerCattle.staticCall(c.age, c.weight, c.grade, c.feed, c.farmId)).to.equal(1n)
+    expect(await registry.connect(farmer).registerCattle.staticCall(...cattleArgs())).to.equal(1n)
     await registerCattle(registry, farmer)
-    expect(await registry.connect(farmer).registerCattle.staticCall(c.age, c.weight, c.grade, c.feed, c.farmId)).to.equal(2n)
+    expect(await registry.connect(farmer).registerCattle.staticCall(...cattleArgs())).to.equal(2n)
   })
 
   it('menyimpan data sapi dan memancarkan CattleRegistered', async function () {
@@ -31,6 +33,31 @@ describe('CattleRegistry — registrasi sapi', function () {
     expect(c.farmer).to.equal(farmer.address)
     expect(c.registeredAt).to.equal(BigInt(ts))
     expect(c.farmId).to.equal(CATTLE.farmId)
+    expect(c.breed).to.equal(BigInt(Breed.Bali))
+    expect(c.sex).to.equal(BigInt(Sex.Male))
+    expect(c.coatColor).to.equal(BigInt(CoatColor.RedBrown))
+  })
+
+  it('foto dipancarkan lewat CattlePhoto dan bloknya dicatat', async function () {
+    const tx = await registerCattle(registry, farmer)
+    await expect(tx).to.emit(registry, 'CattlePhoto').withArgs(1, PHOTO)
+    const { blockNumber } = await tx.wait()
+    expect((await registry.getCattle(1)).photoBlock).to.equal(BigInt(blockNumber))
+    // Halaman konsumen membaca log tepat di blok itu.
+    const [log] = await registry.queryFilter(registry.filters.CattlePhoto(1), blockNumber, blockNumber)
+    expect(log.args.photo).to.equal(PHOTO)
+  })
+
+  it('tanpa foto: tidak ada event CattlePhoto dan photoBlock 0', async function () {
+    await expect(registerCattle(registry, farmer, { photo: '0x' })).not.to.emit(registry, 'CattlePhoto')
+    expect((await registry.getCattle(1)).photoBlock).to.equal(0n)
+  })
+
+  it('foto di atas MAX_PHOTO_BYTES ditolak, tepat batasnya diterima', async function () {
+    const max = Number(await registry.MAX_PHOTO_BYTES())
+    await expect(registerCattle(registry, farmer, { photo: '0x' + 'ff'.repeat(max + 1) }))
+      .to.be.revertedWithCustomError(registry, 'PhotoTooLarge').withArgs(max + 1, max)
+    await expect(registerCattle(registry, farmer, { photo: '0x' + 'ff'.repeat(max) })).not.to.revert(ethers)
   })
 
   it('totalCattle menghitung sapi terdaftar', async function () {
@@ -69,6 +96,15 @@ describe('CattleRegistry — registrasi sapi', function () {
       .to.be.revertedWithCustomError(registry, 'UnspecifiedEnum').withArgs('grade')
     await expect(registerCattle(registry, farmer, { feed: FeedType.Unspecified }))
       .to.be.revertedWithCustomError(registry, 'UnspecifiedEnum').withArgs('feedType')
+  })
+
+  it('ras, jenis kelamin, dan warna bulu Unspecified ditolak', async function () {
+    await expect(registerCattle(registry, farmer, { breed: Breed.Unspecified }))
+      .to.be.revertedWithCustomError(registry, 'UnspecifiedEnum').withArgs('breed')
+    await expect(registerCattle(registry, farmer, { sex: Sex.Unspecified }))
+      .to.be.revertedWithCustomError(registry, 'UnspecifiedEnum').withArgs('sex')
+    await expect(registerCattle(registry, farmer, { coatColor: CoatColor.Unspecified }))
+      .to.be.revertedWithCustomError(registry, 'UnspecifiedEnum').withArgs('coatColor')
   })
 
   it('kode peternakan kosong ditolak', async function () {

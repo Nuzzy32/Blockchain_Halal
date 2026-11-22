@@ -68,7 +68,7 @@ enum PackageStatus {
 
 ```solidity
 struct CattleRecord {
-    // slot 1 (21 byte)
+    // slot 1 (24 byte)
     uint64  cattleId;
     uint16  ageInMonths;
     uint16  liveWeightKg;
@@ -78,9 +78,13 @@ struct CattleRecord {
     uint8   slaughterMethod; // SlaughterMethod
     uint32  packagedGrams;   // total berat seluruh kemasan dari sapi ini
     bool    exists;
-    // slot 2
+    uint8   breed;           // Breed
+    uint8   sex;             // Sex
+    uint8   coatColor;       // CoatColor
+    // slot 2 (32 byte)
     address farmer;
     uint64  registeredAt;
+    uint32  photoBlock;      // blok berisi event CattlePhoto; 0 = tanpa foto
     // slot 3
     address abattoir;
     uint64  slaughteredAt;
@@ -92,6 +96,8 @@ struct CattleRecord {
 ```
 
 > `slaughterMethod` sengaja ditaruh di slot 1 (bukan slot terpisah di akhir) karena slot 1 baru terisi 16 dari 32 byte. Hasilnya 6 slot per sapi, bukan 7.
+
+`breed`, `sex`, `coatColor`, dan `photoBlock` mengisi ruang kosong di slot 1 dan 2, jadi tetap 6 slot per sapi.
 
 `packagedGrams` menjumlah berat seluruh kemasan dari sapi itu; tidak boleh melebihi berat hidup (lihat CONTRACTS.md createPackages).
 
@@ -132,6 +138,26 @@ enum CutType {
 }
 ```
 
+### Ciri fisik sapi
+
+Supaya konsumen tahu sapi seperti apa asal dagingnya. Nilai 0 tetap `Unspecified` dan ditolak.
+
+```solidity
+enum Breed { Unspecified, Bali, Madura, PeranakanOngole, Limousin, Simmental, Brahman, Other }
+enum Sex { Unspecified, Male, Female }
+enum CoatColor { Unspecified, White, Grey, Cream, RedBrown, Black, Mixed }
+```
+
+### Foto sapi
+
+Foto tidak disimpan di storage (30 KB = ~940 slot, ~19 juta gas), melainkan di event `CattlePhoto`
+(sekitar 1 juta gas untuk 30 KB; terukur 853 ribu gas untuk satu `registerCattle` dengan foto 21 KB). Log event sama permanennya dengan storage, hanya tidak bisa dibaca
+contract lain — dan memang hanya frontend yang perlu membacanya. Nomor blok event disimpan di
+`photoBlock`, jadi halaman konsumen cukup meminta log satu blok itu.
+
+Frontend mengecilkan foto ke WebP/JPEG ≤ 30 KB lewat `<canvas>` (sekaligus membuang EXIF, termasuk
+lokasi GPS) di `frontend/src/photo.js`. Foto hanya ditampilkan kalau byte awalnya WebP, JPEG, atau PNG.
+
 ## 4. Penyimpanan
 
 ```solidity
@@ -161,7 +187,9 @@ uint256 private adminCount;
 | `liveWeightKg` | Antara 100 dan 1500 |
 | `grade` | Tidak boleh `Unspecified` |
 | `feedType` | Tidak boleh `Unspecified` |
+| `breed`, `sex`, `coatColor` | Tidak boleh `Unspecified` |
 | `farmId` | Tidak boleh kosong |
+| `photo` | Maksimal 30.000 byte (`MAX_PHOTO_BYTES`). Boleh kosong di contract; form peternak mewajibkannya |
 
 ### Pencatatan penyembelihan
 | Field | Aturan |
@@ -214,6 +242,11 @@ event CattleRegistered(
     uint64 timestamp
 );
 
+event CattlePhoto(
+    uint64 indexed cattleId,
+    bytes photo              // hanya dipancarkan kalau foto tidak kosong
+);
+
 event CattleSlaughtered(
     uint64 indexed cattleId,
     address indexed abattoir,
@@ -246,5 +279,4 @@ event RoleRevoked(address indexed account, bytes32 indexed role);
 | Nama juru sembelih | Data pribadi, cukup ID sertifikatnya |
 | Alamat dan nomor telepon | Data pribadi, tidak relevan untuk ketertelusuran |
 | Harga jual | Informasi komersial sensitif, tidak perlu publik |
-| Foto hewan | Ukuran besar, butuh penyimpanan eksternal, di luar scope |
 | Koordinat GPS peternakan | Berpotensi mengungkap lokasi properti pribadi |
