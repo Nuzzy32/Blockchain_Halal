@@ -8,13 +8,13 @@ Status: `[ ]` belum diuji · `✓` sesuai harapan · `✗` gagal (tulis apa yang
 
 Putaran 2026-09-26: diuji di browser pratinjau terhadap node Hardhat lokal (deploy + seed), dengan penyedia EIP-1193 uji yang meneruskan transaksi ke akun Hardhat — **bukan MetaMask asli**. B10 (pindah jaringan), C3 (node mati), dan C4/C5 (kamera) belum diuji; kamera diblokir di browser pratinjau, logika penolakan URL scanner sudah dicakup uji murni `validation.test.js`. Ulangi seluruh tabel dengan MetaMask sebelum demo.
 
-Putaran 2026-11-22 (fitur foto, ciri fisik, eartag): cara uji sama seperti di atas. Seed sekarang memakai foto asli dan eartag `ID-SEED-<id sapi>`, jadi baris A dan B ditulis ulang. Baris yang menyebut foto lewat form peternak belum diuji ulang, jadi statusnya `[ ]`.
+Putaran 2026-11-22 (fitur foto, ciri fisik, eartag): cara uji sama seperti di atas. Seed sekarang memakai foto asli dan eartag `ID-SEED-<id sapi>`, jadi baris A dan B ditulis ulang. A1, B13, dan B14 diuji dengan akun demo lokal; file foto dipasang ke `<input type=file>` lewat skrip karena browser pratinjau tidak punya dialog file.
 
 ### A. Alur bahagia
 
 | # | Akun MetaMask | Aksi | Harapan | Status |
 |---|---|---|---|---|
-| A1 | #1 Peternak | Daftarkan sapi: umur 28, berat 460, Prime, Rumput, Bali, jantan, merah bata, `FARM-TES-001`, eartag `id 3201 0099`, foto JPG dari ponsel | Foto dikecilkan ≤ 30 KB dengan pratinjau → ringkasan menampilkan eartag `ID32010099` dan foto → tanda tangan → "ID sapi baru: HCT-C-000005" | `[ ]` |
+| A1 | #1 Peternak | Daftarkan sapi: umur 28, berat 300, Prime, Rumput, Bali, betina, cokelat kemerahan, `FARM-TES-001`, eartag `id 3201 0099`, foto JPG 1280×960 405 KB ber-EXIF | "25,8 KB, siap dicatat" + pratinjau → ringkasan menampilkan eartag `ID32010099` dan foto → "ID sapi baru: HCT-C-000005"; on-chain: event `CattlePhoto` 25.842 byte WebP tanpa EXIF, ciri fisik dan eartag sesuai | `✓` |
 | A2 | #2 RPH | Catat sembelih sapi 5: cocokkan foto, ketik eartag `ID32010099`, waktu default, metode manual tanpa pemingsanan, `JULEHA-0042`, `ID00410000123` | Kotak "Cocokkan dengan sapi yang datang" menampilkan foto, eartag tidak ditampilkan; ringkasan "ID32010099 (cocok)"; sukses, pratinjau sapi berubah ke Disembelih | `✓` |
 | A3 | #2 RPH | Buat 2 kemasan dari sapi 5: Sirloin 500 g, Brisket 1000 g | Dua label QR HCT-P-000006 dan HCT-P-000007 tampil | `✓` |
 | A4 | — | Unduh PNG label HCT-P-000006 | File `label-HCT-P-000006.png` berisi QR + teks label | `✓` |
@@ -38,8 +38,8 @@ Putaran 2026-11-22 (fitur foto, ciri fisik, eartag): cara uji sama seperti di at
 | B10 | siapa saja | MetaMask di jaringan lain | Banner "Jaringan salah", form terkunci, tombol pindah jaringan berfungsi | `[ ]` |
 | B11 | #2 RPH | Sembelih sapi 4 dengan eartag `ID-SEED-3` (milik sapi lain) | Pesan inline "Tidak cocok dengan eartag sapi ini…", MetaMask tidak muncul | `✓` |
 | B12 | #1 Peternak | Daftarkan sapi baru dengan eartag `ID-SEED-1` | Pesan contract "Eartag ID-SEED-1 sudah dipakai sapi HCT-C-000001." | `✓` |
-| B13 | #1 Peternak | Kirim form tanpa foto | Pesan inline "Foto sapi wajib diunggah." | `[ ]` |
-| B14 | #1 Peternak | Pilih file PDF sebagai foto | "File ini tidak bisa dibaca sebagai gambar…" | `[ ]` |
+| B13 | #1 Peternak | Kirim form tanpa foto | Pesan inline "Foto sapi wajib diunggah." | `✓` |
+| B14 | #1 Peternak | Pilih file PDF sebagai foto | "File ini tidak bisa dibaca sebagai gambar…" | `✓` |
 
 ### C. Halaman konsumen dan scanner
 
