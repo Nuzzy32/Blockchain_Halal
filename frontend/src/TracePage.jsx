@@ -4,8 +4,8 @@ import {
   BREED, COAT_COLOR, CUT_TYPE, FEED_TYPE, GRADE, PACKAGE_STATUS, SEX, SLAUGHTER_METHOD, bytes32ToText, cattleLabel, formatDate,
   freshnessText, label, packageLabel, shortAddress,
 } from './format.js'
-import { usePhotoUrl } from './hooks.js'
-import { cattlePhoto, errorMessage, findStepTxs, isRevert, readRegistry } from './registry.js'
+import { useCattlePhoto, usePhotoUrl } from './hooks.js'
+import { errorMessage, findStepTxs, isRevert, readRegistry } from './registry.js'
 
 const SHIPPED = 1n
 
@@ -17,7 +17,6 @@ const SHIPPED = 1n
 export default function TracePage({ id }) {
   const [state, setState] = useState({ status: 'loading' })
   const [txs, setTxs] = useState(null)
-  const [photo, setPhoto] = useState({ status: 'loading' })
   const [nonce, setNonce] = useState(0)
 
   useEffect(() => {
@@ -25,7 +24,6 @@ export default function TracePage({ id }) {
     let cancelled = false
     setState({ status: 'loading' })
     setTxs(null)
-    setPhoto({ status: 'loading' })
     readRegistry()
       .getPackageTrace(id)
       .then(([pkg, cattle]) => {
@@ -35,9 +33,6 @@ export default function TracePage({ id }) {
         findStepTxs(cattle.cattleId, pkg.packageId)
           .then((t) => !cancelled && setTxs(t))
           .catch(() => !cancelled && setTxs('failed'))
-        cattlePhoto(cattle)
-          .then((bytes) => !cancelled && setPhoto(bytes ? { status: 'ok', bytes } : { status: 'none' }))
-          .catch(() => !cancelled && setPhoto({ status: 'failed' }))
       })
       .catch((err) => {
         if (cancelled) return
@@ -47,6 +42,7 @@ export default function TracePage({ id }) {
       cancelled = true
     }
   }, [id, nonce])
+  const photo = useCattlePhoto(state.status === 'ok' ? state.cattle : null)
 
   let body
   if (!isDeployed()) body = <Message title="Belum tersedia">Contract HalalChain Trace v1 belum di-deploy ke {NETWORK.name}.</Message>
@@ -140,6 +136,7 @@ function Trace({ pkg, cattle, txs, photo }) {
 function CattleCard({ cattle, photo }) {
   const url = usePhotoUrl(photo.status === 'ok' ? photo.bytes : null)
   const note = {
+    idle: 'Memuat foto dari blockchain…',
     loading: 'Memuat foto dari blockchain…',
     none: 'Peternak tidak menyertakan foto.',
     failed: 'Foto tidak dapat dimuat.',
@@ -150,7 +147,7 @@ function CattleCard({ cattle, photo }) {
       {url ? (
         <img src={url} alt={`Foto sapi ${cattleLabel(cattle.cattleId)} saat didaftarkan`} className="aspect-[4/3] w-full bg-divider object-cover" />
       ) : (
-        <div className={`flex aspect-[4/3] w-full items-center justify-center bg-divider/50 px-6 text-center text-base text-muted${photo.status === 'loading' ? ' animate-pulse' : ''}`}>
+        <div className={`flex aspect-[4/3] w-full items-center justify-center bg-divider/50 px-6 text-center text-base text-muted${photo.status === 'loading' || photo.status === 'idle' ? ' animate-pulse' : ''}`}>
           {note}
         </div>
       )}
@@ -164,6 +161,7 @@ function CattleCard({ cattle, photo }) {
           <Fact term="Berat hidup" value={`${cattle.liveWeightKg} kg`} />
           <Fact term="Pakan" value={label(FEED_TYPE, cattle.feedType)} />
           <Fact term="Grade" value={label(GRADE, cattle.grade)} />
+          <Fact term="Eartag" value={bytes32ToText(cattle.eartag)} mono />
         </dl>
         {url && (
           <p className="mt-5 border-t border-divider pt-4 text-base leading-relaxed text-muted">

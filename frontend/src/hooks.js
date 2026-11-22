@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { NETWORK, addChainParams } from './chain.js'
-import { errorMessage, isRevert, listCattle, listPackages, readRegistry, rolesOf, setDemoAccount, writeRegistry } from './registry.js'
+import { imageMime } from './photo.js'
+import {
+  cattlePhoto, errorMessage, isRevert, listCattle, listPackages, readRegistry, rolesOf, setDemoAccount, writeRegistry,
+} from './registry.js'
+import { parseId } from './validation.js'
 
 // Disiarkan setiap transaksi berhasil, supaya daftar pilihan di semua form ikut diperbarui.
 const CHANGED = 'registry:changed'
-import { imageMime } from './photo.js'
-import { parseId } from './validation.js'
 
 export const hasMetaMask = () => typeof window.ethereum !== 'undefined'
 
@@ -181,6 +183,23 @@ export function useCattle(idText) {
   }, [cattleId, nonce])
 
   return { ...state, cattleId, reload: () => setNonce((n) => n + 1) }
+}
+
+/** Foto sapi dari event CattlePhoto: { status: 'idle' | 'loading' | 'ok' | 'none' | 'failed', bytes }. */
+export function useCattlePhoto(cattle) {
+  const [state, setState] = useState({ status: 'idle' })
+  useEffect(() => {
+    if (!cattle) return setState({ status: 'idle' })
+    let cancelled = false
+    setState({ status: 'loading' })
+    cattlePhoto(cattle)
+      .then((bytes) => !cancelled && setState(bytes ? { status: 'ok', bytes } : { status: 'none' }))
+      .catch(() => !cancelled && setState({ status: 'failed' }))
+    return () => {
+      cancelled = true
+    }
+  }, [cattle])
+  return state
 }
 
 /** Byte gambar -> object URL untuk <img>, dilepas otomatis. Bukan WebP/JPEG/PNG -> null. */

@@ -34,11 +34,14 @@ const Coat = { White: 1, Cream: 3, RedBrown: 4 }
 const Cut = { Sirloin: 1, Tenderloin: 2, Ribeye: 3, Brisket: 4, Shank: 5, Ground: 6 }
 
 // Tanpa foto ('0x'): unggah foto lewat form peternak di dashboard untuk mencoba tampilannya.
+// Eartag seed: ID-SEED-<id sapi>. RPH mengetik nomor yang sama saat mencatat sembelih.
+const tag = (cattleId) => b32(`ID-SEED-${cattleId}`)
+let seeded = 0
 async function register(age, weightKg, grade, feed, breed, sex, coat, farmId) {
-  await send(registry.connect(farmer).registerCattle(age, weightKg, grade, feed, breed, sex, coat, b32(farmId), '0x'))
+  await send(registry.connect(farmer).registerCattle(age, weightKg, grade, feed, breed, sex, coat, b32(farmId), tag(++seeded), '0x'))
 }
 async function slaughter(cattleId, method) {
-  await send(registry.connect(abattoir).recordSlaughter(cattleId, await latest(), b32('JULEHA-0042'), b32('ID00410000123'), method))
+  await send(registry.connect(abattoir).recordSlaughter(cattleId, tag(cattleId), await latest(), b32('JULEHA-0042'), b32('ID00410000123'), method))
 }
 
 // Sapi 1: sampai dikirim. Sapi 2: dikemas, belum dikirim. Sapi 3: disembelih. Sapi 4: terdaftar.

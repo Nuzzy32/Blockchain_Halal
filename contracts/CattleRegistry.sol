@@ -50,10 +50,11 @@ contract CattleRegistry {
         // slot 3
         address abattoir;
         uint64  slaughteredAt;
-        // slot 4-6
+        // slot 4-7
         bytes32 farmId;          // kode peternakan, bukan nama orang
         bytes32 slaughtermanId;  // ID sertifikat juru sembelih
         bytes32 halalCertNo;     // nomor sertifikat halal
+        bytes32 eartag;          // nomor eartag di telinga sapi: pengikat catatan ke sapi fisik
     }
 
     struct PackageRecord {
@@ -92,6 +93,8 @@ contract CattleRegistry {
     mapping(uint64 => CattleRecord)  private cattleRecords;
     mapping(uint64 => PackageRecord) private packageRecords;
     mapping(uint64 => uint64[])      private cattleToPackages;
+    // Satu eartag hanya untuk satu sapi, supaya satu sapi fisik tidak punya dua catatan.
+    mapping(bytes32 => uint64)       private eartagToCattle;
 
     uint64 private nextCattleId  = 1;
     uint64 private nextPackageId = 1;
@@ -119,6 +122,8 @@ contract CattleRegistry {
     error WrongAbattoir(uint64 cattleId, address abattoir);
     error PackageWeightExceeded(uint64 cattleId, uint256 totalGrams, uint256 maxGrams);
     error PhotoTooLarge(uint256 given, uint256 max);
+    error EartagTaken(bytes32 eartag, uint64 cattleId);
+    error EartagMismatch(uint64 cattleId);
 
     // ---------------------------------------------------------------- Event
 
@@ -186,6 +191,7 @@ contract CattleRegistry {
         Sex sex,
         CoatColor coatColor,
         bytes32 farmId,
+        bytes32 eartag,
         bytes calldata photo
     ) external onlyRole(FARMER_ROLE) returns (uint64 cattleId) {
         if (ageInMonths < MIN_AGE_MONTHS || ageInMonths > MAX_AGE_MONTHS) revert InvalidAge(ageInMonths);
@@ -196,6 +202,8 @@ contract CattleRegistry {
         if (sex == Sex.Unspecified) revert UnspecifiedEnum("sex");
         if (coatColor == CoatColor.Unspecified) revert UnspecifiedEnum("coatColor");
         if (farmId == bytes32(0)) revert EmptyField("farmId");
+        if (eartag == bytes32(0)) revert EmptyField("eartag");
+        if (eartagToCattle[eartag] != 0) revert EartagTaken(eartag, eartagToCattle[eartag]);
         // Foto opsional di contract (form mewajibkannya); yang dijaga di sini hanya ukurannya.
         if (photo.length > MAX_PHOTO_BYTES) revert PhotoTooLarge(photo.length, MAX_PHOTO_BYTES);
 
@@ -214,6 +222,8 @@ contract CattleRegistry {
         c.farmer = msg.sender;
         c.registeredAt = registeredAt;
         c.farmId = farmId;
+        c.eartag = eartag;
+        eartagToCattle[eartag] = cattleId;
         c.breed = uint8(breed);
         c.sex = uint8(sex);
         c.coatColor = uint8(coatColor);
@@ -230,8 +240,11 @@ contract CattleRegistry {
 
     /// @notice Hanya bisa sekali per sapi dan tidak ada fungsi untuk mengubahnya — disengaja,
     ///         karena data halal yang bisa diedit menghilangkan seluruh nilai sistem ini.
+    /// @param  eartag Dibaca RPH dari telinga sapi yang datang. Harus sama dengan saat didaftarkan,
+    ///         jadi tercatat bahwa RPH sudah mencocokkan sapi fisik dengan catatannya.
     function recordSlaughter(
         uint64 cattleId,
+        bytes32 eartag,
         uint64 slaughteredAt,
         bytes32 slaughtermanId,
         bytes32 halalCertNo,
@@ -241,6 +254,7 @@ contract CattleRegistry {
         if (c.status != uint8(CattleStatus.Registered)) {
             revert InvalidCattleStatus(cattleId, c.status, uint8(CattleStatus.Registered));
         }
+        if (eartag != c.eartag) revert EartagMismatch(cattleId);
         if (slaughteredAt > block.timestamp || slaughteredAt < c.registeredAt) revert InvalidTimestamp(slaughteredAt);
         if (slaughtermanId == bytes32(0)) revert EmptyField("slaughtermanId");
         if (halalCertNo == bytes32(0)) revert EmptyField("halalCertNo");

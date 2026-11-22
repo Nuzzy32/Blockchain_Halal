@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import {
   CUT_TYPE, GRADE, ROLE, blockRanges, bytes32ToText, byteLength, cattleLabel, formatDate,
-  freshnessText, label, options, packageLabel, roleKeyOf, shortAddress, textToBytes32, toDatetimeLocal,
+  freshnessText, label, normalizeEartag, options, packageLabel, roleKeyOf, shortAddress, textToBytes32, toDatetimeLocal,
 } from './format.js'
 
 test('label ID diberi awalan dan nol di depan', () => {
@@ -58,4 +58,10 @@ test('rentang blok dipecah per ukuran', () => {
   assert.deepEqual(blockRanges(0, 25, 10), [[0, 9], [10, 19], [20, 25]])
   assert.deepEqual(blockRanges(5, 5, 10), [[5, 5]])
   assert.deepEqual(blockRanges(10, 3, 10), [])
+})
+
+test('eartag dinormalisasi: spasi dibuang, huruf besar', () => {
+  assert.equal(normalizeEartag(' id 3201\t0001 '), 'ID32010001')
+  assert.equal(normalizeEartag('ID-SEED-1'), 'ID-SEED-1')
+  assert.equal(normalizeEartag(null), '')
 })

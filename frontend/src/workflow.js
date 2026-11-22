@@ -8,7 +8,7 @@ export const STAGES = [
     title: 'Daftarkan sapi',
     anchor: 'tahap-daftar',
     does: 'Mendaftarkan sapi hidup begitu siap dijual ke rumah potong.',
-    fills: ['Umur (bulan)', 'Berat hidup', 'Grade', 'Jenis pakan', 'Ras, jenis kelamin, warna bulu', 'Kode peternakan', 'Foto sapi'],
+    fills: ['Umur (bulan)', 'Berat hidup', 'Grade', 'Jenis pakan', 'Ras, jenis kelamin, warna bulu', 'Kode peternakan', 'Nomor eartag', 'Foto sapi'],
     gets: 'ID sapi, misalnya HCT-C-000012. Sapi langsung muncul di daftar RPH.',
   },
   {
@@ -17,7 +17,7 @@ export const STAGES = [
     title: 'Catat penyembelihan',
     anchor: 'tahap-sembelih',
     does: 'Mencatat penyembelihan halal satu kali, tepat setelah sapi disembelih.',
-    fills: ['Sapi dari daftar', 'Waktu sembelih', 'Metode syar\'i', 'ID juru sembelih', 'Nomor sertifikat halal', 'Konfirmasi syarat halal'],
+    fills: ['Sapi dari daftar', 'Cocokkan foto & eartag', 'Waktu sembelih', 'Metode syar\'i', 'ID juru sembelih', 'Nomor sertifikat halal', 'Konfirmasi syarat halal'],
     gets: 'Status sapi berubah menjadi "Disembelih" dan siap dikemas.',
   },
   {

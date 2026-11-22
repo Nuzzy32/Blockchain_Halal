@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import {
-  Breed, CATTLE, CattleStatus, CoatColor, FeedType, Grade, PHOTO, ROLE, Sex, cattleArgs, deployWithRoles, ethers, networkHelpers,
+  Breed, CATTLE, CattleStatus, CoatColor, FeedType, Grade, PHOTO, ROLE, Sex, b32, cattleArgs, deployWithRoles, ethers, networkHelpers,
   registerCattle,
 } from './helpers.js'
 
@@ -110,6 +110,16 @@ describe('CattleRegistry — registrasi sapi', function () {
   it('kode peternakan kosong ditolak', async function () {
     await expect(registerCattle(registry, farmer, { farmId: '0x' + '00'.repeat(32) }))
       .to.be.revertedWithCustomError(registry, 'EmptyField').withArgs('farmId')
+  })
+
+  it('eartag disimpan, wajib diisi, dan tidak boleh dipakai dua sapi', async function () {
+    const tag = b32('ID-3201-0001')
+    await registerCattle(registry, farmer, { eartag: tag })
+    expect((await registry.getCattle(1)).eartag).to.equal(tag)
+    await expect(registerCattle(registry, farmer, { eartag: tag }))
+      .to.be.revertedWithCustomError(registry, 'EartagTaken').withArgs(tag, 1)
+    await expect(registerCattle(registry, farmer, { eartag: ethers.ZeroHash }))
+      .to.be.revertedWithCustomError(registry, 'EmptyField').withArgs('eartag')
   })
 
   it('membaca sapi yang tidak ada memberi CattleNotFound', async function () {

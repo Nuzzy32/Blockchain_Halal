@@ -36,6 +36,7 @@ Dokumen ini berisi model ancaman, mitigasi yang diterapkan, dan keterbatasan yan
 - Admin bisa mencabut peran wallet yang terbukti curang
 - Hanya RPH yang mencatat penyembelihan yang bisa membuat kemasan dari sapi itu
 - Total berat kemasan dari satu sapi dibatasi berat hidupnya, supaya satu sertifikat halal tidak bisa ditempel ke kemasan tanpa batas
+- Eartag unik per sapi dan wajib diketik ulang RPH saat mencatat sembelih, sambil membandingkan foto dari peternak. Ini mencegah salah sapi karena kelalaian; RPH yang sengaja curang tetap bisa menyalin eartag dari data publik
 
 **Status:** Tidak sepenuhnya bisa diselesaikan oleh teknologi
 

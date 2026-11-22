@@ -37,6 +37,8 @@ error LengthMismatch(uint256 cutTypes, uint256 weights);
 error WrongAbattoir(uint64 cattleId, address abattoir);
 error PackageWeightExceeded(uint64 cattleId, uint256 totalGrams, uint256 maxGrams);
 error PhotoTooLarge(uint256 given, uint256 max);
+error EartagTaken(bytes32 eartag, uint64 cattleId);
+error EartagMismatch(uint64 cattleId);
 ```
 
 Custom error lebih hemat gas dibanding `require` dengan pesan string, dan frontend bisa menangkap tipe error spesifiknya untuk menampilkan pesan yang tepat.
@@ -105,6 +107,7 @@ function registerCattle(
     Sex sex,
     CoatColor coatColor,
     bytes32 farmId,
+    bytes32 eartag,
     bytes calldata photo
 ) external onlyRole(FARMER_ROLE) returns (uint64 cattleId)
 ```
@@ -118,6 +121,7 @@ function registerCattle(
 - `feedType` bukan `Unspecified`, kalau tidak revert `UnspecifiedEnum`
 - `breed`, `sex`, `coatColor` bukan `Unspecified`, kalau tidak revert `UnspecifiedEnum`
 - `farmId` bukan bytes32 kosong, kalau tidak revert `EmptyField`
+- `eartag` bukan bytes32 kosong (`EmptyField`) dan belum dipakai sapi lain (`EartagTaken`)
 - `photo` maksimal `MAX_PHOTO_BYTES` (30.000), kalau tidak revert `PhotoTooLarge`
 
 **Efek:**
@@ -135,6 +139,7 @@ function registerCattle(
 ```solidity
 function recordSlaughter(
     uint64 cattleId,
+    bytes32 eartag,
     uint64 slaughteredAt,
     bytes32 slaughtermanId,
     bytes32 halalCertNo,
@@ -146,6 +151,7 @@ function recordSlaughter(
 
 **Validasi:**
 - Status sapi harus `Registered`, kalau tidak revert `InvalidCattleStatus`
+- `eartag` (diketik RPH dari telinga sapi) sama dengan saat didaftarkan, kalau tidak revert `EartagMismatch`
 - `slaughteredAt` tidak boleh lebih besar dari `block.timestamp`, tidak boleh lebih kecil dari `registeredAt`
 - `slaughtermanId` dan `halalCertNo` tidak boleh kosong
 - `method` bukan `Unspecified`

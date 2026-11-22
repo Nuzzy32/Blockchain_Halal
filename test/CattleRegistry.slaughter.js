@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { CattleStatus, ROLE, SLAUGHTER, SlaughterMethod, deployWithRoles, ethers, networkHelpers, registerCattle, slaughterCattle } from './helpers.js'
+import { CattleStatus, b32, ROLE, SLAUGHTER, SlaughterMethod, deployWithRoles, ethers, networkHelpers, registerCattle, slaughterCattle } from './helpers.js'
 
 describe('CattleRegistry — pencatatan sembelih', function () {
   let registry, farmer, abattoir
@@ -22,6 +22,11 @@ describe('CattleRegistry — pencatatan sembelih', function () {
     expect(c.slaughtermanId).to.equal(SLAUGHTER.slaughtermanId)
     expect(c.halalCertNo).to.equal(SLAUGHTER.halalCertNo)
     expect(c.slaughterMethod).to.equal(BigInt(SlaughterMethod.ManualNoStunning))
+  })
+
+  it('eartag yang tidak cocok dengan catatan sapi ditolak', async function () {
+    await expect(slaughterCattle(registry, abattoir, 1, { eartag: b32('ID-SAPI-LAIN') }))
+      .to.be.revertedWithCustomError(registry, 'EartagMismatch').withArgs(1)
   })
 
   it('wallet tanpa peran RPH ditolak', async function () {

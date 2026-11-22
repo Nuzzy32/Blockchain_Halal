@@ -53,6 +53,8 @@ export const cattleOption = (c) =>
 /* ---------- bytes32 ---------- */
 
 export const byteLength = (text) => new TextEncoder().encode(text).length
+/** Eartag ditulis peternak dan diketik ulang RPH: spasi dibuang dan huruf dibesarkan supaya "id 32 01" = "ID3201". */
+export const normalizeEartag = (text) => String(text ?? '').replace(/\s+/g, '').toUpperCase()
 export const textToBytes32 = (text) => encodeBytes32String(text)
 
 /** Data bytes32 dari chain ke teks. Yang tidak bisa di-decode ditampilkan sebagai hex, bukan dipaksa. */

@@ -1,10 +1,11 @@
 // Nama custom error contract -> kalimat Indonesia untuk pengguna.
 import {
-  CATTLE_STATUS, PACKAGE_STATUS, ROLE_LABEL, cattleLabel, formatDate, label, packageLabel, roleKeyOf, shortAddress,
+  CATTLE_STATUS, PACKAGE_STATUS, ROLE_LABEL, bytes32ToText, cattleLabel, formatDate, label, packageLabel, roleKeyOf, shortAddress,
 } from './format.js'
 
 const FIELD_LABEL = {
   farmId: 'Kode peternakan',
+  eartag: 'Nomor eartag',
   slaughtermanId: 'ID juru sembelih',
   halalCertNo: 'Nomor sertifikat halal',
   grade: 'Grade',
@@ -43,6 +44,9 @@ const MESSAGES = {
   PackageWeightExceeded: ([, total, max]) =>
     `Total berat kemasan ${num(total)} g melebihi berat hidup sapi (${num(max)} g).`,
   PhotoTooLarge: ([given, max]) => `Foto ${num(given)} byte melebihi batas ${num(max)} byte.`,
+  EartagTaken: ([tag, cattleId]) => `Eartag ${bytes32ToText(tag)} sudah dipakai sapi ${cattleLabel(cattleId)}.`,
+  EartagMismatch: ([cattleId]) =>
+    `Eartag tidak cocok dengan catatan sapi ${cattleLabel(cattleId)}. Periksa lagi telinga sapinya — bisa jadi ini sapi lain.`,
 }
 
 export function describeRevert(name, args = []) {

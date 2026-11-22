@@ -41,9 +41,13 @@ export const CATTLE = {
   breed: Breed.Bali, sex: Sex.Male, coatColor: CoatColor.RedBrown, farmId: b32('FARM-JTG-001'), photo: PHOTO,
 }
 
+// Eartag harus unik, jadi tiap panggilan mendapat nomor baru kecuali ditentukan.
+let tagSeq = 0
+export const nextEartag = () => b32(`ID-TAG-${++tagSeq}`)
+
 export const cattleArgs = (overrides = {}) => {
-  const c = { ...CATTLE, ...overrides }
-  return [c.age, c.weight, c.grade, c.feed, c.breed, c.sex, c.coatColor, c.farmId, c.photo]
+  const c = { ...CATTLE, eartag: nextEartag(), ...overrides }
+  return [c.age, c.weight, c.grade, c.feed, c.breed, c.sex, c.coatColor, c.farmId, c.eartag, c.photo]
 }
 
 export function registerCattle(registry, farmer, overrides = {}) {
@@ -55,7 +59,9 @@ export const SLAUGHTER = { slaughtermanId: b32('JULEHA-0042'), halalCertNo: b32(
 export async function slaughterCattle(registry, abattoir, cattleId, overrides = {}) {
   const s = { ...SLAUGHTER, ...overrides }
   const slaughteredAt = s.slaughteredAt ?? (await networkHelpers.time.latest())
-  return registry.connect(abattoir).recordSlaughter(cattleId, slaughteredAt, s.slaughtermanId, s.halalCertNo, s.method)
+  // Default: eartag yang benar dari catatan sapi (sapi tak terdaftar -> nol, biar CattleNotFound yang muncul).
+  const eartag = s.eartag ?? (await registry.getCattle(cattleId).then((c) => c.eartag, () => ethers.ZeroHash))
+  return registry.connect(abattoir).recordSlaughter(cattleId, eartag, slaughteredAt, s.slaughtermanId, s.halalCertNo, s.method)
 }
 
 export async function createSlaughteredCattle() {

@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import { Field, NextStep, Review, Section, TxStatus, fieldProps } from '../components.jsx'
-import { BREED, COAT_COLOR, FEED_TYPE, GRADE, GRADE_HINT, SEX, cattleLabel, label, options, textToBytes32 } from '../format.js'
+import { BREED, COAT_COLOR, FEED_TYPE, GRADE, GRADE_HINT, SEX, cattleLabel, label, normalizeEartag, options, textToBytes32 } from '../format.js'
 import { usePhotoUrl, useTx } from '../hooks.js'
 import { compressPhoto } from '../photo.js'
 import { eventsOf } from '../registry.js'
 import { validateAge, validateChoice, validateLiveWeight, validateShortText } from '../validation.js'
 
-const EMPTY = { age: '', weight: '', grade: '', feed: '', breed: '', sex: '', coat: '', farmId: '' }
+const EMPTY = { age: '', weight: '', grade: '', feed: '', breed: '', sex: '', coat: '', farmId: '', eartag: '' }
 const NO_PHOTO = { bytes: null, error: null, busy: false }
 
 export default function FarmerSection() {
@@ -27,6 +27,7 @@ export default function FarmerSection() {
     sex: validateChoice(v.sex, 'Jenis kelamin'),
     coat: validateChoice(v.coat, 'Warna bulu'),
     farmId: validateShortText(v.farmId, 'Kode peternakan'),
+    eartag: validateShortText(normalizeEartag(v.eartag), 'Nomor eartag'),
     photo: photo.error ?? (photo.busy ? 'Foto masih diproses…' : photo.bytes ? null : 'Foto sapi wajib diunggah.'),
   }
   const err = (k) => (touched ? errors[k] : null)
@@ -57,7 +58,7 @@ export default function FarmerSection() {
     const receipt = await tx.run((ct) =>
       ct.registerCattle(
         Number(v.age), Number(v.weight), Number(v.grade), Number(v.feed),
-        Number(v.breed), Number(v.sex), Number(v.coat), textToBytes32(v.farmId.trim()), photo.bytes,
+        Number(v.breed), Number(v.sex), Number(v.coat), textToBytes32(v.farmId.trim()), textToBytes32(normalizeEartag(v.eartag)), photo.bytes,
       ),
     )
     setReview(false)
@@ -112,6 +113,9 @@ export default function FarmerSection() {
           <Field id="farmer-farmId" label="Kode peternakan" error={err('farmId')} hint="Kode, bukan nama orang — data ini publik dan permanen.">
             <input {...fieldProps('farmer-farmId', err('farmId'), { placeholder: 'contoh: FARM-JTG-001', autoComplete: 'off', 'aria-describedby': 'farmer-farmId-hint' })} value={v.farmId} onChange={set('farmId')} />
           </Field>
+          <Field id="farmer-eartag" label="Nomor eartag" error={err('eartag')} hint="Nomor di anting telinga sapi. RPH mencocokkan nomor ini saat sapi datang.">
+            <input {...fieldProps('farmer-eartag', err('eartag'), { placeholder: 'contoh: 3201-0001', autoComplete: 'off', 'aria-describedby': 'farmer-eartag-hint' })} value={v.eartag} onChange={set('eartag')} />
+          </Field>
           <div className="sm:col-span-2">
             <Field
               id="farmer-photo"
@@ -148,6 +152,7 @@ export default function FarmerSection() {
               ['Jenis kelamin', label(SEX, v.sex)],
               ['Warna bulu', label(COAT_COLOR, v.coat)],
               ['Kode peternakan', v.farmId.trim()],
+              ['Eartag', normalizeEartag(v.eartag)],
               ['Foto', <img key="foto" src={photoUrl} alt="Foto sapi yang akan dicatat" className="h-20 w-28 rounded-md object-cover" />],
             ]}
             status={tx.state.status}

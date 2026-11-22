@@ -1,15 +1,16 @@
 import { useState } from 'react'
 import { CattleSummary, Field, NextStep, Review, Section, TxStatus, fieldProps } from '../components.jsx'
 import {
-  SLAUGHTER_METHOD, SLAUGHTER_METHOD_HINT, SYARIAH_CHECKLIST, cattleLabel, cattleOption, formatDate, label, options, textToBytes32, toDatetimeLocal,
+  SLAUGHTER_METHOD, SLAUGHTER_METHOD_HINT, SYARIAH_CHECKLIST, cattleLabel, cattleOption, formatDate, label, normalizeEartag, options,
+  textToBytes32, toDatetimeLocal,
 } from '../format.js'
-import { useCattle, useCattleList, useTx } from '../hooks.js'
+import { useCattle, useCattleList, useCattlePhoto, usePhotoUrl, useTx } from '../hooks.js'
 import { resolveTimestamp, validateChoice, validateShortText } from '../validation.js'
 
 const REGISTERED = 0n
 
 export default function SlaughterSection() {
-  const [v, setV] = useState(() => ({ cattle: '', at: toDatetimeLocal(new Date()), slaughterman: '', cert: '', method: '', syariah: false }))
+  const [v, setV] = useState(() => ({ cattle: '', at: toDatetimeLocal(new Date()), eartag: '', slaughterman: '', cert: '', method: '', syariah: false }))
   const [touched, setTouched] = useState(false)
   const [review, setReview] = useState(null) // { seconds } saat ringkasan tampil
   const [done, setDone] = useState(null) // ID sapi yang baru dicatat
@@ -20,12 +21,18 @@ export default function SlaughterSection() {
 
   const nowSeconds = BigInt(Math.floor(Date.now() / 1000))
   const cattleReady = lookup.status === 'ok' && lookup.cattle.status === REGISTERED
+  const photo = useCattlePhoto(cattleReady ? lookup.cattle : null)
+  const photoUrl = usePhotoUrl(photo.status === 'ok' ? photo.bytes : null)
+  const tag = normalizeEartag(v.eartag)
   const time = cattleReady
     ? resolveTimestamp(v.at, { minSeconds: lookup.cattle.registeredAt, nowSeconds, label: 'Waktu sembelih' })
     : { error: null }
 
   const errors = {
     cattle: !v.cattle ? 'Pilih sapi yang akan dicatat.' : !cattleReady ? 'Sapi ini sudah dicatat penyembelihannya.' : null,
+    // Dicek di sini supaya salah ketik tidak membayar gas; contract tetap menolak yang tidak cocok.
+    eartag: !cattleReady ? null : validateShortText(tag, 'Nomor eartag')
+      ?? (textToBytes32(tag) === lookup.cattle.eartag ? null : 'Tidak cocok dengan eartag sapi ini. Pastikan sapinya benar.'),
     method: validateChoice(v.method, 'Metode sembelih'),
     at: time.error,
     slaughterman: validateShortText(v.slaughterman, 'ID juru sembelih'),
@@ -47,7 +54,7 @@ export default function SlaughterSection() {
 
   const confirm = async () => {
     const receipt = await tx.run((ct) =>
-      ct.recordSlaughter(lookup.cattleId, review.seconds, textToBytes32(v.slaughterman.trim()), textToBytes32(v.cert.trim()), Number(v.method)),
+      ct.recordSlaughter(lookup.cattleId, textToBytes32(tag), review.seconds, textToBytes32(v.slaughterman.trim()), textToBytes32(v.cert.trim()), Number(v.method)),
     )
     setReview(null)
     if (receipt) {
@@ -55,7 +62,7 @@ export default function SlaughterSection() {
       // Form kemasan di bawah langsung memilih sapi ini.
       window.dispatchEvent(new CustomEvent('pack:select', { detail: String(lookup.cattleId) }))
       // Juru sembelih dan sertifikat biasanya sama untuk sapi berikutnya; yang lain dikosongkan.
-      setV({ ...v, cattle: '', at: toDatetimeLocal(new Date()), syariah: false })
+      setV({ ...v, cattle: '', eartag: '', at: toDatetimeLocal(new Date()), syariah: false })
       setTouched(false)
     }
   }
@@ -76,6 +83,26 @@ export default function SlaughterSection() {
             </select>
           </Field>
           <CattleSummary lookup={lookup} />
+          {cattleReady && (
+            <div className="rounded-lg border border-divider bg-bg px-5 py-4">
+              <p className="font-display font-semibold">Cocokkan dengan sapi yang datang</p>
+              <p className="mt-0.5 text-sm text-muted">Bandingkan foto dari peternak dengan sapinya, lalu baca nomor eartag langsung dari telinga sapi.</p>
+              <div className="mt-4 flex flex-wrap items-start gap-5">
+                {photoUrl ? (
+                  <img src={photoUrl} alt={`Foto sapi ${cattleLabel(lookup.cattleId)} dari peternak`} className="aspect-[4/3] w-full max-w-64 rounded-lg border border-divider object-cover" />
+                ) : (
+                  <p className="flex aspect-[4/3] w-full max-w-64 items-center justify-center rounded-lg border border-divider px-4 text-center text-sm text-muted">
+                    {photo.status === 'none' ? 'Peternak tidak menyertakan foto.' : photo.status === 'failed' ? 'Foto tidak dapat dimuat.' : 'Memuat foto…'}
+                  </p>
+                )}
+                <div className="min-w-48 flex-1">
+                  <Field id="slaughter-eartag" label="Nomor eartag di telinga sapi" error={err('eartag')}>
+                    <input {...fieldProps('slaughter-eartag', err('eartag'), { placeholder: 'ketik dari eartag', autoComplete: 'off' })} value={v.eartag} onChange={set('eartag')} />
+                  </Field>
+                </div>
+              </div>
+            </div>
+          )}
           <Field
             id="slaughter-method"
             label="Metode sembelih (keduanya syar'i)"
@@ -134,6 +161,7 @@ export default function SlaughterSection() {
           <Review
             rows={[
               ['Sapi', cattleLabel(lookup.cattleId)],
+              ['Eartag', `${tag} (cocok)`],
               ['Waktu sembelih', formatDate(review.seconds)],
               ['Metode', label(SLAUGHTER_METHOD, v.method)],
               ['Juru sembelih', v.slaughterman.trim()],

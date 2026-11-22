@@ -88,16 +88,17 @@ struct CattleRecord {
     // slot 3
     address abattoir;
     uint64  slaughteredAt;
-    // slot 4-6
+    // slot 4-7
     bytes32 farmId;          // kode peternakan, bukan nama orang
     bytes32 slaughtermanId;  // ID sertifikat juru sembelih
     bytes32 halalCertNo;     // nomor sertifikat halal
+    bytes32 eartag;          // nomor eartag di telinga sapi: pengikat catatan ke sapi fisik
 }
 ```
 
-> `slaughterMethod` sengaja ditaruh di slot 1 (bukan slot terpisah di akhir) karena slot 1 baru terisi 16 dari 32 byte. Hasilnya 6 slot per sapi, bukan 7.
+> `slaughterMethod` sengaja ditaruh di slot 1 (bukan slot terpisah di akhir) karena slot 1 baru terisi 16 dari 32 byte, jadi tidak memakan slot tambahan.
 
-`breed`, `sex`, `coatColor`, dan `photoBlock` mengisi ruang kosong di slot 1 dan 2, jadi tetap 6 slot per sapi.
+`breed`, `sex`, `coatColor`, dan `photoBlock` mengisi ruang kosong di slot 1 dan 2. `eartag` butuh slot sendiri, jadi total 7 slot per sapi.
 
 `packagedGrams` menjumlah berat seluruh kemasan dari sapi itu; tidak boleh melebihi berat hidup (lihat CONTRACTS.md createPackages).
 
@@ -158,12 +159,26 @@ contract lain — dan memang hanya frontend yang perlu membacanya. Nomor blok ev
 Frontend mengecilkan foto ke WebP/JPEG ≤ 30 KB lewat `<canvas>` (sekaligus membuang EXIF, termasuk
 lokasi GPS) di `frontend/src/photo.js`. Foto hanya ditampilkan kalau byte awalnya WebP, JPEG, atau PNG.
 
+### Eartag
+
+Nomor di anting telinga sapi, mengikat catatan on-chain ke sapi fisiknya. Tanpa ini, ID sapi
+(`HCT-C-…`) hanya ada di sistem dan tidak bisa dicocokkan dengan hewan yang datang ke RPH.
+
+- Unik: satu eartag hanya untuk satu sapi (`eartagToCattle`), jadi satu sapi fisik tidak bisa punya dua catatan.
+- RPH mengetik ulang eartag dari telinga sapi saat mencatat sembelih; contract menolak kalau tidak sama
+  (`EartagMismatch`). Hasilnya tercatat bahwa RPH sudah mencocokkan sapi fisik dengan catatannya, sambil
+  membandingkan foto dari peternak.
+- Frontend menormalisasi sebelum dikirim (spasi dibuang, huruf besar), supaya "id 3201" dan "ID3201" sama.
+- Batasannya: data on-chain publik, jadi RPH yang curang tetap bisa menyalin eartag tanpa melihat sapinya.
+  Ini mengurangi salah sapi karena kelalaian, bukan kecurangan yang disengaja (SECURITY A2).
+
 ## 4. Penyimpanan
 
 ```solidity
 mapping(uint64 => CattleRecord)  private cattleRecords;
 mapping(uint64 => PackageRecord) private packageRecords;
 mapping(uint64 => uint64[])      private cattleToPackages;
+mapping(bytes32 => uint64)       private eartagToCattle;   // eartag -> cattleId, menjaga keunikan
 
 uint64 private nextCattleId  = 1;
 uint64 private nextPackageId = 1;
@@ -189,12 +204,14 @@ uint256 private adminCount;
 | `feedType` | Tidak boleh `Unspecified` |
 | `breed`, `sex`, `coatColor` | Tidak boleh `Unspecified` |
 | `farmId` | Tidak boleh kosong |
+| `eartag` | Tidak boleh kosong dan belum dipakai sapi lain |
 | `photo` | Maksimal 30.000 byte (`MAX_PHOTO_BYTES`). Boleh kosong di contract; form peternak mewajibkannya |
 
 ### Pencatatan penyembelihan
 | Field | Aturan |
 |---|---|
 | Status sapi | Harus `Registered`. Sapi yang sudah disembelih tidak bisa dicatat dua kali |
+| `eartag` | Harus sama dengan eartag saat didaftarkan |
 | `slaughteredAt` | Tidak boleh di masa depan, tidak boleh sebelum `registeredAt` |
 | `slaughtermanId` | Tidak boleh kosong |
 | `halalCertNo` | Tidak boleh kosong |

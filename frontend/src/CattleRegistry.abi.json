@@ -34,6 +34,33 @@
   {
     "inputs": [
       {
+        "internalType": "uint64",
+        "name": "cattleId",
+        "type": "uint64"
+      }
+    ],
+    "name": "EartagMismatch",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "eartag",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint64",
+        "name": "cattleId",
+        "type": "uint64"
+      }
+    ],
+    "name": "EartagTaken",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "string",
         "name": "field",
         "type": "string"
@@ -651,6 +678,11 @@
             "internalType": "bytes32",
             "name": "halalCertNo",
             "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "eartag",
+            "type": "bytes32"
           }
         ],
         "internalType": "struct CattleRegistry.CattleRecord",
@@ -824,6 +856,11 @@
             "internalType": "bytes32",
             "name": "halalCertNo",
             "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "eartag",
+            "type": "bytes32"
           }
         ],
         "internalType": "struct CattleRegistry.CattleRecord",
@@ -912,6 +949,11 @@
         "type": "uint64"
       },
       {
+        "internalType": "bytes32",
+        "name": "eartag",
+        "type": "bytes32"
+      },
+      {
         "internalType": "uint64",
         "name": "slaughteredAt",
         "type": "uint64"
@@ -977,6 +1019,11 @@
       {
         "internalType": "bytes32",
         "name": "farmId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "eartag",
         "type": "bytes32"
       },
       {
