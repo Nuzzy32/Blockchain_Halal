@@ -75,7 +75,7 @@ Estimasi total 5 sampai 6 minggu dengan ritme santai. Sesuaikan dengan tenggat t
 
 **Ini fase terpenting.** Kalau contract sudah benar dan teruji, sisanya jauh lebih mudah.
 
-**Catatan POL (2026-11-22):** deploy butuh 2,4 juta gas, sekitar 0,135 POL pada gas price 56 gwei. Pendaftaran sapi dengan foto 30 KB kira-kira 0,03 sampai 0,05 POL per sapi (taksiran). Saldo empat wallet v0 saat itu totalnya sekitar 0,033 POL. Faucet resmi Polygon sudah tidak aktif, jadi pakai faucet pihak ketiga atau minta transfer dari teman.
+**Catatan POL (2026-11-22):** deploy butuh 2,4 juta gas, sekitar 0,135 POL pada gas price 56 gwei. Pendaftaran sapi dengan foto sekitar 0,06 POL per sapi (terukur 1,05 juta gas untuk foto 25,8 KB). Saldo empat wallet v0 saat itu totalnya sekitar 0,033 POL. Faucet resmi Polygon sudah tidak aktif, jadi pakai faucet pihak ketiga atau minta transfer dari teman.
 
 ---
 
