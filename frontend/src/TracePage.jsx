@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { NETWORK, addressUrl, isDeployed, scanUrl, txUrl } from './chain.js'
 import {
-  CUT_TYPE, FEED_TYPE, GRADE, PACKAGE_STATUS, SLAUGHTER_METHOD, bytes32ToText, cattleLabel, formatDate, freshnessText,
-  label, packageLabel, shortAddress,
+  BREED, COAT_COLOR, CUT_TYPE, FEED_TYPE, GRADE, PACKAGE_STATUS, SEX, SLAUGHTER_METHOD, bytes32ToText, cattleLabel, formatDate,
+  freshnessText, label, packageLabel, shortAddress,
 } from './format.js'
-import { errorMessage, findStepTxs, isRevert, readRegistry } from './registry.js'
+import { usePhotoUrl } from './hooks.js'
+import { cattlePhoto, errorMessage, findStepTxs, isRevert, readRegistry } from './registry.js'
 
 const SHIPPED = 1n
 
@@ -16,6 +17,7 @@ const SHIPPED = 1n
 export default function TracePage({ id }) {
   const [state, setState] = useState({ status: 'loading' })
   const [txs, setTxs] = useState(null)
+  const [photo, setPhoto] = useState({ status: 'loading' })
   const [nonce, setNonce] = useState(0)
 
   useEffect(() => {
@@ -23,6 +25,7 @@ export default function TracePage({ id }) {
     let cancelled = false
     setState({ status: 'loading' })
     setTxs(null)
+    setPhoto({ status: 'loading' })
     readRegistry()
       .getPackageTrace(id)
       .then(([pkg, cattle]) => {
@@ -32,6 +35,9 @@ export default function TracePage({ id }) {
         findStepTxs(cattle.cattleId, pkg.packageId)
           .then((t) => !cancelled && setTxs(t))
           .catch(() => !cancelled && setTxs('failed'))
+        cattlePhoto(cattle)
+          .then((bytes) => !cancelled && setPhoto(bytes ? { status: 'ok', bytes } : { status: 'none' }))
+          .catch(() => !cancelled && setPhoto({ status: 'failed' }))
       })
       .catch((err) => {
         if (cancelled) return
@@ -47,7 +53,7 @@ export default function TracePage({ id }) {
   else if (!id || state.status === 'notfound') body = <NotFound id={id} />
   else if (state.status === 'loading') body = <Loading />
   else if (state.status === 'error') body = <LoadError message={state.message} onRetry={() => setNonce((n) => n + 1)} />
-  else body = <Trace pkg={state.pkg} cattle={state.cattle} txs={txs} />
+  else body = <Trace pkg={state.pkg} cattle={state.cattle} txs={txs} photo={photo} />
 
   return (
     <div className="min-h-dvh">
@@ -65,7 +71,7 @@ export default function TracePage({ id }) {
   )
 }
 
-function Trace({ pkg, cattle, txs }) {
+function Trace({ pkg, cattle, txs, photo }) {
   const shipped = pkg.status === SHIPPED
   const steps = [
     {
@@ -74,13 +80,7 @@ function Trace({ pkg, cattle, txs }) {
       actorRole: 'Peternak',
       actor: cattle.farmer,
       tx: txs?.registered,
-      facts: [
-        ['Kode peternakan', bytes32ToText(cattle.farmId)],
-        ['Umur', `${cattle.ageInMonths} bulan`],
-        ['Berat hidup', `${cattle.liveWeightKg} kg`],
-        ['Grade', label(GRADE, cattle.grade)],
-        ['Pakan', label(FEED_TYPE, cattle.feedType)],
-      ],
+      facts: [['Kode peternakan', bytes32ToText(cattle.farmId)]],
     },
     { title: 'Disembelih di RPH', date: cattle.slaughteredAt, actorRole: 'RPH', actor: cattle.abattoir, tx: txs?.slaughtered },
     { title: 'Dikemas', date: pkg.packagedAt, actorRole: 'RPH', actor: cattle.abattoir, tx: txs?.packaged },
@@ -120,6 +120,8 @@ function Trace({ pkg, cattle, txs }) {
         </p>
       </section>
 
+      <CattleCard cattle={cattle} photo={photo} />
+
       <section>
         <h2 className="font-display mb-5 text-xl font-semibold tracking-tight">Perjalanan kemasan</h2>
         <ol>
@@ -131,6 +133,45 @@ function Trace({ pkg, cattle, txs }) {
 
       <Provenance />
     </div>
+  )
+}
+
+/** Sapi asal daging: foto dari event CattlePhoto + ciri fisik yang dicatat peternak. */
+function CattleCard({ cattle, photo }) {
+  const url = usePhotoUrl(photo.status === 'ok' ? photo.bytes : null)
+  const note = {
+    loading: 'Memuat foto dari blockchain…',
+    none: 'Peternak tidak menyertakan foto.',
+    failed: 'Foto tidak dapat dimuat.',
+    ok: url ? null : 'Format foto tidak dikenali.',
+  }[photo.status]
+  return (
+    <section className="card overflow-hidden" aria-labelledby="cattle-title">
+      {url ? (
+        <img src={url} alt={`Foto sapi ${cattleLabel(cattle.cattleId)} saat didaftarkan`} className="aspect-[4/3] w-full bg-divider object-cover" />
+      ) : (
+        <div className={`flex aspect-[4/3] w-full items-center justify-center bg-divider/50 px-6 text-center text-base text-muted${photo.status === 'loading' ? ' animate-pulse' : ''}`}>
+          {note}
+        </div>
+      )}
+      <div className="px-6 py-6">
+        <h2 id="cattle-title" className="font-display text-xl font-semibold tracking-tight">Sapi asal daging ini</h2>
+        <dl className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3">
+          <Fact term="Ras" value={label(BREED, cattle.breed)} />
+          <Fact term="Jenis kelamin" value={label(SEX, cattle.sex)} />
+          <Fact term="Warna bulu" value={label(COAT_COLOR, cattle.coatColor)} />
+          <Fact term="Umur" value={`${cattle.ageInMonths} bulan`} />
+          <Fact term="Berat hidup" value={`${cattle.liveWeightKg} kg`} />
+          <Fact term="Pakan" value={label(FEED_TYPE, cattle.feedType)} />
+          <Fact term="Grade" value={label(GRADE, cattle.grade)} />
+        </dl>
+        {url && (
+          <p className="mt-5 border-t border-divider pt-4 text-base leading-relaxed text-muted">
+            Foto diunggah peternak saat pendaftaran dan tersimpan permanen, jadi tidak bisa diganti belakangan.
+          </p>
+        )}
+      </div>
+    </section>
   )
 }
 

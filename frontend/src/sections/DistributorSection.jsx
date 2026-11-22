@@ -1,39 +1,40 @@
 import { useEffect, useState } from 'react'
 import { Field, Review, Section, TxStatus, fieldProps } from '../components.jsx'
-import { CUT_TYPE, PACKAGE_STATUS, formatDate, label, packageLabel, toDatetimeLocal } from '../format.js'
-import { usePackages, useTx } from '../hooks.js'
+import { CUT_TYPE, cattleLabel, formatDate, label, packageLabel, toDatetimeLocal } from '../format.js'
+import { usePackageList, useTx } from '../hooks.js'
 import { readRegistry } from '../registry.js'
-import { parseIdList, resolveTimestamp } from '../validation.js'
+import { traceUrl } from '../chain.js'
+import { resolveTimestamp } from '../validation.js'
 
 const CREATED = 0n
 
 export default function DistributorSection() {
-  const [text, setText] = useState('')
+  const [picked, setPicked] = useState([]) // ID kemasan (string) yang dicentang
   const [at, setAt] = useState(() => toDatetimeLocal(new Date()))
   const [touched, setTouched] = useState(false)
   const [review, setReview] = useState(null) // { ids, seconds }
   const [maxBatch, setMaxBatch] = useState(50)
+  const [shipped, setShipped] = useState([]) // ID kemasan yang baru dicatat dikirim
   const tx = useTx()
+  const list = usePackageList()
 
   useEffect(() => {
     readRegistry().MAX_BATCH().then((n) => setMaxBatch(Number(n))).catch(() => {})
   }, [])
 
-  const parsed = parseIdList(text, maxBatch)
-  const lookup = usePackages(parsed.ids ?? [])
-  const items = lookup.status === 'ok' ? lookup.items : []
-  const missing = items.filter((i) => !i.found)
-  const notReady = items.filter((i) => i.found && i.pkg.status !== CREATED)
-  const minSeconds = items.reduce((m, i) => (i.found && i.pkg.packagedAt > m ? i.pkg.packagedAt : m), 0n)
+  const waiting = list.items.filter((p) => p.status === CREATED)
+  const chosen = waiting.filter((p) => picked.includes(String(p.packageId)))
+  const minSeconds = chosen.reduce((m, p) => (p.packagedAt > m ? p.packagedAt : m), 0n)
   const time = resolveTimestamp(at, { minSeconds, nowSeconds: BigInt(Math.floor(Date.now() / 1000)), label: 'Waktu kirim' })
 
   const idsError =
-    parsed.error ??
-    (lookup.status === 'error' ? `Gagal membaca kemasan: ${lookup.message}` : null) ??
-    (lookup.status !== 'ok' ? 'Menunggu data kemasan…' : null) ??
-    (missing.length ? `Tidak ditemukan: ${missing.map((i) => packageLabel(i.id)).join(', ')}.` : null) ??
-    (notReady.length ? `Sudah dikirim: ${notReady.map((i) => packageLabel(i.id)).join(', ')}.` : null)
+    (list.status === 'error' ? `Gagal membaca kemasan: ${list.message}` : null) ??
+    (chosen.length === 0 ? 'Pilih minimal satu kemasan.' : null) ??
+    (chosen.length > maxBatch ? `Maksimal ${maxBatch} kemasan per transaksi.` : null)
   const err = (e) => (touched ? e : null)
+
+  const toggle = (id) => setPicked(picked.includes(id) ? picked.filter((x) => x !== id) : [...picked, id])
+  const allPicked = waiting.length > 0 && chosen.length === waiting.length
 
   const submit = (e) => {
     e.preventDefault()
@@ -41,42 +42,73 @@ export default function DistributorSection() {
     if (idsError) return document.getElementById('ship-ids')?.focus()
     if (time.error) return document.getElementById('ship-at')?.focus()
     tx.reset()
-    setReview({ ids: parsed.ids, seconds: time.seconds })
+    setShipped([])
+    setReview({ ids: chosen.map((p) => String(p.packageId)), seconds: time.seconds })
   }
 
   const confirm = async () => {
     const receipt = await tx.run((ct) => ct.recordShipping(review.ids, review.seconds))
     setReview(null)
     if (receipt) {
-      lookup.reload()
+      setShipped(review.ids)
+      setPicked([])
       setTouched(false)
     }
   }
 
   return (
-    <Section badge="Distributor" step={4} title="Catat pengiriman" lead="Satu transaksi bisa mencatat beberapa kemasan sekaligus.">
+    <Section badge="Distributor" step={4} title="Catat pengiriman" lead="Centang kemasan yang berangkat ke toko. Beberapa kemasan bisa dicatat sekaligus.">
       <form onSubmit={submit} noValidate className="space-y-5">
         <fieldset disabled={!!review} className="space-y-5">
-          <Field id="ship-ids" label="ID kemasan" error={err(idsError)} hint={`Pisahkan dengan koma, misalnya 1, 2, 5. Maksimal ${maxBatch}.`}>
-            <input {...fieldProps('ship-ids', err(idsError), { placeholder: 'contoh: 1, 2, 5', autoComplete: 'off', 'aria-describedby': 'ship-ids-hint' })} value={text} onChange={(e) => setText(e.target.value)} />
-          </Field>
-
-          {items.length > 0 && (
-            <ul className="divide-y divide-divider rounded-lg border border-divider text-sm" aria-label="Kemasan yang dipilih">
-              {items.map((i) => (
-                <li key={i.id} className="flex flex-wrap justify-between gap-2 px-4 py-2.5">
-                  <span className="font-medium">{packageLabel(i.id)}</span>
-                  {i.found ? (
-                    <span className={i.pkg.status === CREATED ? 'text-muted' : ''} style={i.pkg.status === CREATED ? undefined : { color: 'var(--color-danger)' }}>
-                      {label(CUT_TYPE, i.pkg.cutType)} · {Number(i.pkg.weightGrams).toLocaleString('id-ID')} g · {label(PACKAGE_STATUS, i.pkg.status)}
-                    </span>
-                  ) : (
-                    <span style={{ color: 'var(--color-danger)' }}>Tidak ditemukan</span>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
+          <div>
+            <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
+              <p id="ship-ids-label" className="text-sm font-medium">
+                Kemasan siap dikirim {list.status === 'ok' && <span className="text-muted">({waiting.length})</span>}
+              </p>
+              {waiting.length > 1 && (
+                <button
+                  type="button"
+                  className="text-sm font-semibold text-primary underline-offset-4 hover:underline"
+                  onClick={() => setPicked(allPicked ? [] : waiting.slice(0, maxBatch).map((p) => String(p.packageId)))}
+                >
+                  {allPicked ? 'Batalkan semua' : 'Pilih semua'}
+                </button>
+              )}
+            </div>
+            {list.status === 'loading' ? (
+              <p className="text-sm text-muted" role="status">Membaca daftar kemasan…</p>
+            ) : waiting.length === 0 ? (
+              <p className="rounded-lg border border-divider px-4 py-3 text-sm text-muted">Belum ada kemasan yang menunggu dikirim. RPH membuat kemasan dulu.</p>
+            ) : (
+              <ul
+                id="ship-ids"
+                tabIndex={-1}
+                aria-labelledby="ship-ids-label"
+                aria-describedby={err(idsError) ? 'ship-ids-error' : undefined}
+                className="divide-y divide-divider overflow-hidden rounded-lg border border-divider text-sm"
+              >
+                {waiting.map((p) => {
+                  const id = String(p.packageId)
+                  return (
+                    <li key={id}>
+                      <label className="flex cursor-pointer items-center gap-3 px-4 py-3 hover:bg-primary-soft/50">
+                        <input type="checkbox" className="h-5 w-5 shrink-0 accent-primary" checked={picked.includes(id)} onChange={() => toggle(id)} />
+                        <span className="font-medium">{packageLabel(id)}</span>
+                        <span className="ml-auto text-right text-muted">
+                          {label(CUT_TYPE, p.cutType)} · {Number(p.weightGrams).toLocaleString('id-ID')} g · dari {cattleLabel(p.cattleId)}
+                        </span>
+                      </label>
+                    </li>
+                  )
+                })}
+              </ul>
+            )}
+            {err(idsError) && (
+              <p id="ship-ids-error" className="mt-1.5 text-sm font-medium" style={{ color: 'var(--color-danger)' }}>
+                {idsError}
+              </p>
+            )}
+          </div>
 
           <Field id="ship-at" label="Waktu kirim" error={err(time.error)}>
             <input {...fieldProps('ship-at', err(time.error), { type: 'datetime-local', max: toDatetimeLocal(new Date()) })} value={at} onChange={(e) => setAt(e.target.value)} />
@@ -99,6 +131,14 @@ export default function DistributorSection() {
         )}
       </form>
       <TxStatus tx={tx.state} />
+      {shipped.length > 0 && (
+        <div className="animate-rise mt-4 flex flex-wrap items-center gap-3 rounded-lg border border-divider bg-bg px-4 py-3">
+          <p className="min-w-0 flex-1 text-sm leading-relaxed">
+            <strong className="font-semibold">Selesai.</strong> Riwayat {packageLabel(shipped[0])} sudah lengkap dan bisa dilihat konsumen lewat QR.
+          </p>
+          <a href={traceUrl(shipped[0])} target="_blank" rel="noreferrer" className="btn btn-primary shrink-0">Lihat halaman konsumen</a>
+        </div>
+      )}
     </Section>
   )
 }

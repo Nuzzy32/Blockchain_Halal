@@ -10,9 +10,31 @@ export const roleKeyOf = (hash) => ROLE_KEYS.find((k) => ROLE[k] === String(hash
 
 /* ---------- enum — urutan angka harus sama dengan contracts/CattleRegistry.sol ---------- */
 
-export const GRADE = { 1: 'Standard', 2: 'Choice', 3: 'Prime' }
+// Grade mengikuti tingkat marbling (lemak di sela serat daging): makin tinggi, makin empuk dan juicy.
+export const GRADE = { 1: 'Standard (marbling rendah)', 2: 'Choice (marbling sedang)', 3: 'Prime (marbling tinggi)' }
+export const GRADE_HINT = {
+  1: 'Daging lebih padat dan rendah lemak. Cocok untuk rendang, semur, atau daging giling.',
+  2: 'Marbling cukup, empuk. Cocok untuk masakan sehari-hari dan steak.',
+  3: 'Marbling paling banyak, paling empuk dan juicy. Kelas steak premium.',
+}
 export const FEED_TYPE = { 1: 'Rumput (grass-fed)', 2: 'Biji-bijian (grain-fed)', 3: 'Campuran', 4: 'Organik bersertifikat' }
-export const SLAUGHTER_METHOD = { 1: 'Manual tanpa pemingsanan', 2: 'Manual dengan pemingsanan reversibel' }
+// Keduanya penyembelihan syar'i; bedanya hanya ada tidaknya pemingsanan sebelum disembelih.
+export const SLAUGHTER_METHOD = { 1: "Syar'i tanpa pemingsanan", 2: "Syar'i dengan pemingsanan reversibel" }
+export const SLAUGHTER_METHOD_HINT = {
+  1: 'Sapi dalam keadaan sadar langsung disembelih oleh juru sembelih halal. Cara tradisional.',
+  2: 'Sapi dipingsankan dulu (stunning) agar tenang, lalu disembelih saat masih hidup. Boleh menurut Fatwa MUI No. 12 Tahun 2009, asalkan pemingsanan tidak mematikan atau mencederai permanen.',
+}
+// Syarat penyembelihan halal menurut Fatwa MUI No. 12 Tahun 2009; dikonfirmasi RPH sebelum mencatat.
+export const SYARIAH_CHECKLIST = [
+  'Sapi masih hidup saat disembelih',
+  'Disembelih juru sembelih halal (juleha) muslim yang bersertifikat',
+  'Membaca basmalah saat menyembelih',
+  'Memotong saluran napas, saluran makan, dan dua pembuluh darah leher',
+  'Memakai pisau tajam dan darah dibiarkan mengalir tuntas',
+]
+export const BREED = { 1: 'Bali', 2: 'Madura', 3: 'Peranakan Ongole (PO)', 4: 'Limousin', 5: 'Simental', 6: 'Brahman', 7: 'Lainnya' }
+export const SEX = { 1: 'Jantan', 2: 'Betina' }
+export const COAT_COLOR = { 1: 'Putih', 2: 'Abu-abu', 3: 'Krem / cokelat muda', 4: 'Cokelat kemerahan', 5: 'Hitam', 6: 'Belang' }
 export const CUT_TYPE = { 1: 'Sirloin', 2: 'Tenderloin (has dalam)', 3: 'Ribeye', 4: 'Brisket (sandung lamur)', 5: 'Shank (sengkel)', 6: 'Daging giling', 7: 'Lainnya' }
 export const CATTLE_STATUS = { 0: 'Terdaftar', 1: 'Disembelih', 2: 'Dikemas' }
 export const PACKAGE_STATUS = { 0: 'Dikemas', 1: 'Dikirim' }
@@ -24,6 +46,9 @@ export const label = (table, value) => table[Number(value)] ?? 'Tidak dikenal'
 
 export const cattleLabel = (cattleId) => `HCT-C-${String(cattleId).padStart(6, '0')}`
 export const packageLabel = (packageId) => `HCT-P-${String(packageId).padStart(6, '0')}`
+/** Teks satu sapi di daftar pilihan form. */
+export const cattleOption = (c) =>
+  `${cattleLabel(c.cattleId)} · ${label(BREED, c.breed)} ${label(SEX, c.sex).toLowerCase()} · ${GRADE[Number(c.grade)]?.split(' ')[0] ?? '?'} · ${c.liveWeightKg} kg · ${bytes32ToText(c.farmId)}`
 
 /* ---------- bytes32 ---------- */
 

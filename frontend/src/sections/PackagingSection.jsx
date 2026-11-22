@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
-import { CattleSummary, Field, QrLabel, Review, Section, TxStatus, fieldProps } from '../components.jsx'
-import { CUT_TYPE, cattleLabel, label, options, shortAddress } from '../format.js'
-import { useCattle, useTx } from '../hooks.js'
+import { CattleSummary, Field, NextStep, QrLabel, Review, Section, TxStatus, fieldProps } from '../components.jsx'
+import { CUT_TYPE, cattleLabel, cattleOption, label, options } from '../format.js'
+import { useCattle, useCattleList, useTx } from '../hooks.js'
 import { eventsOf, readRegistry } from '../registry.js'
-import { validateChoice, validateId, validatePackageGrams } from '../validation.js'
+import { validateChoice, validatePackageGrams } from '../validation.js'
 
 const REGISTERED = 0n
 // Penghitung biasa, bukan crypto.randomUUID(): yang terakhir hanya ada di secure context,
@@ -19,24 +19,32 @@ export default function PackagingSection({ account }) {
   const [created, setCreated] = useState([])
   const [maxBatch, setMaxBatch] = useState(50)
   const tx = useTx()
+  const list = useCattleList()
   const lookup = useCattle(cattle)
+  // Hanya sapi yang sudah disembelih RPH ini: contract menolak RPH lain mengemasnya.
+  const ready = list.items.filter((x) => x.status !== REGISTERED && x.abattoir.toLowerCase() === account.toLowerCase())
+  const newest = ready.at(-1)?.cattleId
 
   // Batas batch dibaca dari contract, bukan disalin angkanya (spec §7).
   useEffect(() => {
     readRegistry().MAX_BATCH().then((n) => setMaxBatch(Number(n))).catch(() => {})
   }, [])
 
+  // Sapi yang baru disembelih langsung terpilih, supaya RPH tidak perlu mencarinya lagi.
+  useEffect(() => {
+    if (!cattle && newest) setCattle(String(newest))
+  }, [cattle, newest])
+  useEffect(() => {
+    const pick = (e) => setCattle(e.detail)
+    window.addEventListener('pack:select', pick)
+    return () => window.removeEventListener('pack:select', pick)
+  }, [])
+
   const c = lookup.status === 'ok' ? lookup.cattle : null
   const remaining = c ? Number(c.liveWeightKg) * 1000 - Number(c.packagedGrams) : 0
   const total = rows.reduce((sum, r) => sum + (Number(r.grams) || 0), 0)
 
-  const cattleError =
-    validateId(cattle, 'ID sapi') ??
-    (lookup.status !== 'ok' ? 'Pilih sapi yang terdaftar.' : null) ??
-    (c.status === REGISTERED ? 'Sapi ini belum disembelih.' : null) ??
-    (c.abattoir.toLowerCase() !== account.toLowerCase()
-      ? `Sapi ini disembelih RPH lain (${shortAddress(c.abattoir)}) — hanya RPH itu yang boleh mengemasnya.`
-      : null)
+  const cattleError = !cattle ? 'Pilih sapi yang akan dikemas.' : lookup.status !== 'ok' ? 'Menunggu data sapi…' : null
   const rowErrors = rows.map((r) => ({ cut: validateChoice(r.cut, 'Jenis potongan'), grams: validatePackageGrams(r.grams) }))
   const totalError = c && total > remaining ? `Total ${total.toLocaleString('id-ID')} g melebihi sisa berat ${remaining.toLocaleString('id-ID')} g.` : null
   const invalid = cattleError || totalError || rowErrors.some((e) => e.cut || e.grams)
@@ -71,11 +79,19 @@ export default function PackagingSection({ account }) {
     <Section badge="RPH" step={3} title="Buat kemasan" lead="Satu sapi bisa dibuatkan beberapa kemasan. Tiap kemasan mendapat QR sendiri.">
       <form onSubmit={submit} noValidate className="space-y-5">
         <fieldset disabled={review} className="space-y-5">
-          <Field id="pack-cattle" label="ID sapi" error={touched ? cattleError : null}>
-            <input {...fieldProps('pack-cattle', touched ? cattleError : null, { placeholder: 'contoh: 3 atau HCT-C-000003', autoComplete: 'off' })} value={cattle} onChange={(e) => setCattle(e.target.value)} />
+          <Field
+            id="pack-cattle"
+            label="Sapi yang dikemas"
+            error={touched ? cattleError : null}
+            hint={list.status === 'ok' && ready.length === 0 ? 'Belum ada sapi yang siap dikemas. Catat penyembelihannya dulu di form di atas.' : null}
+          >
+            <select {...fieldProps('pack-cattle', touched ? cattleError : null, { 'aria-describedby': 'pack-cattle-hint' })} value={cattle} onChange={(e) => setCattle(e.target.value)}>
+              <option value="">{list.status === 'loading' ? 'Membaca daftar sapi…' : 'Pilih sapi yang sudah disembelih…'}</option>
+              {ready.map((x) => <option key={String(x.cattleId)} value={String(x.cattleId)}>{cattleOption(x)}</option>)}
+            </select>
           </Field>
           <CattleSummary lookup={lookup} />
-          {c && c.status !== REGISTERED && (
+          {c && (
             <p className="text-sm text-muted">
               Sisa berat yang boleh dikemas: <strong className="text-ink">{remaining.toLocaleString('id-ID')} g</strong>
             </p>
@@ -144,6 +160,7 @@ export default function PackagingSection({ account }) {
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             {created.map((p) => <QrLabel key={String(p.packageId)} packageId={p.packageId} cutType={p.cutType} grams={p.grams} />)}
           </div>
+          <NextStep role="DISTRIBUTOR">distributor memilih kemasan ini dari daftar lalu mencatat pengirimannya.</NextStep>
         </div>
       )}
     </Section>

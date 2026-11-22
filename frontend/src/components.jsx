@@ -1,8 +1,35 @@
-import { Fragment, useRef } from 'react'
+import { Fragment, createContext, useContext, useRef } from 'react'
 import { QRCodeCanvas } from 'qrcode.react'
 import { traceUrl, txUrl } from './chain.js'
-import { CATTLE_STATUS, CUT_TYPE, FEED_TYPE, GRADE, bytes32ToText, cattleLabel, formatDate, label, packageLabel } from './format.js'
+import { BREED, CATTLE_STATUS, CUT_TYPE, FEED_TYPE, GRADE, ROLE_LABEL, SEX, bytes32ToText, cattleLabel, formatDate, label, packageLabel } from './format.js'
 import { demoActive } from './registry.js'
+
+/** Mode demo: (roleKey) => pindah ke akun tes pemegang peran itu. Null di luar mode demo. */
+export const DemoSwitch = createContext(null)
+
+/**
+ * Petunjuk tahap berikutnya setelah transaksi berhasil. `anchor`: tahap berikutnya ada di halaman
+ * yang sama (peran sama). `role`: tahap milik pihak lain — di mode demo sekalian tombol pindah peran.
+ */
+export function NextStep({ role, anchor, children }) {
+  const switchTo = useContext(DemoSwitch)
+  return (
+    <div className="animate-rise mt-4 flex flex-wrap items-center gap-3 rounded-lg border border-divider bg-bg px-4 py-3">
+      <p className="min-w-0 flex-1 text-sm leading-relaxed">
+        <strong className="font-semibold">Langkah berikutnya:</strong> {children}
+      </p>
+      {anchor ? (
+        <a href={`#${anchor}`} className="btn btn-primary shrink-0">Ke form berikutnya</a>
+      ) : (
+        switchTo && (
+          <button type="button" className="btn btn-primary shrink-0" onClick={() => switchTo(role)}>
+            Lanjut sebagai {ROLE_LABEL[role]}
+          </button>
+        )
+      )}
+    </div>
+  )
+}
 
 export function Banner({ tone, children, action }) {
   const danger = tone === 'danger'
@@ -176,6 +203,7 @@ export function CattleSummary({ lookup }) {
   const items = [
     ['Sapi', cattleLabel(c.cattleId)],
     ['Status', label(CATTLE_STATUS, c.status)],
+    ['Ras', `${label(BREED, c.breed)} ${label(SEX, c.sex).toLowerCase()}`],
     ['Grade', label(GRADE, c.grade)],
     ['Berat hidup', `${c.liveWeightKg} kg`],
     ['Pakan', label(FEED_TYPE, c.feedType)],
@@ -184,8 +212,8 @@ export function CattleSummary({ lookup }) {
   ]
   return (
     <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-divider bg-divider text-sm sm:grid-cols-4" aria-label="Data sapi">
-      {items.map(([k, v], idx) => (
-        <div key={k} className={`bg-surface px-3 py-2.5${idx === items.length - 1 ? ' col-span-2 sm:col-span-2' : ''}`}>
+      {items.map(([k, v]) => (
+        <div key={k} className="bg-surface px-3 py-2.5">
           <dt className="eyebrow">{k}</dt>
           <dd className="mt-1 font-medium">{v}</dd>
         </div>

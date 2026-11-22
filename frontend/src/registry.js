@@ -1,6 +1,6 @@
 // Akses contract CattleRegistry: baca lewat RPC publik (tanpa wallet), tulis lewat MetaMask
 // (atau akun demo node lokal, lihat demoAvailable).
-import { BrowserProvider, Contract, Interface } from 'ethers'
+import { BrowserProvider, Contract, Interface, getBytes } from 'ethers'
 import abi from './CattleRegistry.abi.json'
 import { NETWORK, readProvider } from './chain.js'
 import { describeRevert } from './errors.js'
@@ -38,6 +38,32 @@ export async function rolesOf(address) {
   const ct = readRegistry()
   const held = await Promise.all(ROLE_KEYS.map((k) => ct.checkRole(address, ROLE[k])))
   return Object.fromEntries(ROLE_KEYS.map((k, i) => [k, held[i]]))
+}
+
+/**
+ * Semua sapi dan kemasan, untuk daftar pilihan di form (supaya ID tidak perlu diketik ulang).
+ * ponytail: satu panggilan RPC per item; cukup untuk prototype. Kalau data ribuan, baca per halaman
+ * atau indeks lewat event.
+ */
+export async function listCattle() {
+  const ct = readRegistry()
+  const n = Number(await ct.totalCattle())
+  return Promise.all(Array.from({ length: n }, (_, i) => ct.getCattle(i + 1)))
+}
+
+export async function listPackages() {
+  const ct = readRegistry()
+  const n = Number(await ct.totalPackages())
+  return Promise.all(Array.from({ length: n }, (_, i) => ct.getPackageTrace(i + 1).then(([pkg]) => pkg)))
+}
+
+/** Byte foto sapi dari event CattlePhoto di blok `photoBlock`, atau null kalau sapi tanpa foto. */
+export async function cattlePhoto(cattle) {
+  const block = Number(cattle.photoBlock)
+  if (!block) return null
+  const ct = readRegistry()
+  const [log] = await ct.queryFilter(ct.filters.CattlePhoto(cattle.cattleId), block, block)
+  return log ? getBytes(log.args.photo) : null
 }
 
 /** Event bernama `name` di receipt, sudah di-decode. */

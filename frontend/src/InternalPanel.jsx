@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useGSAP } from '@gsap/react'
-import { Banner } from './components.jsx'
+import { Banner, DemoSwitch } from './components.jsx'
 import { NETWORK, addressUrl, homeUrl, isDeployed, scanUrl } from './chain.js'
 import { ROLE_KEYS, ROLE_LABEL, shortAddress } from './format.js'
 import { hasMetaMask, useWallet } from './hooks.js'
@@ -34,6 +34,21 @@ const ROLE_DESC = {
 export default function InternalPanel() {
   const wallet = useWallet()
   const root = useRef(null)
+  const demo = useDemoAccounts()
+  const [pendingAnchor, setPendingAnchor] = useState(null)
+
+  // Mode demo: pindah langsung ke akun tes pemegang peran itu, lalu gulir ke form-nya.
+  const switchTo = (roleKey) => {
+    const acct = demo.accounts?.find((a) => a.roles[roleKey])
+    if (!acct) return
+    wallet.demoLogin(acct.address)
+    setPendingAnchor(STAGES.find((s) => s.role === roleKey)?.anchor ?? 'tahap-admin')
+  }
+  useEffect(() => {
+    if (!pendingAnchor || !wallet.roles) return
+    document.getElementById(pendingAnchor)?.scrollIntoView({ block: 'start' })
+    setPendingAnchor(null)
+  }, [pendingAnchor, wallet.roles])
 
   // Semua animasi opt-in lewat no-preference: kalau tidak berjalan, konten tetap tampil penuh.
   useGSAP(
@@ -58,20 +73,38 @@ export default function InternalPanel() {
   )
 
   return (
+    <DemoSwitch.Provider value={wallet.demo ? switchTo : null}>
     <div ref={root} className="min-h-dvh bg-bg">
       <Nav wallet={wallet} />
       <main className="w-full max-w-full overflow-x-clip">
         <Hero wallet={wallet} />
         <div className="mx-auto grid max-w-7xl gap-10 px-5 py-16 sm:px-8 md:py-24 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-14">
           <div className="min-w-0 space-y-8">
-            <Body wallet={wallet} />
+            <Body wallet={wallet} demo={demo} onSwitch={switchTo} />
           </div>
           <Aside />
         </div>
       </main>
       <Footer />
     </div>
+    </DemoSwitch.Provider>
   )
+}
+
+/** Akun tes node lokal yang punya peran (kosong di luar mode demo). */
+function useDemoAccounts() {
+  const [state, setState] = useState(() => (demoAvailable() ? { status: 'loading' } : { status: 'ok', accounts: [] }))
+  useEffect(() => {
+    if (!demoAvailable()) return
+    let cancelled = false
+    demoAccounts()
+      .then((accounts) => !cancelled && setState({ status: 'ok', accounts }))
+      .catch((err) => !cancelled && setState({ status: 'error', message: errorMessage(err) }))
+    return () => {
+      cancelled = true
+    }
+  }, [])
+  return state
 }
 
 function Nav({ wallet }) {
@@ -263,13 +296,14 @@ function StageMap({ roles }) {
   )
 }
 
-function Body({ wallet }) {
+function Body({ wallet, demo, onSwitch }) {
   if (!isDeployed()) return <NotDeployed />
   if (!wallet.account) {
     return (
       <>
-        {demoAvailable() && <DemoLogin onPick={wallet.demoLogin} />}
-        {hasMetaMask() ? <ConnectCard onConnect={wallet.connect} busy={wallet.connecting} /> : <NoWallet />}
+        {demoAvailable() && <DemoLogin state={demo} onPick={wallet.demoLogin} />}
+        {/* Di mode demo MetaMask tidak wajib, jadi kartu "pasang MetaMask" hanya mengganggu. */}
+        {hasMetaMask() ? <ConnectCard onConnect={wallet.connect} busy={wallet.connecting} /> : !demoAvailable() && <NoWallet />}
       </>
     )
   }
@@ -302,18 +336,20 @@ function Body({ wallet }) {
       ) : !anyRole ? (
         <>
           {/* MetaMask bisa tersambung otomatis dengan akun pribadi tanpa peran; tetap tawarkan akun demo. */}
-          {demoAvailable() && !wallet.demo && <DemoLogin onPick={wallet.demoLogin} />}
+          {demoAvailable() && !wallet.demo && <DemoLogin state={demo} onPick={wallet.demoLogin} />}
           <NoRole account={wallet.account} />
         </>
       ) : (
         // Jaringan salah -> seluruh form terkunci lewat fieldset disabled.
         <fieldset disabled={wallet.wrongNetwork} className="min-w-0 space-y-8">
           <legend className="sr-only">Form pencatatan</legend>
-          {roles.ADMIN && <div id="tahap-admin"><AdminSection wallet={wallet} /></div>}
-          {roles.FARMER && <div id="tahap-daftar"><FarmerSection /></div>}
-          {roles.ABATTOIR && <div id="tahap-sembelih"><SlaughterSection /></div>}
-          {roles.ABATTOIR && <div id="tahap-kemas"><PackagingSection account={wallet.account} /></div>}
-          {roles.DISTRIBUTOR && <div id="tahap-kirim"><DistributorSection /></div>}
+          {wallet.demo && <RoleBar accounts={demo.accounts ?? []} current={wallet.account} onSwitch={onSwitch} />}
+          {/* key: form dikosongkan saat pindah akun, supaya isian peran lain tidak terbawa. */}
+          {roles.ADMIN && <div id="tahap-admin" className="scroll-mt-28"><AdminSection key={wallet.account} wallet={wallet} /></div>}
+          {roles.FARMER && <div id="tahap-daftar" className="scroll-mt-28"><FarmerSection key={wallet.account} /></div>}
+          {roles.ABATTOIR && <div id="tahap-sembelih" className="scroll-mt-28"><SlaughterSection key={wallet.account} /></div>}
+          {roles.ABATTOIR && <div id="tahap-kemas" className="scroll-mt-28"><PackagingSection key={wallet.account} account={wallet.account} /></div>}
+          {roles.DISTRIBUTOR && <div id="tahap-kirim" className="scroll-mt-28"><DistributorSection key={wallet.account} /></div>}
         </fieldset>
       )}
     </>
@@ -351,19 +387,39 @@ function Aside() {
   )
 }
 
-/** Hanya di node Hardhat lokal: masuk sebagai akun tes tanpa MetaMask. */
-function DemoLogin({ onPick }) {
-  const [state, setState] = useState({ status: 'loading' })
-  useEffect(() => {
-    let cancelled = false
-    demoAccounts()
-      .then((accounts) => !cancelled && setState({ status: 'ok', accounts }))
-      .catch((err) => !cancelled && setState({ status: 'error', message: errorMessage(err) }))
-    return () => {
-      cancelled = true
-    }
-  }, [])
+/** Mode demo: pindah peran tanpa keluar-masuk, supaya satu alur bisa dicoba dari awal sampai akhir. */
+function RoleBar({ accounts, current, onSwitch }) {
+  // Urut sesuai alur: peternak -> RPH -> distributor, admin terakhir.
+  const order = ['FARMER', 'ABATTOIR', 'DISTRIBUTOR', 'ADMIN']
+  const items = order
+    .map((k) => ({ key: k, acct: accounts.find((a) => a.roles[k]) }))
+    .filter((x) => x.acct)
+  return (
+    <div className="flex flex-wrap items-center gap-2 rounded-[1.25rem] border border-divider bg-surface px-4 py-3">
+      <span className="mr-1 text-sm font-medium text-muted">Mode demo · berperan sebagai</span>
+      {items.map(({ key, acct }) => {
+        const active = acct.address.toLowerCase() === current?.toLowerCase()
+        return (
+          <button
+            key={key}
+            type="button"
+            onClick={() => onSwitch(key)}
+            disabled={active}
+            aria-pressed={active}
+            className={`rounded-full px-3.5 py-2 text-sm font-semibold transition-colors ${
+              active ? 'bg-night text-[#f0fdf4]' : 'border border-border hover:border-primary hover:bg-primary-soft'
+            }`}
+          >
+            {ROLE_LABEL[key]}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
 
+/** Hanya di node Hardhat lokal: masuk sebagai akun tes tanpa MetaMask. */
+function DemoLogin({ state, onPick }) {
   return (
     <section data-rise className="card overflow-hidden" aria-labelledby="demo-title">
       <header className="border-b border-divider px-6 py-6 sm:px-8 sm:py-7">

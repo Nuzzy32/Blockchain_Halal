@@ -293,3 +293,18 @@ Preset `Stagger List` (300-450ms, `back.out(1.4)`, stagger 0.06s) diadopsi karak
 tapi diimplementasi dengan CSS `animation-delay` + `cubic-bezier(0.34, 1.56, 0.64, 1)`.
 Menambah GSAP (~100KB) untuk satu stagger tidak sepadan di aplikasi 4 layar.
 `prefers-reduced-motion` dihormati.
+
+### 6. Landing page (ditambahkan 2026-09-26) — pengecualian untuk #4 dan #5
+
+Tanpa param (`/`) sekarang landing page yang menjelaskan sistem; panel internal pindah ke
+`?panel=1`. Override #4 tetap berlaku untuk `?trace=` dan panel.
+
+- GSAP (+ `@gsap/react`) dipakai **hanya** di `src/Landing.jsx`, yang di-lazy-load — halaman
+  `?trace=` tidak mengunduhnya. Semua animasi di dalam `gsap.matchMedia('(prefers-reduced-motion:
+  no-preference)')`; kalau tidak berjalan, konten tetap tampil.
+- Kolom "Cara kerja" menempel dengan CSS `sticky`, bukan pin ScrollTrigger (pin + `pinSpacing:
+  false` meninggalkan kolom menimpa section berikutnya). Karena itu `<main>` memakai
+  `overflow-x: clip`, bukan `hidden` — `hidden` mematikan sticky.
+- Latar gelap `--color-night: #0B1D13` hanya di hero dan CTA penutup (pembuka dan penutup yang
+  disengaja). Teks di atasnya: `#F0FDF4` 16.7:1, `#B9D3C1` 11:1.
+- Gambar dari picsum.photos adalah placeholder; ganti dengan foto asli peternakan/RPH mitra.

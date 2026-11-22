@@ -8,8 +8,8 @@ export const STAGES = [
     title: 'Daftarkan sapi',
     anchor: 'tahap-daftar',
     does: 'Mendaftarkan sapi hidup begitu siap dijual ke rumah potong.',
-    fills: ['Umur (bulan)', 'Berat hidup', 'Grade', 'Jenis pakan', 'Kode peternakan'],
-    gets: 'ID sapi, misalnya HCT-C-000012. Serahkan ID ini ke RPH bersama sapinya.',
+    fills: ['Umur (bulan)', 'Berat hidup', 'Grade', 'Jenis pakan', 'Ras, jenis kelamin, warna bulu', 'Kode peternakan', 'Foto sapi'],
+    gets: 'ID sapi, misalnya HCT-C-000012. Sapi langsung muncul di daftar RPH.',
   },
   {
     role: 'ABATTOIR',
@@ -17,7 +17,7 @@ export const STAGES = [
     title: 'Catat penyembelihan',
     anchor: 'tahap-sembelih',
     does: 'Mencatat penyembelihan halal satu kali, tepat setelah sapi disembelih.',
-    fills: ['ID sapi dari peternak', 'Waktu sembelih', 'ID juru sembelih', 'Nomor sertifikat halal', 'Metode'],
+    fills: ['Sapi dari daftar', 'Waktu sembelih', 'Metode syar\'i', 'ID juru sembelih', 'Nomor sertifikat halal', 'Konfirmasi syarat halal'],
     gets: 'Status sapi berubah menjadi "Disembelih" dan siap dikemas.',
   },
   {
@@ -26,7 +26,7 @@ export const STAGES = [
     title: 'Buat kemasan',
     anchor: 'tahap-kemas',
     does: 'Membagi daging menjadi kemasan. Setiap kemasan mendapat QR sendiri.',
-    fills: ['ID sapi', 'Jenis potongan', 'Berat (gram)'],
+    fills: ['Sapi yang sudah disembelih', 'Jenis potongan', 'Berat (gram)'],
     gets: 'ID kemasan dan label QR siap cetak untuk ditempel di kemasan.',
   },
   {
@@ -35,7 +35,7 @@ export const STAGES = [
     title: 'Catat pengiriman',
     anchor: 'tahap-kirim',
     does: 'Mencatat kemasan yang berangkat ke toko. Beberapa kemasan bisa sekaligus.',
-    fills: ['ID kemasan (pisahkan dengan koma)', 'Waktu kirim'],
+    fills: ['Centang kemasan yang dikirim', 'Waktu kirim'],
     gets: 'Kemasan berstatus "Dikirim" dan riwayatnya lengkap untuk konsumen.',
   },
 ]

@@ -9,6 +9,9 @@ const FIELD_LABEL = {
   halalCertNo: 'Nomor sertifikat halal',
   grade: 'Grade',
   feedType: 'Jenis pakan',
+  breed: 'Ras',
+  sex: 'Jenis kelamin',
+  coatColor: 'Warna bulu',
   method: 'Metode sembelih',
   cutType: 'Jenis potongan',
   cutTypes: 'Daftar kemasan',
@@ -39,6 +42,7 @@ const MESSAGES = {
     `Sapi ${cattleLabel(cattleId)} disembelih RPH lain (${shortAddress(abattoir)}), hanya RPH itu yang boleh mengemasnya.`,
   PackageWeightExceeded: ([, total, max]) =>
     `Total berat kemasan ${num(total)} g melebihi berat hidup sapi (${num(max)} g).`,
+  PhotoTooLarge: ([given, max]) => `Foto ${num(given)} byte melebihi batas ${num(max)} byte.`,
 }
 
 export function describeRevert(name, args = []) {

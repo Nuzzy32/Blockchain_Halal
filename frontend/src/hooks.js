@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { NETWORK, addChainParams } from './chain.js'
-import { errorMessage, isRevert, readRegistry, rolesOf, setDemoAccount, writeRegistry } from './registry.js'
+import { errorMessage, isRevert, listCattle, listPackages, readRegistry, rolesOf, setDemoAccount, writeRegistry } from './registry.js'
+
+// Disiarkan setiap transaksi berhasil, supaya daftar pilihan di semua form ikut diperbarui.
+const CHANGED = 'registry:changed'
+import { imageMime } from './photo.js'
 import { parseId } from './validation.js'
 
 export const hasMetaMask = () => typeof window.ethereum !== 'undefined'
@@ -138,6 +142,7 @@ export function useTx() {
       setState({ status: 'mining', hash: sent.hash })
       const receipt = await sent.wait()
       setState({ status: 'success', hash: sent.hash })
+      window.dispatchEvent(new Event(CHANGED))
       return receipt
     } catch (err) {
       setState({ status: 'error', message: errorMessage(err) })
@@ -178,34 +183,42 @@ export function useCattle(idText) {
   return { ...state, cattleId, reload: () => setNonce((n) => n + 1) }
 }
 
-/** Data beberapa kemasan sekaligus untuk pratinjau pengiriman. Kemasan yang tidak ada -> found: false. */
-export function usePackages(ids) {
-  const key = ids.join(',')
-  const [state, setState] = useState({ status: 'idle', items: [] })
+/** Byte gambar -> object URL untuk <img>, dilepas otomatis. Bukan WebP/JPEG/PNG -> null. */
+export function usePhotoUrl(bytes) {
+  const [url, setUrl] = useState(null)
+  useEffect(() => {
+    const type = imageMime(bytes)
+    if (!type) return setUrl(null)
+    const u = URL.createObjectURL(new Blob([bytes], { type }))
+    setUrl(u)
+    return () => URL.revokeObjectURL(u)
+  }, [bytes])
+  return url
+}
+
+/** Daftar dari contract yang dibaca ulang setiap ada transaksi berhasil di form mana pun. */
+function useList(load) {
+  const [state, setState] = useState({ status: 'loading', items: [] })
   const [nonce, setNonce] = useState(0)
 
   useEffect(() => {
-    if (!key) return setState({ status: 'idle', items: [] })
+    const bump = () => setNonce((n) => n + 1)
+    window.addEventListener(CHANGED, bump)
+    return () => window.removeEventListener(CHANGED, bump)
+  }, [])
+
+  useEffect(() => {
     let cancelled = false
-    setState({ status: 'loading', items: [] })
-    const ct = readRegistry()
-    Promise.all(
-      key.split(',').map((id) =>
-        ct.getPackageTrace(id).then(
-          ([pkg]) => ({ id, found: true, pkg }),
-          (err) => {
-            if (isRevert(err, 'PackageNotFound')) return { id, found: false }
-            throw err
-          },
-        ),
-      ),
-    )
+    load()
       .then((items) => !cancelled && setState({ status: 'ok', items }))
       .catch((err) => !cancelled && setState({ status: 'error', items: [], message: errorMessage(err) }))
     return () => {
       cancelled = true
     }
-  }, [key, nonce])
+  }, [load, nonce])
 
-  return { ...state, reload: () => setNonce((n) => n + 1) }
+  return state
 }
+
+export const useCattleList = () => useList(listCattle)
+export const usePackageList = () => useList(listPackages)
